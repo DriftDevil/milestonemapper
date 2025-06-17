@@ -182,8 +182,6 @@ export default function HomePage() {
         return;
       }
       try {
-        // Fetching only designated National Parks, limit 100 should be enough (current count is 63)
-        // Added fields=states to get the states information
         const response = await fetch(`https://developer.nps.gov/api/v1/parks?limit=100&designationCode=NATP&fields=states&api_key=${apiKey}`);
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -193,7 +191,7 @@ export default function HomePage() {
           .map(park => ({
             id: park.parkCode,
             name: park.fullName,
-            state: park.states, // This is a comma-separated string like "CA,NV" or "WY"
+            state: park.states, 
           }))
           .sort((a, b) => a.name.localeCompare(b.name));
 
@@ -281,8 +279,8 @@ export default function HomePage() {
             if (category.slug === 'countries') trackerSpecificProps.countries = category.data;
             else if (category.slug === 'us-states') trackerSpecificProps.states = category.data;
             else if (category.slug === 'national-parks') trackerSpecificProps.parks = category.data;
-            else if (category.slug === 'mlb-ballparks') trackerSpecificProps.stadiums = category.data; // MLB still uses local data
-            else if (category.slug === 'nfl-stadiums') trackerSpecificProps.stadiums = category.data; // NFL still uses local data
+            else if (category.slug === 'mlb-ballparks') trackerSpecificProps.stadiums = category.data; 
+            else if (category.slug === 'nfl-stadiums') trackerSpecificProps.stadiums = category.data;
 
             return (
               <CategoryCard

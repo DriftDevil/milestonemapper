@@ -2,18 +2,21 @@
 "use client";
 
 import type { NFLStadium, CategorySlug } from '@/types';
-import { useTravelData } from '@/hooks/useTravelData';
+// Removed: import { useTravelData } from '@/hooks/useTravelData';
 import { ItemToggle } from './ItemToggle';
 import { Input } from '@/components/ui/input';
 import { useState } from 'react';
 
 interface NflStadiumTrackerProps {
   stadiums: NFLStadium[];
+  categorySlug: CategorySlug;
+  isItemVisited: (category: CategorySlug, itemId: string) => boolean;
+  toggleItemVisited: (category: CategorySlug, itemId: string) => void;
 }
 
-export function NflStadiumTracker({ stadiums }: NflStadiumTrackerProps) {
-  const { toggleItemVisited, isItemVisited } = useTravelData();
-  const categorySlug: CategorySlug = 'nfl-stadiums';
+export function NflStadiumTracker({ stadiums, categorySlug, isItemVisited, toggleItemVisited }: NflStadiumTrackerProps) {
+  // Removed: const { toggleItemVisited, isItemVisited } = useTravelData();
+  // Removed: const categorySlug: CategorySlug = 'nfl-stadiums'; // Now passed as prop
   const [searchTerm, setSearchTerm] = useState('');
 
   const filteredStadiums = stadiums.filter(stadium =>

@@ -2,18 +2,21 @@
 "use client";
 
 import type { MLBStadium, CategorySlug } from '@/types';
-import { useTravelData } from '@/hooks/useTravelData';
+// Removed: import { useTravelData } from '@/hooks/useTravelData';
 import { ItemToggle } from './ItemToggle';
 import { Input } from '@/components/ui/input';
 import { useState } from 'react';
 
 interface MlbStadiumTrackerProps {
   stadiums: MLBStadium[];
+  categorySlug: CategorySlug;
+  isItemVisited: (category: CategorySlug, itemId: string) => boolean;
+  toggleItemVisited: (category: CategorySlug, itemId: string) => void;
 }
 
-export function MlbStadiumTracker({ stadiums }: MlbStadiumTrackerProps) {
-  const { toggleItemVisited, isItemVisited } = useTravelData();
-  const categorySlug: CategorySlug = 'mlb-ballparks';
+export function MlbStadiumTracker({ stadiums, categorySlug, isItemVisited, toggleItemVisited }: MlbStadiumTrackerProps) {
+  // Removed: const { toggleItemVisited, isItemVisited } = useTravelData();
+  // Removed: const categorySlug: CategorySlug = 'mlb-ballparks'; // Now passed as prop
   const [searchTerm, setSearchTerm] = useState('');
 
   const filteredStadiums = stadiums.filter(stadium =>
