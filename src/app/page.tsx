@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import type { CategorySlug, Country as CountryType, TrackableItem } from '@/types';
+import type { CategorySlug, Country as CountryType, USState as USStateType, TrackableItem } from '@/types';
 import { CategoryCard } from "@/components/CategoryCard";
 import { GlobeIcon, StarIcon, MountainIcon, BaseballIcon, FootballIcon, MilestoneMapperIcon } from "@/components/icons";
 import { CountryTracker } from "@/components/trackers/CountryTracker";
@@ -13,7 +13,7 @@ import { NflStadiumTracker } from "@/components/trackers/NflStadiumTracker";
 import * as localData from "@/lib/data";
 import { useTravelData } from "@/hooks/useTravelData";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card"; // Ensure using ShadCN card for skeleton too
+import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card";
 
 interface CategoryConfig {
   slug: CategorySlug;
@@ -25,7 +25,6 @@ interface CategoryConfig {
   cardColor: string;
   error?: string;
 }
-
 
 const initialCategories: CategoryConfig[] = [
   {
@@ -41,8 +40,8 @@ const initialCategories: CategoryConfig[] = [
     slug: 'us-states',
     title: "U.S. States",
     icon: StarIcon,
-    totalCount: localData.usStates.length,
-    data: localData.usStates,
+    totalCount: 0, // Updated after fetch
+    data: [] as USStateType[], // Updated after fetch
     TrackerComponent: StateTracker,
     cardColor: "text-red-500",
   },
@@ -75,11 +74,11 @@ const initialCategories: CategoryConfig[] = [
   },
 ];
 
-
 export default function HomePage() {
   const { getVisitedCount, isLoaded: travelDataLoaded, toggleItemVisited, isItemVisited } = useTravelData();
   const [categories, setCategories] = useState<CategoryConfig[]>(initialCategories);
   const [countriesLoading, setCountriesLoading] = useState(true);
+  const [statesLoading, setStatesLoading] = useState(true);
 
   useEffect(() => {
     async function fetchCountries() {
@@ -118,10 +117,61 @@ export default function HomePage() {
       }
     }
 
+    async function fetchStates() {
+      const apiKey = process.env.NEXT_PUBLIC_CENSUS_API_KEY;
+      if (!apiKey) {
+        console.error("Census API key is missing.");
+        setCategories(prevCategories =>
+          prevCategories.map(cat =>
+            cat.slug === 'us-states'
+              ? { ...cat, data: [], totalCount: 0, error: "API key missing. Cannot load U.S. States." }
+              : cat
+          )
+        );
+        setStatesLoading(false);
+        return;
+      }
+      try {
+        const response = await fetch(`https://api.census.gov/data/2023/geoinfo?get=NAME&for=state:*&key=${apiKey}`);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const rawStatesData: string[][] = await response.json();
+        // The first row is headers, e.g., ["NAME", "state"]
+        const formattedStates: USStateType[] = rawStatesData
+          .slice(1) // Skip header row
+          .map(stateArray => ({
+            id: stateArray[1], // FIPS code, e.g., "01"
+            name: stateArray[0], // State name, e.g., "Alabama"
+          }))
+          .sort((a, b) => a.name.localeCompare(b.name));
+
+        setCategories(prevCategories =>
+          prevCategories.map(cat =>
+            cat.slug === 'us-states'
+              ? { ...cat, data: formattedStates, totalCount: formattedStates.length, error: undefined }
+              : cat
+          )
+        );
+      } catch (error) {
+        console.error("Failed to fetch U.S. states:", error);
+        setCategories(prevCategories =>
+          prevCategories.map(cat =>
+            cat.slug === 'us-states'
+              ? { ...cat, data: [], totalCount: 0, error: "Failed to load U.S. States. Please try again later." }
+              : cat
+          )
+        );
+      } finally {
+        setStatesLoading(false);
+      }
+    }
+
     fetchCountries();
+    fetchStates();
   }, []);
 
-  const overallLoading = !travelDataLoaded || countriesLoading;
+  const overallLoading = !travelDataLoaded || countriesLoading || statesLoading;
 
   if (overallLoading) {
     return (

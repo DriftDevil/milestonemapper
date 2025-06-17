@@ -2,18 +2,21 @@
 "use client";
 
 import type { USState, CategorySlug } from '@/types';
-import { useTravelData } from '@/hooks/useTravelData';
+// import { useTravelData } from '@/hooks/useTravelData'; // Now passed as props
 import { ItemToggle } from './ItemToggle';
 import { Input } from '@/components/ui/input';
 import { useState } from 'react';
 
 interface StateTrackerProps {
   states: USState[];
+  categorySlug: CategorySlug;
+  isItemVisited: (category: CategorySlug, itemId: string) => boolean;
+  toggleItemVisited: (category: CategorySlug, itemId: string) => void;
 }
 
-export function StateTracker({ states }: StateTrackerProps) {
-  const { toggleItemVisited, isItemVisited } = useTravelData();
-  const categorySlug: CategorySlug = 'us-states';
+export function StateTracker({ states, categorySlug, isItemVisited, toggleItemVisited }: StateTrackerProps) {
+  // const { toggleItemVisited, isItemVisited } = useTravelData(); // Now passed as props
+  // const categorySlug: CategorySlug = 'us-states'; // Now passed as prop
   const [searchTerm, setSearchTerm] = useState('');
 
   const filteredStates = states.filter(state =>
@@ -32,11 +35,11 @@ export function StateTracker({ states }: StateTrackerProps) {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
         {filteredStates.map((state) => (
           <ItemToggle
-            key={state.id}
+            key={state.id} // state.id is now FIPS code
             item={state}
             isChecked={isItemVisited(categorySlug, state.id)}
             onToggle={() => toggleItemVisited(categorySlug, state.id)}
-            details={<span className="font-mono text-xs">{state.code}</span>}
+            // details prop is removed as state.code (2-letter postal) is no longer available
           />
         ))}
       </div>

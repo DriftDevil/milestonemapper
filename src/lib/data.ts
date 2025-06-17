@@ -1,16 +1,8 @@
 
-import type { USState, NationalPark, MLBStadium, NFLStadium } from '@/types';
+import type { NationalPark, MLBStadium, NFLStadium } from '@/types';
 
 // Countries will be fetched from an API in page.tsx
-
-export const usStates: USState[] = [
-  { id: 'al', name: 'Alabama', code: 'AL' },
-  { id: 'ak', name: 'Alaska', code: 'AK' },
-  { id: 'az', name: 'Arizona', code: 'AZ' },
-  { id: 'ar', name: 'Arkansas', code: 'AR' },
-  { id: 'ca', name: 'California', code: 'CA' },
-  // Add all 50 states
-];
+// US States will be fetched from an API in page.tsx
 
 export const nationalParks: NationalPark[] = [
   { id: 'acad', name: 'Acadia National Park', state: 'Maine' },
