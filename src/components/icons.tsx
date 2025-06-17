@@ -1,6 +1,6 @@
 
 import type React from 'react';
-import { Plane, Star, Mountain, MapPin, Search, CheckCircle, Filter, Check, Globe, Landmark, Trophy, CalendarDays } from 'lucide-react';
+import { Plane, Star, Mountain, MapPin, Search, CheckCircle, Filter, Check, Globe, Landmark, Trophy, CalendarDays, Sun, Moon, Laptop } from 'lucide-react';
 
 // Re-exporting Lucide icons for consistency or if we need to wrap them
 export const PlaneIcon = Plane;
@@ -15,6 +15,10 @@ export const GlobeIcon = Globe; // For Countries
 export const LandmarkIcon = Landmark; // Generic, could be used
 export const TrophyIcon = Trophy; // For achievements/stadiums
 export const CalendarDaysIcon = CalendarDays; // For visit dates
+export const SunIcon = Sun;
+export const MoonIcon = Moon;
+export const LaptopIcon = Laptop;
+
 
 // Custom Baseball Icon
 const CustomBaseballIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
@@ -136,5 +140,3 @@ export const UsaFlagIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
     <circle cx="10" cy="8.5" r="0.5" fill="white" stroke="none" />
   </svg>
 );
-
-

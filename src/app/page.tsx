@@ -14,6 +14,7 @@ import * as localData from "@/lib/data";
 import { useTravelData } from "@/hooks/useTravelData";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 interface CategoryConfig {
   slug: CategorySlug;
@@ -315,6 +316,9 @@ export default function HomePage() {
         </div>
       </div>
        <footer className="py-8 text-center text-muted-foreground">
+         <div className="mb-4">
+          <ThemeToggle />
+        </div>
         <p>&copy; {new Date().getFullYear()} Milestone Mapper. Happy travels!</p>
       </footer>
     </main>
