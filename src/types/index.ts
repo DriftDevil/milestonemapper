@@ -7,7 +7,8 @@ export interface TrackableItem {
 }
 
 export interface Country extends TrackableItem {
-  code: string; // ISO 3166-1 alpha-2 code
+  code: string; // ISO 3166-1 alpha-2 code (cca2 from API)
+  // name will be common name from API
 }
 
 export interface USState extends TrackableItem {

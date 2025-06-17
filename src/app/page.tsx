@@ -1,6 +1,8 @@
 
 "use client";
 
+import { useState, useEffect } from 'react';
+import type { CategorySlug, Country as CountryType, TrackableItem } from '@/types';
 import { CategoryCard } from "@/components/CategoryCard";
 import { GlobeIcon, StarIcon, MountainIcon, BaseballIcon, FootballIcon, MilestoneMapperIcon } from "@/components/icons";
 import { CountryTracker } from "@/components/trackers/CountryTracker";
@@ -8,62 +10,119 @@ import { StateTracker } from "@/components/trackers/StateTracker";
 import { NationalParkTracker } from "@/components/trackers/NationalParkTracker";
 import { MlbStadiumTracker } from "@/components/trackers/MlbStadiumTracker";
 import { NflStadiumTracker } from "@/components/trackers/NflStadiumTracker";
-import * as data from "@/lib/data";
+import * as localData from "@/lib/data";
 import { useTravelData } from "@/hooks/useTravelData";
 import { Skeleton } from "@/components/ui/skeleton";
 
+interface CategoryConfig {
+  slug: CategorySlug;
+  title: string;
+  icon: React.ElementType;
+  totalCount: number;
+  data: TrackableItem[];
+  TrackerComponent: React.ElementType;
+  cardColor: string;
+  error?: string;
+}
+
+
+const initialCategories: CategoryConfig[] = [
+  {
+    slug: 'countries',
+    title: "Countries",
+    icon: GlobeIcon,
+    totalCount: 0, // Updated after fetch
+    data: [] as CountryType[], // Updated after fetch
+    TrackerComponent: CountryTracker,
+    cardColor: "text-blue-500",
+  },
+  {
+    slug: 'us-states',
+    title: "U.S. States",
+    icon: StarIcon,
+    totalCount: localData.usStates.length,
+    data: localData.usStates,
+    TrackerComponent: StateTracker,
+    cardColor: "text-red-500",
+  },
+  {
+    slug: 'national-parks',
+    title: "National Parks",
+    icon: MountainIcon,
+    totalCount: localData.nationalParks.length,
+    data: localData.nationalParks,
+    TrackerComponent: NationalParkTracker,
+    cardColor: "text-green-600",
+  },
+  {
+    slug: 'mlb-ballparks',
+    title: "MLB Ballparks",
+    icon: BaseballIcon,
+    totalCount: localData.mlbBallparks.length,
+    data: localData.mlbBallparks,
+    TrackerComponent: MlbStadiumTracker,
+    cardColor: "text-orange-500",
+  },
+  {
+    slug: 'nfl-stadiums',
+    title: "NFL Stadiums",
+    icon: FootballIcon,
+    totalCount: localData.nflStadiums.length,
+    data: localData.nflStadiums,
+    TrackerComponent: NflStadiumTracker,
+    cardColor: "text-purple-500",
+  },
+];
+
+
 export default function HomePage() {
-  const { getVisitedCount, isLoaded } = useTravelData();
+  const { getVisitedCount, isLoaded: travelDataLoaded } = useTravelData();
+  const [categories, setCategories] = useState<CategoryConfig[]>(initialCategories);
+  const [countriesLoading, setCountriesLoading] = useState(true);
 
-  const categories = [
-    {
-      slug: 'countries',
-      title: "Countries",
-      icon: GlobeIcon,
-      totalCount: data.countries.length, // Adjust if using a more complete list
-      data: data.countries,
-      TrackerComponent: CountryTracker,
-      cardColor: "text-blue-500",
-    },
-    {
-      slug: 'us-states',
-      title: "U.S. States",
-      icon: StarIcon,
-      totalCount: data.usStates.length, // Should be 50
-      data: data.usStates,
-      TrackerComponent: StateTracker,
-      cardColor: "text-red-500",
-    },
-    {
-      slug: 'national-parks',
-      title: "National Parks",
-      icon: MountainIcon,
-      totalCount: data.nationalParks.length, // Should be 63
-      data: data.nationalParks,
-      TrackerComponent: NationalParkTracker,
-      cardColor: "text-green-600",
-    },
-    {
-      slug: 'mlb-ballparks',
-      title: "MLB Ballparks",
-      icon: BaseballIcon,
-      totalCount: data.mlbBallparks.length, // Should be 30
-      data: data.mlbBallparks,
-      TrackerComponent: MlbStadiumTracker,
-      cardColor: "text-orange-500",
-    },
-    {
-      slug: 'nfl-stadiums',
-      title: "NFL Stadiums",
-      icon: FootballIcon,
-      totalCount: data.nflStadiums.length, // Should be ~30-32
-      data: data.nflStadiums,
-      TrackerComponent: NflStadiumTracker,
-      cardColor: "text-purple-500",
-    },
-  ] as const; // Use 'as const' for better type inference of slugs
+  useEffect(() => {
+    async function fetchCountries() {
+      try {
+        const response = await fetch('https://restcountries.com/v3.1/all?fields=name,cca2');
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const rawCountries: Array<{ name: { common: string }, cca2: string }> = await response.json();
+        const formattedCountries: CountryType[] = rawCountries
+          .map(country => ({
+            id: country.cca2,
+            name: country.name.common,
+            code: country.cca2,
+          }))
+          .sort((a, b) => a.name.localeCompare(b.name));
 
-  if (!isLoaded) {
+        setCategories(prevCategories =>
+          prevCategories.map(cat =>
+            cat.slug === 'countries'
+              ? { ...cat, data: formattedCountries, totalCount: formattedCountries.length, error: undefined }
+              : cat
+          )
+        );
+      } catch (error) {
+        console.error("Failed to fetch countries:", error);
+        setCategories(prevCategories =>
+          prevCategories.map(cat =>
+            cat.slug === 'countries'
+              ? { ...cat, data: [], totalCount: 0, error: "Failed to load countries. Please try again later." }
+              : cat
+          )
+        );
+      } finally {
+        setCountriesLoading(false);
+      }
+    }
+
+    fetchCountries();
+  }, []);
+
+  const overallLoading = !travelDataLoaded || countriesLoading;
+
+  if (overallLoading) {
     return (
       <div className="container mx-auto px-4 py-8">
         <header className="mb-12 text-center">
@@ -110,18 +169,29 @@ export default function HomePage() {
         </header>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {categories.map(category => (
-            <CategoryCard
-              key={category.slug}
-              title={category.title}
-              icon={category.icon}
-              visitedCount={getVisitedCount(category.slug)}
-              totalCount={category.totalCount}
-              cardColor={category.cardColor}
-            >
-              <category.TrackerComponent {...{[category.slug === 'us-states' ? 'states' : category.slug === 'national-parks' ? 'parks' : category.slug.replace('-', '')]: category.data}} />
-            </CategoryCard>
-          ))}
+          {categories.map(category => {
+            // Prepare props for the TrackerComponent
+            let trackerProps = {};
+            if (category.slug === 'countries') trackerProps = { countries: category.data };
+            else if (category.slug === 'us-states') trackerProps = { states: category.data };
+            else if (category.slug === 'national-parks') trackerProps = { parks: category.data };
+            else if (category.slug === 'mlb-ballparks') trackerProps = { stadiums: category.data };
+            else if (category.slug === 'nfl-stadiums') trackerProps = { stadiums: category.data };
+
+            return (
+              <CategoryCard
+                key={category.slug}
+                title={category.title}
+                icon={category.icon}
+                visitedCount={getVisitedCount(category.slug)}
+                totalCount={category.totalCount}
+                cardColor={category.cardColor}
+                // You could pass category.error here if CategoryCard is updated to display it
+              >
+                {category.error ? <p className="text-destructive text-center p-4">{category.error}</p> : <category.TrackerComponent {...trackerProps} />}
+              </CategoryCard>
+            );
+          })}
         </div>
       </div>
        <footer className="py-8 text-center text-muted-foreground">
@@ -131,8 +201,10 @@ export default function HomePage() {
   );
 }
 
-// Helper types for CardHeader and Card (replace with actual imports if needed)
-// These are usually part of shadcn/ui components
+// Helper components (Card, CardHeader, CardContent, CardFooter)
+// These are usually part of shadcn/ui components, ensure they are imported if not defined locally.
+// For this example, assuming they are available as before or through actual shadcn/ui imports.
+
 interface CardProps extends React.HTMLAttributes<HTMLDivElement> {}
 const Card: React.FC<CardProps> = ({ className, children, ...props }) => (
   <div className={`rounded-lg border bg-card text-card-foreground shadow-sm ${className}`} {...props}>
@@ -160,4 +232,3 @@ const CardFooter: React.FC<CardFooterProps> = ({ className, children, ...props }
     {children}
   </div>
 );
-

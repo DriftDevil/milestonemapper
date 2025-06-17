@@ -1,16 +1,7 @@
 
-import type { Country, USState, NationalPark, MLBStadium, NFLStadium } from '@/types';
+import type { USState, NationalPark, MLBStadium, NFLStadium } from '@/types';
 
-export const countries: Country[] = [
-  { id: 'us', name: 'United States', code: 'US' },
-  { id: 'ca', name: 'Canada', code: 'CA' },
-  { id: 'mx', name: 'Mexico', code: 'MX' },
-  { id: 'gb', name: 'United Kingdom', code: 'GB' },
-  { id: 'fr', name: 'France', code: 'FR' },
-  { id: 'de', name: 'Germany', code: 'DE' },
-  { id: 'jp', name: 'Japan', code: 'JP' },
-  // Add more countries (total ~195 for a full list)
-];
+// Countries will be fetched from an API in page.tsx
 
 export const usStates: USState[] = [
   { id: 'al', name: 'Alabama', code: 'AL' },
