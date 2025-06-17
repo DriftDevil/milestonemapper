@@ -140,3 +140,4 @@ export const UsaFlagIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
     <circle cx="10" cy="8.5" r="0.5" fill="white" stroke="none" />
   </svg>
 );
+
