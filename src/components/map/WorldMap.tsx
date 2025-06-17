@@ -33,10 +33,8 @@ export function WorldMap({ allCountries, isItemVisited, categorySlug, toggleItem
             {({ geographies }) =>
               geographies.map(geo => {
                 const countryIsoA2Raw = geo.properties.ISO_A2;
-                // Ensure countryIsoA2 is a string and uppercase for reliable matching
                 const countryIsoA2 = typeof countryIsoA2Raw === 'string' ? countryIsoA2Raw.toUpperCase() : undefined;
                 
-                // Find the corresponding country in our application data (c.code should be uppercase)
                 const appCountry = countryIsoA2 ? allCountries.find(c => c.code === countryIsoA2) : undefined;
                 
                 const visited = appCountry ? isItemVisited(categorySlug, appCountry.id) : false;
@@ -48,11 +46,23 @@ export function WorldMap({ allCountries, isItemVisited, categorySlug, toggleItem
                       <Geography
                         geography={geo}
                         fill={appCountry ? (visited ? "hsl(var(--primary))" : "hsl(var(--muted))") : "hsl(var(--muted) / 0.5)"}
-                        stroke="hsl(var(--background))" // Corrected stroke color
+                        stroke="hsl(var(--background))"
                         strokeWidth={0.5}
                         onClick={() => {
                           if (appCountry) {
+                            console.log(
+                              'Clicked on appCountry:', 
+                              appCountry.name, 
+                              'ID:', appCountry.id, 
+                              'Current visited status:', isItemVisited(categorySlug, appCountry.id)
+                            );
                             toggleItemVisited(categorySlug, appCountry.id);
+                          } else {
+                            console.log(
+                              'Clicked on geography with no matching appCountry. Name from map:', 
+                              geo.properties.NAME, 
+                              'ISO_A2 from map:', geo.properties.ISO_A2
+                            );
                           }
                         }}
                         style={{
