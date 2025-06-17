@@ -43,7 +43,7 @@ export function CategoryCard({ title, icon: Icon, visitedCount, totalCount, chil
                 Mark the {title.toLowerCase()} you've visited. Progress: {visitedCount}/{totalCount}.
               </DialogDescription>
             </DialogHeader>
-            <ScrollArea className="flex-grow pr-6 -mr-6 max-h-[calc(90vh-150px)]"> {/* Adjust max-h as needed */}
+            <ScrollArea className="flex-grow min-h-0 pr-6 -mr-6"> {/* Changed: Removed max-h, added min-h-0 */}
               <div className="py-4">
                 {children}
               </div>
