@@ -32,8 +32,8 @@ const initialCategories: CategoryConfig[] = [
     slug: 'countries',
     title: "Countries",
     icon: GlobeIcon,
-    totalCount: 0, 
-    data: [] as CountryType[], 
+    totalCount: 0,
+    data: [] as CountryType[],
     TrackerComponent: CountryTracker,
     cardColor: "text-blue-500",
   },
@@ -41,8 +41,8 @@ const initialCategories: CategoryConfig[] = [
     slug: 'us-states',
     title: "U.S. States",
     icon: UsaFlagIcon,
-    totalCount: 0, 
-    data: [] as USStateType[], 
+    totalCount: 0,
+    data: [] as USStateType[],
     TrackerComponent: StateTracker,
     cardColor: "text-red-500",
   },
@@ -50,8 +50,8 @@ const initialCategories: CategoryConfig[] = [
     slug: 'national-parks',
     title: "National Parks",
     icon: MountainIcon,
-    totalCount: 0, 
-    data: [] as NationalParkType[], 
+    totalCount: 0,
+    data: [] as NationalParkType[],
     TrackerComponent: NationalParkTracker,
     cardColor: "text-green-600",
   },
@@ -100,9 +100,9 @@ export default function HomePage() {
         const rawCountries: Array<{ name: { common: string }, cca2: string }> = await response.json();
         const formattedCountries: CountryType[] = rawCountries
           .map(country => ({
-            id: country.cca2,
+            id: country.cca2.toUpperCase(), // Ensure ID is uppercase
             name: country.name.common,
-            code: country.cca2,
+            code: country.cca2.toUpperCase(), // Ensure code is uppercase
           }))
           .sort((a, b) => a.name.localeCompare(b.name));
 
@@ -150,7 +150,7 @@ export default function HomePage() {
         const formattedStates: USStateType[] = rawStatesData
           .slice(1)
           .map(stateArray => ({
-            id: stateArray[1], 
+            id: stateArray[1],
             name: stateArray[0],
           }))
           .sort((a, b) => a.name.localeCompare(b.name));

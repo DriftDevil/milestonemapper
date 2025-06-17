@@ -22,8 +22,8 @@ export function WorldMap({ allCountries, isItemVisited, categorySlug, toggleItem
         projection="geoMercator"
         className="w-full h-full"
         projectionConfig={{
-          rotate: [-10, 0, 0], 
-          scale: 120 
+          rotate: [-10, 0, 0],
+          scale: 120
         }}
       >
         <ZoomableGroup center={[0, 20]} maxZoom={8}>
@@ -32,13 +32,15 @@ export function WorldMap({ allCountries, isItemVisited, categorySlug, toggleItem
           <Geographies geography={geoUrl}>
             {({ geographies }) =>
               geographies.map(geo => {
-                const countryIsoA2 = geo.properties.ISO_A2; 
-                const countryNameFromMap = geo.properties.NAME;
+                // ISO_A2 from world-atlas is typically uppercase (e.g., "US", "CA")
+                const countryIsoA2 = geo.properties.ISO_A2;
                 
+                // Find the corresponding country in our application data
+                // Our appCountry.code is now consistently uppercase from page.tsx
                 const appCountry = allCountries.find(c => c.code === countryIsoA2);
                 
                 const visited = appCountry ? isItemVisited(categorySlug, appCountry.id) : false;
-                const displayName = appCountry ? appCountry.name : countryNameFromMap;
+                const displayName = appCountry ? appCountry.name : geo.properties.NAME;
 
                 return (
                   <Tooltip key={geo.rsmKey} delayDuration={100}>
@@ -46,7 +48,7 @@ export function WorldMap({ allCountries, isItemVisited, categorySlug, toggleItem
                       <Geography
                         geography={geo}
                         fill={appCountry ? (visited ? "hsl(var(--primary))" : "hsl(var(--muted))") : "hsl(var(--muted) / 0.5)"}
-                        stroke="hsl(var(--card-background))" 
+                        stroke="hsl(var(--card-background))"
                         strokeWidth={0.5}
                         onClick={() => {
                           if (appCountry) {
@@ -55,13 +57,13 @@ export function WorldMap({ allCountries, isItemVisited, categorySlug, toggleItem
                         }}
                         style={{
                           default: { outline: "none", transition: "fill 0.2s ease-in-out" },
-                          hover: { 
-                            outline: "none", 
+                          hover: {
+                            outline: "none",
                             fill: appCountry ? (visited ? "hsl(var(--primary) / 0.8)" : "hsl(var(--accent))") : "hsl(var(--muted) / 0.6)",
-                            cursor: appCountry ? "pointer" : "default" 
+                            cursor: appCountry ? "pointer" : "default"
                           },
-                          pressed: { 
-                            outline: "none", 
+                          pressed: {
+                            outline: "none",
                             fill: appCountry ? (visited ? "hsl(var(--primary) / 0.7)" : "hsl(var(--accent) / 0.8)") : "hsl(var(--muted) / 0.6)"
                           },
                         }}
@@ -81,4 +83,3 @@ export function WorldMap({ allCountries, isItemVisited, categorySlug, toggleItem
     </TooltipProvider>
   );
 }
-
