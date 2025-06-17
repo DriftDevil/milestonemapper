@@ -78,7 +78,7 @@ export const MilestoneMapperIcon: React.FC<React.SVGProps<SVGSVGElement>> = (pro
   </svg>
 );
 
-// Custom USA Flag Icon
+// Custom USA Flag Icon - Updated for RWB
 export const UsaFlagIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -86,40 +86,55 @@ export const UsaFlagIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
     width="24"
     height="24"
     fill="none"
-    stroke="currentColor"
-    strokeWidth="1.5" // Adjusted for consistency
+    /* stroke="currentColor" // Default stroke, overridden by specific paths */
+    strokeWidth="1.5" // Default strokeWidth for paths unless overridden
     strokeLinecap="round"
     strokeLinejoin="round"
     {...props}
   >
-    {/* Blue rectangle for stars */}
-    <path fill="var(--primary)" stroke="var(--primary)" d="M2 3h10v7H2z" />
-    {/* Stripes */}
-    <path d="M2 4.5h20" />
-    <path d="M2 6h20" />
-    <path d="M2 7.5h20" />
-    <path d="M12 9h10" /> {/* Short stripe */}
-    <path d="M2 10.5h20" />
-    <path d="M2 12h20" />
-    <path d="M2 13.5h20" />
-    <path d="M2 15h20" />
-    <path d="M2 16.5h20" />
-    <path d="M2 18h20" />
-    <path d="M2 19.5h20" />
-    {/* Outline of the flag */}
-    <rect x="2" y="3" width="20" height="18" fill="none" strokeWidth="1.5" />
-     {/* Simplified Stars - a few representative stars */}
+    {/* Canton (Blue Box for Stars) */}
+    <path fill="hsl(var(--primary))" stroke="hsl(var(--primary))" strokeWidth="0.5" d="M2 3h10v7H2z" />
+
+    {/* Stripes - using theme colors */}
+    {/* Red Stripes */}
+    <path d="M2 4.5h20" stroke="hsl(var(--destructive))" />
+    <path d="M2 7.5h20" stroke="hsl(var(--destructive))" />
+    <path d="M2 10.5h20" stroke="hsl(var(--destructive))" />
+    <path d="M2 13.5h20" stroke="hsl(var(--destructive))" />
+    <path d="M2 16.5h20" stroke="hsl(var(--destructive))" />
+    <path d="M2 19.5h20" stroke="hsl(var(--destructive))" />
+
+    {/* White Stripes (using card color from theme) */}
+    <path d="M2 6h20" stroke="hsl(var(--card))" />
+    <path d="M12 9h10" stroke="hsl(var(--card))" /> {/* Short stripe part */}
+    {/* Full length part of the stripe at y=9, under canton if not covered by blue. If canton is opaque, this is fine. */}
+    {/* If the blue canton is drawn last, it covers. If white stripe drawn last, it covers blue. Order matters. Canton drawn first. */}
+     <path d="M2 9h10" stroke="hsl(var(--card))" /> {/* Stripe portion that would be under canton, ensure it's there for layering logic */}
+
+
+    <path d="M2 12h20" stroke="hsl(var(--card))" />
+    <path d="M2 15h20" stroke="hsl(var(--card))" />
+    <path d="M2 18h20" stroke="hsl(var(--card))" />
+    
+    {/* Outline of the flag - using theme border color */}
+    <rect x="2" y="3" width="20" height="18" fill="none" stroke="hsl(var(--border))" strokeWidth="1" />
+
+    {/* Stars (White) - simplified */}
     <circle cx="4" cy="4.5" r="0.5" fill="white" stroke="none" />
     <circle cx="6" cy="4.5" r="0.5" fill="white" stroke="none" />
     <circle cx="8" cy="4.5" r="0.5" fill="white" stroke="none" />
     <circle cx="10" cy="4.5" r="0.5" fill="white" stroke="none" />
+
     <circle cx="3" cy="6.5" r="0.5" fill="white" stroke="none" />
     <circle cx="5" cy="6.5" r="0.5" fill="white" stroke="none" />
     <circle cx="7" cy="6.5" r="0.5" fill="white" stroke="none" />
     <circle cx="9" cy="6.5" r="0.5" fill="white" stroke="none" />
+
     <circle cx="4" cy="8.5" r="0.5" fill="white" stroke="none" />
     <circle cx="6" cy="8.5" r="0.5" fill="white" stroke="none" />
     <circle cx="8" cy="8.5" r="0.5" fill="white" stroke="none" />
     <circle cx="10" cy="8.5" r="0.5" fill="white" stroke="none" />
   </svg>
 );
+
+
