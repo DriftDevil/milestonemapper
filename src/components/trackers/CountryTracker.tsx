@@ -18,6 +18,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { WorldMap } from '@/components/map/WorldMap';
 import { useState } from 'react';
 
 interface CountryTrackerProps {
@@ -45,68 +47,91 @@ export function CountryTracker({ countries, categorySlug, isItemVisited, toggleI
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col gap-4">
-        <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-            <Input
-              type="text"
-              placeholder="Search countries..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="flex-grow"
-            />
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="show-visited-countries"
-                checked={showVisited}
-                onCheckedChange={(checked) => setShowVisited(checked as boolean)}
-              />
-              <Label htmlFor="show-visited-countries" className="text-sm whitespace-nowrap">
-                Show Visited
-              </Label>
-            </div>
+      <Tabs defaultValue="list" className="w-full">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
+          <TabsList>
+            <TabsTrigger value="list">List View</TabsTrigger>
+            <TabsTrigger value="map">Map View</TabsTrigger>
+          </TabsList>
+          {countries.length > 0 && (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="outline" size="sm" className="w-full sm:w-auto">Clear Visited Countries</Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action will clear all your visited countries. This cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={() => clearCategoryVisited(categorySlug)}>
+                    Yes, clear all
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
         </div>
-        {countries.length > 0 && (
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button variant="outline" className="w-full sm:w-auto">Clear Visited Countries</Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  This action will clear all your visited countries. This cannot be undone.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={() => clearCategoryVisited(categorySlug)}>
-                  Yes, clear all
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        )}
-      </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-        {filteredCountries.map((country) => (
-          <ItemToggle
-            key={country.id}
-            item={country}
-            isChecked={isItemVisited(categorySlug, country.id)}
-            onToggle={() => toggleItemVisited(categorySlug, country.id)}
-            details={<span className="font-mono text-xs">{country.code}</span>}
-          />
-        ))}
-      </div>
-      {countries.length > 0 && filteredCountries.length === 0 && !showVisited && searchTerm === '' && (
-         <p className="text-muted-foreground text-center">All countries visited! Check "Show Visited" to see them.</p>
-      )}
-      {countries.length > 0 && filteredCountries.length === 0 && (searchTerm !== '' || showVisited) && (
-         <p className="text-muted-foreground text-center">No countries found matching your criteria.</p>
-      )}
-      {countries.length === 0 && (
-         <p className="text-muted-foreground text-center">No countries to display.</p>
-      )}
+
+        <TabsContent value="list">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-4">
+              <Input
+                type="text"
+                placeholder="Search countries..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="flex-grow"
+              />
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="show-visited-countries"
+                  checked={showVisited}
+                  onCheckedChange={(checked) => setShowVisited(checked as boolean)}
+                />
+                <Label htmlFor="show-visited-countries" className="text-sm whitespace-nowrap">
+                  Show Visited
+                </Label>
+              </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {filteredCountries.map((country) => (
+              <ItemToggle
+                key={country.id}
+                item={country}
+                isChecked={isItemVisited(categorySlug, country.id)}
+                onToggle={() => toggleItemVisited(categorySlug, country.id)}
+                details={<span className="font-mono text-xs">{country.code}</span>}
+              />
+            ))}
+          </div>
+          {countries.length > 0 && filteredCountries.length === 0 && !showVisited && searchTerm === '' && (
+            <p className="text-muted-foreground text-center">All countries visited! Check "Show Visited" to see them.</p>
+          )}
+          {countries.length > 0 && filteredCountries.length === 0 && (searchTerm !== '' || showVisited) && (
+            <p className="text-muted-foreground text-center">No countries found matching your criteria.</p>
+          )}
+          {countries.length === 0 && (
+            <p className="text-muted-foreground text-center">No countries to display.</p>
+          )}
+        </TabsContent>
+        <TabsContent value="map">
+          {countries.length > 0 ? (
+            <div className="aspect-[16/9] w-full bg-muted/20 rounded-md overflow-hidden border">
+              <WorldMap
+                allCountries={countries}
+                isItemVisited={isItemVisited}
+                categorySlug={categorySlug}
+                toggleItemVisited={toggleItemVisited}
+              />
+            </div>
+          ) : (
+            <p className="text-muted-foreground text-center">No countries data to display on map.</p>
+          )}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
