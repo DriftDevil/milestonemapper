@@ -16,9 +16,11 @@ interface WorldMapProps {
 }
 
 export function WorldMap({ allCountries, isItemVisited, categorySlug, toggleItemVisited }: WorldMapProps) {
-  const countryCodeToNameMap = React.useMemo(() => {
-    return new Map(allCountries.map(c => [c.code, c.name]));
-  }, [allCountries]);
+  // This map is not strictly needed if we find the country on each render, but can be a small optimization if list is huge.
+  // For simplicity and given the current dataset size, direct find is fine.
+  // const countryCodeToNameMap = React.useMemo(() => {
+  //   return new Map(allCountries.map(c => [c.code, c.name]));
+  // }, [allCountries]);
 
   return (
     <TooltipProvider>
@@ -26,8 +28,8 @@ export function WorldMap({ allCountries, isItemVisited, categorySlug, toggleItem
         projection="geoMercator"
         className="w-full h-full"
         projectionConfig={{
-          rotate: [-10, 0, 0],
-          scale: 120
+          rotate: [-10, 0, 0], // Optional: Adjust to center a bit more on common travel areas
+          scale: 120 // Initial scale
         }}
       >
         <ZoomableGroup center={[0, 20]} maxZoom={8}>
@@ -39,11 +41,11 @@ export function WorldMap({ allCountries, isItemVisited, categorySlug, toggleItem
                 const countryIsoA2 = geo.properties.ISO_A2; // ISO 3166-1 alpha-2 code from map data
                 const countryNameFromMap = geo.properties.NAME;
                 
-                // Find our app's country data using the ISO_A2 code
+                // Find our app's country data using the ISO_A2 code (which is stored in `country.code` and `country.id`)
                 const appCountry = allCountries.find(c => c.code === countryIsoA2);
-                const itemId = appCountry ? appCountry.id : countryIsoA2; // Use appCountry.id if found, otherwise fallback
+                const itemId = appCountry ? appCountry.id : countryIsoA2; // Use appCountry.id if found for toggling
 
-                const visited = isItemVisited(categorySlug, itemId);
+                const visited = appCountry ? isItemVisited(categorySlug, itemId) : false;
                 const displayName = appCountry ? appCountry.name : countryNameFromMap;
 
                 return (
@@ -51,8 +53,8 @@ export function WorldMap({ allCountries, isItemVisited, categorySlug, toggleItem
                     <TooltipTrigger asChild>
                       <Geography
                         geography={geo}
-                        fill={visited ? "hsl(var(--primary))" : "hsl(var(--muted))"}
-                        stroke="hsl(var(--card-background))"
+                        fill={appCountry ? (visited ? "hsl(var(--primary))" : "hsl(var(--muted))") : "hsl(var(--muted) / 0.5)"} // Dim non-tracked countries
+                        stroke="hsl(var(--card-background))" // Use a contrasting stroke for better definition
                         strokeWidth={0.5}
                         onClick={() => {
                           // Only allow toggling if we have a matching country ID from our app's data
@@ -62,8 +64,15 @@ export function WorldMap({ allCountries, isItemVisited, categorySlug, toggleItem
                         }}
                         style={{
                           default: { outline: "none", transition: "fill 0.2s ease-in-out" },
-                          hover: { outline: "none", fill: appCountry ? (visited ? "hsl(var(--primary) / 0.8)" : "hsl(var(--accent))") : "hsl(var(--muted))", cursor: appCountry ? "pointer" : "default" },
-                          pressed: { outline: "none", fill: appCountry ? (visited ? "hsl(var(--primary) / 0.7)" : "hsl(var(--accent) / 0.8)") : "hsl(var(--muted))" },
+                          hover: { 
+                            outline: "none", 
+                            fill: appCountry ? (visited ? "hsl(var(--primary) / 0.8)" : "hsl(var(--accent))") : "hsl(var(--muted) / 0.6)", // Slightly highlight non-tracked on hover
+                            cursor: appCountry ? "pointer" : "default" 
+                          },
+                          pressed: { 
+                            outline: "none", 
+                            fill: appCountry ? (visited ? "hsl(var(--primary) / 0.7)" : "hsl(var(--accent) / 0.8)") : "hsl(var(--muted) / 0.6)"
+                          },
                         }}
                         aria-label={displayName}
                       />
