@@ -1,7 +1,7 @@
 
 "use client";
 
-import type React from 'react';
+import * as React from 'react';
 import { ComposableMap, Geographies, Geography, Sphere, Graticule } from "react-simple-maps";
 import type { USState, CategorySlug } from '@/types';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
