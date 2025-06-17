@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react';
 import type { CategorySlug, Country as CountryType, USState as USStateType, NationalPark as NationalParkType, TrackableItem } from '@/types';
 import { CategoryCard } from "@/components/CategoryCard";
-import { GlobeIcon, StarIcon, MountainIcon, BaseballIcon, FootballIcon, MilestoneMapperIcon } from "@/components/icons";
+import { GlobeIcon, UsaFlagIcon, MountainIcon, BaseballIcon, FootballIcon, MilestoneMapperIcon } from "@/components/icons"; // Updated StarIcon to UsaFlagIcon
 import { CountryTracker } from "@/components/trackers/CountryTracker";
 import { StateTracker } from "@/components/trackers/StateTracker";
 import { NationalParkTracker } from "@/components/trackers/NationalParkTracker";
@@ -39,7 +39,7 @@ const initialCategories: CategoryConfig[] = [
   {
     slug: 'us-states',
     title: "U.S. States",
-    icon: StarIcon,
+    icon: UsaFlagIcon, // Changed from StarIcon
     totalCount: 0, // Updated after fetch
     data: [] as USStateType[], // Updated after fetch
     TrackerComponent: StateTracker,
@@ -75,13 +75,13 @@ const initialCategories: CategoryConfig[] = [
 ];
 
 export default function HomePage() {
-  const { 
-    getVisitedCount, 
-    isLoaded: travelDataLoaded, 
-    toggleItemVisited, 
+  const {
+    getVisitedCount,
+    isLoaded: travelDataLoaded,
+    toggleItemVisited,
     isItemVisited,
     setNationalParkVisitDate,
-    getNationalParkVisitDate 
+    getNationalParkVisitDate
   } = useTravelData();
   const [categories, setCategories] = useState<CategoryConfig[]>(initialCategories);
   const [countriesLoading, setCountriesLoading] = useState(true);
@@ -146,10 +146,10 @@ export default function HomePage() {
         }
         const rawStatesData: string[][] = await response.json();
         const formattedStates: USStateType[] = rawStatesData
-          .slice(1) 
+          .slice(1)
           .map(stateArray => ({
-            id: stateArray[1], 
-            name: stateArray[0], 
+            id: stateArray[1],
+            name: stateArray[0],
           }))
           .sort((a, b) => a.name.localeCompare(b.name));
 
@@ -199,7 +199,7 @@ export default function HomePage() {
           .map(park => ({
             id: park.parkCode,
             name: park.fullName,
-            state: park.states, 
+            state: park.states,
           }))
           .sort((a, b) => a.name.localeCompare(b.name));
 
@@ -263,7 +263,7 @@ export default function HomePage() {
       </div>
     );
   }
-  
+
   return (
     <main className="flex-grow">
       <div className="container mx-auto px-4 py-8">
@@ -291,7 +291,7 @@ export default function HomePage() {
               trackerSpecificProps.setNationalParkVisitDate = setNationalParkVisitDate;
               trackerSpecificProps.getNationalParkVisitDate = getNationalParkVisitDate;
             }
-            else if (category.slug === 'mlb-ballparks') trackerSpecificProps.stadiums = category.data; 
+            else if (category.slug === 'mlb-ballparks') trackerSpecificProps.stadiums = category.data;
             else if (category.slug === 'nfl-stadiums') trackerSpecificProps.stadiums = category.data;
 
             return (

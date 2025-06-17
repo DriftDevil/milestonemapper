@@ -4,7 +4,7 @@ import { Plane, Star, Mountain, MapPin, Search, CheckCircle, Filter, Check, Glob
 
 // Re-exporting Lucide icons for consistency or if we need to wrap them
 export const PlaneIcon = Plane;
-export const StarIcon = Star; // For US States
+export const StarIcon = Star; // For US States (fallback or other uses)
 export const MountainIcon = Mountain; // For National Parks
 export const MapPinIcon = MapPin;
 export const SearchIcon = Search;
@@ -64,16 +64,62 @@ export const FootballIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => 
 
 // Default App Icon (if needed for branding)
 export const MilestoneMapperIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
-  <svg 
-    xmlns="http://www.w3.org/2000/svg" 
-    viewBox="0 0 24 24" 
-    fill="currentColor" 
-    stroke="currentColor" 
-    strokeWidth="1.5" 
-    strokeLinecap="round" 
-    strokeLinejoin="round" 
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="currentColor"
+    stroke="currentColor"
+    strokeWidth="1.5"
+    strokeLinecap="round"
+    strokeLinejoin="round"
     {...props}
   >
     <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+  </svg>
+);
+
+// Custom USA Flag Icon
+export const UsaFlagIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    width="24"
+    height="24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.5" // Adjusted for consistency
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    {...props}
+  >
+    {/* Blue rectangle for stars */}
+    <path fill="var(--primary)" stroke="var(--primary)" d="M2 3h10v7H2z" />
+    {/* Stripes */}
+    <path d="M2 4.5h20" />
+    <path d="M2 6h20" />
+    <path d="M2 7.5h20" />
+    <path d="M12 9h10" /> {/* Short stripe */}
+    <path d="M2 10.5h20" />
+    <path d="M2 12h20" />
+    <path d="M2 13.5h20" />
+    <path d="M2 15h20" />
+    <path d="M2 16.5h20" />
+    <path d="M2 18h20" />
+    <path d="M2 19.5h20" />
+    {/* Outline of the flag */}
+    <rect x="2" y="3" width="20" height="18" fill="none" strokeWidth="1.5" />
+     {/* Simplified Stars - a few representative stars */}
+    <circle cx="4" cy="4.5" r="0.5" fill="white" stroke="none" />
+    <circle cx="6" cy="4.5" r="0.5" fill="white" stroke="none" />
+    <circle cx="8" cy="4.5" r="0.5" fill="white" stroke="none" />
+    <circle cx="10" cy="4.5" r="0.5" fill="white" stroke="none" />
+    <circle cx="3" cy="6.5" r="0.5" fill="white" stroke="none" />
+    <circle cx="5" cy="6.5" r="0.5" fill="white" stroke="none" />
+    <circle cx="7" cy="6.5" r="0.5" fill="white" stroke="none" />
+    <circle cx="9" cy="6.5" r="0.5" fill="white" stroke="none" />
+    <circle cx="4" cy="8.5" r="0.5" fill="white" stroke="none" />
+    <circle cx="6" cy="8.5" r="0.5" fill="white" stroke="none" />
+    <circle cx="8" cy="8.5" r="0.5" fill="white" stroke="none" />
+    <circle cx="10" cy="8.5" r="0.5" fill="white" stroke="none" />
   </svg>
 );
