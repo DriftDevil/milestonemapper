@@ -16,20 +16,14 @@ interface WorldMapProps {
 }
 
 export function WorldMap({ allCountries, isItemVisited, categorySlug, toggleItemVisited }: WorldMapProps) {
-  // This map is not strictly needed if we find the country on each render, but can be a small optimization if list is huge.
-  // For simplicity and given the current dataset size, direct find is fine.
-  // const countryCodeToNameMap = React.useMemo(() => {
-  //   return new Map(allCountries.map(c => [c.code, c.name]));
-  // }, [allCountries]);
-
   return (
     <TooltipProvider>
       <ComposableMap
         projection="geoMercator"
         className="w-full h-full"
         projectionConfig={{
-          rotate: [-10, 0, 0], // Optional: Adjust to center a bit more on common travel areas
-          scale: 120 // Initial scale
+          rotate: [-10, 0, 0], 
+          scale: 120 
         }}
       >
         <ZoomableGroup center={[0, 20]} maxZoom={8}>
@@ -38,14 +32,12 @@ export function WorldMap({ allCountries, isItemVisited, categorySlug, toggleItem
           <Geographies geography={geoUrl}>
             {({ geographies }) =>
               geographies.map(geo => {
-                const countryIsoA2 = geo.properties.ISO_A2; // ISO 3166-1 alpha-2 code from map data
+                const countryIsoA2 = geo.properties.ISO_A2; 
                 const countryNameFromMap = geo.properties.NAME;
                 
-                // Find our app's country data using the ISO_A2 code (which is stored in `country.code` and `country.id`)
                 const appCountry = allCountries.find(c => c.code === countryIsoA2);
-                const itemId = appCountry ? appCountry.id : countryIsoA2; // Use appCountry.id if found for toggling
-
-                const visited = appCountry ? isItemVisited(categorySlug, itemId) : false;
+                
+                const visited = appCountry ? isItemVisited(categorySlug, appCountry.id) : false;
                 const displayName = appCountry ? appCountry.name : countryNameFromMap;
 
                 return (
@@ -53,20 +45,19 @@ export function WorldMap({ allCountries, isItemVisited, categorySlug, toggleItem
                     <TooltipTrigger asChild>
                       <Geography
                         geography={geo}
-                        fill={appCountry ? (visited ? "hsl(var(--primary))" : "hsl(var(--muted))") : "hsl(var(--muted) / 0.5)"} // Dim non-tracked countries
-                        stroke="hsl(var(--card-background))" // Use a contrasting stroke for better definition
+                        fill={appCountry ? (visited ? "hsl(var(--primary))" : "hsl(var(--muted))") : "hsl(var(--muted) / 0.5)"}
+                        stroke="hsl(var(--card-background))" 
                         strokeWidth={0.5}
                         onClick={() => {
-                          // Only allow toggling if we have a matching country ID from our app's data
                           if (appCountry) {
-                            toggleItemVisited(categorySlug, itemId);
+                            toggleItemVisited(categorySlug, appCountry.id);
                           }
                         }}
                         style={{
                           default: { outline: "none", transition: "fill 0.2s ease-in-out" },
                           hover: { 
                             outline: "none", 
-                            fill: appCountry ? (visited ? "hsl(var(--primary) / 0.8)" : "hsl(var(--accent))") : "hsl(var(--muted) / 0.6)", // Slightly highlight non-tracked on hover
+                            fill: appCountry ? (visited ? "hsl(var(--primary) / 0.8)" : "hsl(var(--accent))") : "hsl(var(--muted) / 0.6)",
                             cursor: appCountry ? "pointer" : "default" 
                           },
                           pressed: { 
@@ -90,3 +81,4 @@ export function WorldMap({ allCountries, isItemVisited, categorySlug, toggleItem
     </TooltipProvider>
   );
 }
+
