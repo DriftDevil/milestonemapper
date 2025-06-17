@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react';
 import type { CategorySlug, Country as CountryType, USState as USStateType, NationalPark as NationalParkType, TrackableItem } from '@/types';
 import { CategoryCard } from "@/components/CategoryCard";
-import { GlobeIcon, UsaFlagIcon, MountainIcon, BaseballIcon, FootballIcon, MilestoneMapperIcon } from "@/components/icons"; // Updated StarIcon to UsaFlagIcon
+import { GlobeIcon, UsaFlagIcon, MountainIcon, BaseballIcon, FootballIcon, MilestoneMapperIcon } from "@/components/icons";
 import { CountryTracker } from "@/components/trackers/CountryTracker";
 import { StateTracker } from "@/components/trackers/StateTracker";
 import { NationalParkTracker } from "@/components/trackers/NationalParkTracker";
@@ -31,17 +31,17 @@ const initialCategories: CategoryConfig[] = [
     slug: 'countries',
     title: "Countries",
     icon: GlobeIcon,
-    totalCount: 0, // Updated after fetch
-    data: [] as CountryType[], // Updated after fetch
+    totalCount: 0, 
+    data: [] as CountryType[], 
     TrackerComponent: CountryTracker,
     cardColor: "text-blue-500",
   },
   {
     slug: 'us-states',
     title: "U.S. States",
-    icon: UsaFlagIcon, // Changed from StarIcon
-    totalCount: 0, // Updated after fetch
-    data: [] as USStateType[], // Updated after fetch
+    icon: UsaFlagIcon,
+    totalCount: 0, 
+    data: [] as USStateType[], 
     TrackerComponent: StateTracker,
     cardColor: "text-red-500",
   },
@@ -49,8 +49,8 @@ const initialCategories: CategoryConfig[] = [
     slug: 'national-parks',
     title: "National Parks",
     icon: MountainIcon,
-    totalCount: 0, // Updated after fetch
-    data: [] as NationalParkType[], // Updated after fetch
+    totalCount: 0, 
+    data: [] as NationalParkType[], 
     TrackerComponent: NationalParkTracker,
     cardColor: "text-green-600",
   },
@@ -81,7 +81,8 @@ export default function HomePage() {
     toggleItemVisited,
     isItemVisited,
     setNationalParkVisitDate,
-    getNationalParkVisitDate
+    getNationalParkVisitDate,
+    clearCategoryVisited,
   } = useTravelData();
   const [categories, setCategories] = useState<CategoryConfig[]>(initialCategories);
   const [countriesLoading, setCountriesLoading] = useState(true);
@@ -148,7 +149,7 @@ export default function HomePage() {
         const formattedStates: USStateType[] = rawStatesData
           .slice(1)
           .map(stateArray => ({
-            id: stateArray[1],
+            id: stateArray[1], 
             name: stateArray[0],
           }))
           .sort((a, b) => a.name.localeCompare(b.name));
@@ -189,7 +190,6 @@ export default function HomePage() {
         return;
       }
       try {
-        // Fetching only parks with designation "National Park"
         const response = await fetch(`https://developer.nps.gov/api/v1/parks?limit=100&designationCode=NATP&fields=states&api_key=${apiKey}`);
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -283,6 +283,7 @@ export default function HomePage() {
               isItemVisited: isItemVisited,
               toggleItemVisited: toggleItemVisited,
               categorySlug: category.slug,
+              clearCategoryVisited: clearCategoryVisited,
             };
             if (category.slug === 'countries') trackerSpecificProps.countries = category.data;
             else if (category.slug === 'us-states') trackerSpecificProps.states = category.data;

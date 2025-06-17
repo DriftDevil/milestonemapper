@@ -64,26 +64,24 @@ export function useTravelData() {
   const toggleItemVisited = useCallback((category: CategorySlug, itemId: string) => {
     setVisitedItems(prev => {
       const newCategorySet = new Set(prev[category]);
+      let newDatesMap = prev['national-parks-dates'];
+
       if (newCategorySet.has(itemId)) {
         newCategorySet.delete(itemId);
-        // If unchecking a national park, also clear its date
         if (category === 'national-parks') {
-          const newDatesMap = new Map(prev['national-parks-dates']);
+          newDatesMap = new Map(prev['national-parks-dates']);
           newDatesMap.delete(itemId);
-          return { ...prev, [category]: newCategorySet, 'national-parks-dates': newDatesMap };
         }
       } else {
         newCategorySet.add(itemId);
       }
-      return { ...prev, [category]: newCategorySet };
+      return { ...prev, [category]: newCategorySet, 'national-parks-dates': newDatesMap };
     });
   }, []);
 
   const getVisitedCount = useCallback((category: CategorySlug) => {
     const items = visitedItems[category];
     if (items instanceof Set) {
-      return items.size;
-    } else if (items instanceof Map) { // Though we use Set for main count
       return items.size;
     }
     return 0;
@@ -94,10 +92,6 @@ export function useTravelData() {
      if (items instanceof Set) {
       return items.has(itemId);
     }
-    // For categories that might use Map for primary visited state in future (not current for 'national-parks')
-    // if (items instanceof Map) {
-    //   return items.has(itemId);
-    // }
     return false;
   }, [visitedItems]);
 
@@ -108,12 +102,11 @@ export function useTravelData() {
 
       if (date && date.trim() !== "") {
         newDatesMap.set(parkId, date);
-        newVisitedParksSet.add(parkId); // Ensure it's marked as visited
+        if (!newVisitedParksSet.has(parkId)) {
+           newVisitedParksSet.add(parkId);
+        }
       } else {
         newDatesMap.delete(parkId);
-        // Optional: decide if removing date also unchecks 'visited'. Current toggleItemVisited handles unchecking.
-        // For now, setting date to null/empty only removes the date, doesn't uncheck general visited status.
-        // The toggleItemVisited handles unchecking and will also clear the date.
       }
       return { ...prev, 'national-parks-dates': newDatesMap, 'national-parks': newVisitedParksSet };
     });
@@ -123,6 +116,16 @@ export function useTravelData() {
     return visitedItems['national-parks-dates']?.get(parkId);
   }, [visitedItems]);
 
+  const clearCategoryVisited = useCallback((category: CategorySlug) => {
+    setVisitedItems(prev => {
+      const newState = { ...prev, [category]: new Set<string>() };
+      if (category === 'national-parks') {
+        newState['national-parks-dates'] = new Map<string, string>();
+      }
+      return newState;
+    });
+  }, []);
+
   return {
     visitedItems,
     isLoaded,
@@ -131,5 +134,6 @@ export function useTravelData() {
     isItemVisited,
     setNationalParkVisitDate,
     getNationalParkVisitDate,
+    clearCategoryVisited,
   };
 }

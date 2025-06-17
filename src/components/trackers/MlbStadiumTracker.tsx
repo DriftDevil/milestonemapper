@@ -2,9 +2,20 @@
 "use client";
 
 import type { MLBStadium, CategorySlug } from '@/types';
-// Removed: import { useTravelData } from '@/hooks/useTravelData';
 import { ItemToggle } from './ItemToggle';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { useState } from 'react';
 
 interface MlbStadiumTrackerProps {
@@ -12,11 +23,10 @@ interface MlbStadiumTrackerProps {
   categorySlug: CategorySlug;
   isItemVisited: (category: CategorySlug, itemId: string) => boolean;
   toggleItemVisited: (category: CategorySlug, itemId: string) => void;
+  clearCategoryVisited: (category: CategorySlug) => void;
 }
 
-export function MlbStadiumTracker({ stadiums, categorySlug, isItemVisited, toggleItemVisited }: MlbStadiumTrackerProps) {
-  // Removed: const { toggleItemVisited, isItemVisited } = useTravelData();
-  // Removed: const categorySlug: CategorySlug = 'mlb-ballparks'; // Now passed as prop
+export function MlbStadiumTracker({ stadiums, categorySlug, isItemVisited, toggleItemVisited, clearCategoryVisited }: MlbStadiumTrackerProps) {
   const [searchTerm, setSearchTerm] = useState('');
 
   const filteredStadiums = stadiums.filter(stadium =>
@@ -27,13 +37,36 @@ export function MlbStadiumTracker({ stadiums, categorySlug, isItemVisited, toggl
 
   return (
     <div className="space-y-4">
-      <Input
-        type="text"
-        placeholder="Search by stadium, team, or city..."
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-        className="w-full"
-      />
+      <div className="flex flex-col sm:flex-row gap-2">
+        <Input
+          type="text"
+          placeholder="Search by stadium, team, or city..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="flex-grow"
+        />
+        {stadiums.length > 0 && (
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="outline" className="w-full sm:w-auto">Clear Visited Ballparks</Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action will clear all your visited MLB Ballparks. This cannot be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={() => clearCategoryVisited(categorySlug)}>
+                  Yes, clear all
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        )}
+      </div>
       <div className="space-y-2">
         {filteredStadiums.map((stadium) => (
           <ItemToggle
@@ -50,7 +83,12 @@ export function MlbStadiumTracker({ stadiums, categorySlug, isItemVisited, toggl
           />
         ))}
       </div>
-      {filteredStadiums.length === 0 && <p className="text-muted-foreground text-center">No MLB stadiums found.</p>}
+      {stadiums.length > 0 && filteredStadiums.length === 0 && searchTerm !== '' && (
+        <p className="text-muted-foreground text-center">No MLB stadiums found matching your search.</p>
+      )}
+      {stadiums.length === 0 && (
+         <p className="text-muted-foreground text-center">No MLB stadiums to display.</p>
+      )}
     </div>
   );
 }
