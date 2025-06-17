@@ -36,14 +36,14 @@ export function CategoryCard({ title, icon: Icon, visitedCount, totalCount, chil
           <DialogTrigger asChild>
             <Button variant="outline" className="w-full">View & Update</Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[600px] md:max-w-[750px] lg:max-w-[900px] max-h-[90vh] flex flex-col">
+          <DialogContent className="sm:max-w-[600px] md:max-w-[750px] lg:max-w-[900px] max-h-[90vh] flex flex-col overflow-hidden">
             <DialogHeader>
               <DialogTitle className="text-2xl font-headline">{title}</DialogTitle>
               <DialogDescription>
                 Mark the {title.toLowerCase()} you've visited. Progress: {visitedCount}/{totalCount}.
               </DialogDescription>
             </DialogHeader>
-            <ScrollArea className="flex-grow min-h-0 pr-6 -mr-6"> {/* Changed: Removed max-h, added min-h-0 */}
+            <ScrollArea className="flex-grow min-h-0 pr-6 -mr-6">
               <div className="py-4">
                 {children}
               </div>
