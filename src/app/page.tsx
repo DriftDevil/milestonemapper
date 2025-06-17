@@ -93,16 +93,17 @@ export default function HomePage() {
   useEffect(() => {
     async function fetchCountries() {
       try {
-        const response = await fetch('https://restcountries.com/v3.1/all?fields=name,cca2');
+        const response = await fetch('https://restcountries.com/v3.1/all?fields=name,cca2,ccn3');
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
-        const rawCountries: Array<{ name: { common: string }, cca2: string }> = await response.json();
+        const rawCountries: Array<{ name: { common: string }, cca2: string, ccn3?: string }> = await response.json();
         const formattedCountries: CountryType[] = rawCountries
           .map(country => ({
-            id: country.cca2.toUpperCase(), // Ensure ID is uppercase
+            id: country.cca2.toUpperCase(),
             name: country.name.common,
-            code: country.cca2.toUpperCase(), // Ensure code is uppercase
+            code: country.cca2.toUpperCase(),
+            numericCode: country.ccn3,
           }))
           .sort((a, b) => a.name.localeCompare(b.name));
 
@@ -150,7 +151,7 @@ export default function HomePage() {
         const formattedStates: USStateType[] = rawStatesData
           .slice(1)
           .map(stateArray => ({
-            id: stateArray[1],
+            id: stateArray[1], // FIPS code for state
             name: stateArray[0],
           }))
           .sort((a, b) => a.name.localeCompare(b.name));

@@ -8,6 +8,7 @@ export interface TrackableItem {
 
 export interface Country extends TrackableItem {
   code: string; // ISO 3166-1 alpha-2 code (cca2 from API)
+  numericCode?: string; // ISO 3166-1 numeric code (ccn3 from API)
 }
 
 export interface USState extends TrackableItem {
@@ -48,3 +49,4 @@ export interface VisitedItems {
   'mlb-ballparks': Set<string>;
   'nfl-stadiums': Set<string>;
 }
+

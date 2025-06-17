@@ -32,16 +32,15 @@ export function WorldMap({ allCountries, isItemVisited, categorySlug, toggleItem
           <Geographies geography={geoUrl}>
             {({ geographies }) =>
               geographies.map(geo => {
-                // Attempt to use lowercase 'iso_a2' and 'name' from geo.properties
-                const countryIsoA2Raw = geo.properties.iso_a2; // Changed to lowercase
-                const countryNameFromMap = geo.properties.name; // Changed to lowercase
+                const mapCountryNumericId = geo.id; // This should be the ISO 3166-1 numeric code from world-atlas
+                const mapCountryName = geo.properties.name;
 
-                const countryIsoA2 = typeof countryIsoA2Raw === 'string' ? countryIsoA2Raw.toUpperCase() : undefined;
-                
-                const appCountry = countryIsoA2 ? allCountries.find(c => c.code === countryIsoA2) : undefined;
+                // Find the corresponding country in our application data using the numeric code
+                const appCountry = allCountries.find(c => c.numericCode === mapCountryNumericId);
                 
                 const visited = appCountry ? isItemVisited(categorySlug, appCountry.id) : false;
-                const displayName = appCountry ? appCountry.name : countryNameFromMap;
+                // Use appCountry.name if available (more accurate), otherwise fallback to map's name
+                const displayName = appCountry ? appCountry.name : mapCountryName;
 
                 return (
                   <Tooltip key={geo.rsmKey} delayDuration={100}>
@@ -49,24 +48,25 @@ export function WorldMap({ allCountries, isItemVisited, categorySlug, toggleItem
                       <Geography
                         geography={geo}
                         fill={appCountry ? (visited ? "hsl(var(--primary))" : "hsl(var(--muted))") : "hsl(var(--muted) / 0.5)"}
-                        stroke="hsl(var(--background))" // Corrected from --card-background
+                        stroke="hsl(var(--background))"
                         strokeWidth={0.5}
                         onClick={() => {
                           if (appCountry) {
-                            console.log(
-                              'Clicked on appCountry:', 
-                              appCountry.name, 
-                              'ID:', appCountry.id, 
-                              'Current visited status:', isItemVisited(categorySlug, appCountry.id)
-                            );
-                            toggleItemVisited(categorySlug, appCountry.id);
+                            // console.log(
+                            //   'Clicked on appCountry:', 
+                            //   appCountry.name, 
+                            //   'App ID (cca2):', appCountry.id, 
+                            //   'Map ID (numeric):', mapCountryNumericId,
+                            //   'Current visited status:', isItemVisited(categorySlug, appCountry.id)
+                            // );
+                            toggleItemVisited(categorySlug, appCountry.id); // Use the app's ID (cca2) for toggling
                           } else {
-                            console.log(
-                              'Clicked on geography with no matching appCountry. Name from map:', 
-                              countryNameFromMap, // Use the variable holding the attempted lowercase name
-                              'iso_a2 from map:', countryIsoA2Raw // Use the variable holding the attempted lowercase iso_a2
-                            );
-                             console.log('Full geo.properties:', geo.properties); // Log all properties for further debugging
+                            // console.log(
+                            //   'Clicked on geography with no matching appCountry. Name from map:', 
+                            //   mapCountryName,
+                            //   'Numeric ID from map:', mapCountryNumericId
+                            // );
+                            // console.log('Full geo.properties:', geo.properties);
                           }
                         }}
                         style={{
@@ -97,4 +97,3 @@ export function WorldMap({ allCountries, isItemVisited, categorySlug, toggleItem
     </TooltipProvider>
   );
 }
-
