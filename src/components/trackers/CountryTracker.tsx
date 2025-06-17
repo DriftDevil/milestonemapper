@@ -2,18 +2,21 @@
 "use client";
 
 import type { Country, CategorySlug } from '@/types';
-import { useTravelData } from '@/hooks/useTravelData';
+// Removed: import { useTravelData } from '@/hooks/useTravelData';
 import { ItemToggle } from './ItemToggle';
 import { Input } from '@/components/ui/input';
 import { useState } from 'react';
 
 interface CountryTrackerProps {
   countries: Country[];
+  categorySlug: CategorySlug;
+  isItemVisited: (category: CategorySlug, itemId: string) => boolean;
+  toggleItemVisited: (category: CategorySlug, itemId: string) => void;
 }
 
-export function CountryTracker({ countries }: CountryTrackerProps) {
-  const { toggleItemVisited, isItemVisited } = useTravelData();
-  const categorySlug: CategorySlug = 'countries';
+export function CountryTracker({ countries, categorySlug, isItemVisited, toggleItemVisited }: CountryTrackerProps) {
+  // Removed: const { toggleItemVisited, isItemVisited } = useTravelData();
+  // Removed: const categorySlug: CategorySlug = 'countries'; // Now passed as prop
   const [searchTerm, setSearchTerm] = useState('');
 
   const filteredCountries = countries.filter(country =>

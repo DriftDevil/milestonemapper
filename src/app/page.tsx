@@ -13,6 +13,7 @@ import { NflStadiumTracker } from "@/components/trackers/NflStadiumTracker";
 import * as localData from "@/lib/data";
 import { useTravelData } from "@/hooks/useTravelData";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card"; // Ensure using ShadCN card for skeleton too
 
 interface CategoryConfig {
   slug: CategorySlug;
@@ -76,7 +77,7 @@ const initialCategories: CategoryConfig[] = [
 
 
 export default function HomePage() {
-  const { getVisitedCount, isLoaded: travelDataLoaded } = useTravelData();
+  const { getVisitedCount, isLoaded: travelDataLoaded, toggleItemVisited, isItemVisited } = useTravelData();
   const [categories, setCategories] = useState<CategoryConfig[]>(initialCategories);
   const [countriesLoading, setCountriesLoading] = useState(true);
 
@@ -136,7 +137,7 @@ export default function HomePage() {
         </header>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {Array(5).fill(0).map((_, index) => (
-            <Card className="flex flex-col" key={index}>
+            <Card className="flex flex-col shadow-lg" key={index}>
               <CardHeader className="pb-3">
                 <Skeleton className="h-8 w-3/4 mb-2" />
                 <Skeleton className="h-4 w-1/2" />
@@ -170,13 +171,16 @@ export default function HomePage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {categories.map(category => {
-            // Prepare props for the TrackerComponent
-            let trackerProps = {};
-            if (category.slug === 'countries') trackerProps = { countries: category.data };
-            else if (category.slug === 'us-states') trackerProps = { states: category.data };
-            else if (category.slug === 'national-parks') trackerProps = { parks: category.data };
-            else if (category.slug === 'mlb-ballparks') trackerProps = { stadiums: category.data };
-            else if (category.slug === 'nfl-stadiums') trackerProps = { stadiums: category.data };
+            const trackerSpecificProps: any = {
+              isItemVisited: isItemVisited,
+              toggleItemVisited: toggleItemVisited,
+              categorySlug: category.slug,
+            };
+            if (category.slug === 'countries') trackerSpecificProps.countries = category.data;
+            else if (category.slug === 'us-states') trackerSpecificProps.states = category.data;
+            else if (category.slug === 'national-parks') trackerSpecificProps.parks = category.data;
+            else if (category.slug === 'mlb-ballparks') trackerSpecificProps.stadiums = category.data;
+            else if (category.slug === 'nfl-stadiums') trackerSpecificProps.stadiums = category.data;
 
             return (
               <CategoryCard
@@ -186,9 +190,12 @@ export default function HomePage() {
                 visitedCount={getVisitedCount(category.slug)}
                 totalCount={category.totalCount}
                 cardColor={category.cardColor}
-                // You could pass category.error here if CategoryCard is updated to display it
               >
-                {category.error ? <p className="text-destructive text-center p-4">{category.error}</p> : <category.TrackerComponent {...trackerProps} />}
+                {category.error ? (
+                  <p className="text-destructive text-center p-4">{category.error}</p>
+                ) : (
+                  <category.TrackerComponent {...trackerSpecificProps} />
+                )}
               </CategoryCard>
             );
           })}
@@ -200,35 +207,3 @@ export default function HomePage() {
     </main>
   );
 }
-
-// Helper components (Card, CardHeader, CardContent, CardFooter)
-// These are usually part of shadcn/ui components, ensure they are imported if not defined locally.
-// For this example, assuming they are available as before or through actual shadcn/ui imports.
-
-interface CardProps extends React.HTMLAttributes<HTMLDivElement> {}
-const Card: React.FC<CardProps> = ({ className, children, ...props }) => (
-  <div className={`rounded-lg border bg-card text-card-foreground shadow-sm ${className}`} {...props}>
-    {children}
-  </div>
-);
-
-interface CardHeaderProps extends React.HTMLAttributes<HTMLDivElement> {}
-const CardHeader: React.FC<CardHeaderProps> = ({ className, children, ...props }) => (
-  <div className={`flex flex-col space-y-1.5 p-6 ${className}`} {...props}>
-    {children}
-  </div>
-);
-
-interface CardContentProps extends React.HTMLAttributes<HTMLDivElement> {}
-const CardContent: React.FC<CardContentProps> = ({ className, children, ...props }) => (
-  <div className={`p-6 pt-0 ${className}`} {...props}>
-    {children}
-  </div>
-);
-
-interface CardFooterProps extends React.HTMLAttributes<HTMLDivElement> {}
-const CardFooter: React.FC<CardFooterProps> = ({ className, children, ...props }) => (
-  <div className={`flex items-center p-6 pt-0 ${className}`} {...props}>
-    {children}
-  </div>
-);
