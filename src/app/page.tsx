@@ -75,7 +75,14 @@ const initialCategories: CategoryConfig[] = [
 ];
 
 export default function HomePage() {
-  const { getVisitedCount, isLoaded: travelDataLoaded, toggleItemVisited, isItemVisited } = useTravelData();
+  const { 
+    getVisitedCount, 
+    isLoaded: travelDataLoaded, 
+    toggleItemVisited, 
+    isItemVisited,
+    setNationalParkVisitDate,
+    getNationalParkVisitDate 
+  } = useTravelData();
   const [categories, setCategories] = useState<CategoryConfig[]>(initialCategories);
   const [countriesLoading, setCountriesLoading] = useState(true);
   const [statesLoading, setStatesLoading] = useState(true);
@@ -182,6 +189,7 @@ export default function HomePage() {
         return;
       }
       try {
+        // Fetching only parks with designation "National Park"
         const response = await fetch(`https://developer.nps.gov/api/v1/parks?limit=100&designationCode=NATP&fields=states&api_key=${apiKey}`);
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -278,7 +286,11 @@ export default function HomePage() {
             };
             if (category.slug === 'countries') trackerSpecificProps.countries = category.data;
             else if (category.slug === 'us-states') trackerSpecificProps.states = category.data;
-            else if (category.slug === 'national-parks') trackerSpecificProps.parks = category.data;
+            else if (category.slug === 'national-parks') {
+              trackerSpecificProps.parks = category.data;
+              trackerSpecificProps.setNationalParkVisitDate = setNationalParkVisitDate;
+              trackerSpecificProps.getNationalParkVisitDate = getNationalParkVisitDate;
+            }
             else if (category.slug === 'mlb-ballparks') trackerSpecificProps.stadiums = category.data; 
             else if (category.slug === 'nfl-stadiums') trackerSpecificProps.stadiums = category.data;
 

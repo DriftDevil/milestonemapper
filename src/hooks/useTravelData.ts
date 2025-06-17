@@ -10,6 +10,7 @@ const initialVisitedItems: VisitedItems = {
   countries: new Set<string>(),
   'us-states': new Set<string>(),
   'national-parks': new Set<string>(),
+  'national-parks-dates': new Map<string, string>(),
   'mlb-ballparks': new Set<string>(),
   'nfl-stadiums': new Set<string>(),
 };
@@ -28,6 +29,7 @@ export function useTravelData() {
             countries: new Set(parsedData.countries || []),
             'us-states': new Set(parsedData['us-states'] || []),
             'national-parks': new Set(parsedData['national-parks'] || []),
+            'national-parks-dates': new Map(parsedData['national-parks-dates'] || []),
             'mlb-ballparks': new Set(parsedData['mlb-ballparks'] || []),
             'nfl-stadiums': new Set(parsedData['nfl-stadiums'] || []),
           };
@@ -35,7 +37,6 @@ export function useTravelData() {
         }
       } catch (error) {
         console.error("Failed to load travel data from local storage:", error);
-        // Fallback to initial state if parsing fails
         setVisitedItems(initialVisitedItems);
       }
       setIsLoaded(true);
@@ -49,6 +50,7 @@ export function useTravelData() {
           countries: Array.from(visitedItems.countries),
           'us-states': Array.from(visitedItems['us-states']),
           'national-parks': Array.from(visitedItems['national-parks']),
+          'national-parks-dates': Array.from(visitedItems['national-parks-dates'].entries()),
           'mlb-ballparks': Array.from(visitedItems['mlb-ballparks']),
           'nfl-stadiums': Array.from(visitedItems['nfl-stadiums']),
         };
@@ -61,22 +63,64 @@ export function useTravelData() {
 
   const toggleItemVisited = useCallback((category: CategorySlug, itemId: string) => {
     setVisitedItems(prev => {
-      const newSet = new Set(prev[category]);
-      if (newSet.has(itemId)) {
-        newSet.delete(itemId);
+      const newCategorySet = new Set(prev[category]);
+      if (newCategorySet.has(itemId)) {
+        newCategorySet.delete(itemId);
+        // If unchecking a national park, also clear its date
+        if (category === 'national-parks') {
+          const newDatesMap = new Map(prev['national-parks-dates']);
+          newDatesMap.delete(itemId);
+          return { ...prev, [category]: newCategorySet, 'national-parks-dates': newDatesMap };
+        }
       } else {
-        newSet.add(itemId);
+        newCategorySet.add(itemId);
       }
-      return { ...prev, [category]: newSet };
+      return { ...prev, [category]: newCategorySet };
     });
   }, []);
 
   const getVisitedCount = useCallback((category: CategorySlug) => {
-    return visitedItems[category]?.size || 0;
+    const items = visitedItems[category];
+    if (items instanceof Set) {
+      return items.size;
+    } else if (items instanceof Map) { // Though we use Set for main count
+      return items.size;
+    }
+    return 0;
   }, [visitedItems]);
 
   const isItemVisited = useCallback((category: CategorySlug, itemId: string) => {
-    return visitedItems[category]?.has(itemId) || false;
+    const items = visitedItems[category];
+     if (items instanceof Set) {
+      return items.has(itemId);
+    }
+    // For categories that might use Map for primary visited state in future (not current for 'national-parks')
+    // if (items instanceof Map) {
+    //   return items.has(itemId);
+    // }
+    return false;
+  }, [visitedItems]);
+
+  const setNationalParkVisitDate = useCallback((parkId: string, date: string | null) => {
+    setVisitedItems(prev => {
+      const newDatesMap = new Map(prev['national-parks-dates']);
+      const newVisitedParksSet = new Set(prev['national-parks']);
+
+      if (date && date.trim() !== "") {
+        newDatesMap.set(parkId, date);
+        newVisitedParksSet.add(parkId); // Ensure it's marked as visited
+      } else {
+        newDatesMap.delete(parkId);
+        // Optional: decide if removing date also unchecks 'visited'. Current toggleItemVisited handles unchecking.
+        // For now, setting date to null/empty only removes the date, doesn't uncheck general visited status.
+        // The toggleItemVisited handles unchecking and will also clear the date.
+      }
+      return { ...prev, 'national-parks-dates': newDatesMap, 'national-parks': newVisitedParksSet };
+    });
+  }, []);
+
+  const getNationalParkVisitDate = useCallback((parkId: string): string | undefined => {
+    return visitedItems['national-parks-dates']?.get(parkId);
   }, [visitedItems]);
 
   return {
@@ -85,5 +129,7 @@ export function useTravelData() {
     toggleItemVisited,
     getVisitedCount,
     isItemVisited,
+    setNationalParkVisitDate,
+    getNationalParkVisitDate,
   };
 }

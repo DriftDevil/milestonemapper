@@ -44,7 +44,7 @@ export interface VisitedItems {
   countries: Set<string>;
   'us-states': Set<string>;
   'national-parks': Set<string>;
+  'national-parks-dates': Map<string, string>; // parkId -> date string (YYYY-MM-DD)
   'mlb-ballparks': Set<string>;
   'nfl-stadiums': Set<string>;
 }
-
