@@ -36,17 +36,16 @@ export function CategoryCard({ title, icon: Icon, visitedCount, totalCount, chil
           <DialogTrigger asChild>
             <Button variant="outline" className="w-full">View & Update</Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[600px] md:max-w-[750px] lg:max-w-[900px] max-h-[90vh] flex flex-col">
+          <DialogContent className="sm:max-w-[600px] md:max-w-[750px] lg:max-w-[900px] max-h-[90vh] flex flex-col overflow-hidden">
             <DialogHeader>
               <DialogTitle className="text-2xl font-headline">{title}</DialogTitle>
               <DialogDescription>
                 Mark the {title.toLowerCase()} you've visited. Progress: {visitedCount}/{totalCount}.
               </DialogDescription>
             </DialogHeader>
-            {/* ScrollArea is now a direct flex child that grows and can shrink */}
-            <ScrollArea className="flex-grow min-h-0">
-              {/* Padding applied to the content container inside ScrollArea */}
-              <div className="p-4">
+            {/* ScrollArea should take remaining space and scroll internally */}
+            <ScrollArea className="flex-1 min-h-0"> {/* Use flex-1 and min-h-0 for robust sizing */}
+              <div className="p-4"> {/* Padding for content inside scroll area */}
                 {children}
               </div>
             </ScrollArea>
