@@ -32,13 +32,16 @@ export function WorldMap({ allCountries, isItemVisited, categorySlug, toggleItem
           <Geographies geography={geoUrl}>
             {({ geographies }) =>
               geographies.map(geo => {
-                const countryIsoA2Raw = geo.properties.ISO_A2;
+                // Attempt to use lowercase 'iso_a2' and 'name' from geo.properties
+                const countryIsoA2Raw = geo.properties.iso_a2; // Changed to lowercase
+                const countryNameFromMap = geo.properties.name; // Changed to lowercase
+
                 const countryIsoA2 = typeof countryIsoA2Raw === 'string' ? countryIsoA2Raw.toUpperCase() : undefined;
                 
                 const appCountry = countryIsoA2 ? allCountries.find(c => c.code === countryIsoA2) : undefined;
                 
                 const visited = appCountry ? isItemVisited(categorySlug, appCountry.id) : false;
-                const displayName = appCountry ? appCountry.name : geo.properties.NAME;
+                const displayName = appCountry ? appCountry.name : countryNameFromMap;
 
                 return (
                   <Tooltip key={geo.rsmKey} delayDuration={100}>
@@ -46,7 +49,7 @@ export function WorldMap({ allCountries, isItemVisited, categorySlug, toggleItem
                       <Geography
                         geography={geo}
                         fill={appCountry ? (visited ? "hsl(var(--primary))" : "hsl(var(--muted))") : "hsl(var(--muted) / 0.5)"}
-                        stroke="hsl(var(--background))"
+                        stroke="hsl(var(--background))" // Corrected from --card-background
                         strokeWidth={0.5}
                         onClick={() => {
                           if (appCountry) {
@@ -60,9 +63,10 @@ export function WorldMap({ allCountries, isItemVisited, categorySlug, toggleItem
                           } else {
                             console.log(
                               'Clicked on geography with no matching appCountry. Name from map:', 
-                              geo.properties.NAME, 
-                              'ISO_A2 from map:', geo.properties.ISO_A2
+                              countryNameFromMap, // Use the variable holding the attempted lowercase name
+                              'iso_a2 from map:', countryIsoA2Raw // Use the variable holding the attempted lowercase iso_a2
                             );
+                             console.log('Full geo.properties:', geo.properties); // Log all properties for further debugging
                           }
                         }}
                         style={{
@@ -77,11 +81,11 @@ export function WorldMap({ allCountries, isItemVisited, categorySlug, toggleItem
                             fill: appCountry ? (visited ? "hsl(var(--primary) / 0.7)" : "hsl(var(--accent) / 0.8)") : "hsl(var(--muted) / 0.6)"
                           },
                         }}
-                        aria-label={displayName}
+                        aria-label={displayName || "Unknown territory"}
                       />
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p>{displayName} - {appCountry ? (visited ? "Visited" : "Not Visited") : "Data not tracked"}</p>
+                      <p>{displayName || "Unknown territory"} - {appCountry ? (visited ? "Visited" : "Not Visited") : "Data not tracked"}</p>
                     </TooltipContent>
                   </Tooltip>
                 );
@@ -93,3 +97,4 @@ export function WorldMap({ allCountries, isItemVisited, categorySlug, toggleItem
     </TooltipProvider>
   );
 }
+
