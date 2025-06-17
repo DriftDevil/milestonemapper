@@ -5,6 +5,8 @@ import type { MLBStadium, CategorySlug } from '@/types';
 import { ItemToggle } from './ItemToggle';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -28,23 +30,43 @@ interface MlbStadiumTrackerProps {
 
 export function MlbStadiumTracker({ stadiums, categorySlug, isItemVisited, toggleItemVisited, clearCategoryVisited }: MlbStadiumTrackerProps) {
   const [searchTerm, setSearchTerm] = useState('');
+  const [showVisited, setShowVisited] = useState(false);
 
-  const filteredStadiums = stadiums.filter(stadium =>
-    stadium.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    stadium.team.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    stadium.city.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredStadiums = stadiums
+    .filter(stadium =>
+      stadium.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      stadium.team.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      stadium.city.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+    .filter(stadium => {
+      if (showVisited) {
+        return true;
+      }
+      return !isItemVisited(categorySlug, stadium.id);
+    });
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row gap-2">
-        <Input
-          type="text"
-          placeholder="Search by stadium, team, or city..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="flex-grow"
-        />
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+            <Input
+              type="text"
+              placeholder="Search by stadium, team, or city..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="flex-grow"
+            />
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="show-visited-mlb"
+                checked={showVisited}
+                onCheckedChange={(checked) => setShowVisited(checked as boolean)}
+              />
+              <Label htmlFor="show-visited-mlb" className="text-sm whitespace-nowrap">
+                Show Visited
+              </Label>
+            </div>
+        </div>
         {stadiums.length > 0 && (
           <AlertDialog>
             <AlertDialogTrigger asChild>
@@ -83,11 +105,14 @@ export function MlbStadiumTracker({ stadiums, categorySlug, isItemVisited, toggl
           />
         ))}
       </div>
-      {stadiums.length > 0 && filteredStadiums.length === 0 && searchTerm !== '' && (
-        <p className="text-muted-foreground text-center">No MLB stadiums found matching your search.</p>
+      {stadiums.length > 0 && filteredStadiums.length === 0 && !showVisited && searchTerm === '' && (
+         <p className="text-muted-foreground text-center">All MLB ballparks visited! Check "Show Visited" to see them.</p>
+      )}
+      {stadiums.length > 0 && filteredStadiums.length === 0 && (searchTerm !== '' || showVisited) && (
+         <p className="text-muted-foreground text-center">No MLB ballparks found matching your criteria.</p>
       )}
       {stadiums.length === 0 && (
-         <p className="text-muted-foreground text-center">No MLB stadiums to display.</p>
+         <p className="text-muted-foreground text-center">No MLB ballparks to display.</p>
       )}
     </div>
   );
