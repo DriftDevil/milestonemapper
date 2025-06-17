@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { ProgressDisplay } from "@/components/shared/ProgressDisplay";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { cn } from "@/lib/utils";
 
 interface CategoryCardProps {
   title: string;
