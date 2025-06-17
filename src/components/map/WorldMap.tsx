@@ -32,12 +32,12 @@ export function WorldMap({ allCountries, isItemVisited, categorySlug, toggleItem
           <Geographies geography={geoUrl}>
             {({ geographies }) =>
               geographies.map(geo => {
-                // ISO_A2 from world-atlas is typically uppercase (e.g., "US", "CA")
-                const countryIsoA2 = geo.properties.ISO_A2;
+                const countryIsoA2Raw = geo.properties.ISO_A2;
+                // Ensure countryIsoA2 is a string and uppercase for reliable matching
+                const countryIsoA2 = typeof countryIsoA2Raw === 'string' ? countryIsoA2Raw.toUpperCase() : undefined;
                 
-                // Find the corresponding country in our application data
-                // Our appCountry.code is now consistently uppercase from page.tsx
-                const appCountry = allCountries.find(c => c.code === countryIsoA2);
+                // Find the corresponding country in our application data (c.code should be uppercase)
+                const appCountry = countryIsoA2 ? allCountries.find(c => c.code === countryIsoA2) : undefined;
                 
                 const visited = appCountry ? isItemVisited(categorySlug, appCountry.id) : false;
                 const displayName = appCountry ? appCountry.name : geo.properties.NAME;
@@ -48,7 +48,7 @@ export function WorldMap({ allCountries, isItemVisited, categorySlug, toggleItem
                       <Geography
                         geography={geo}
                         fill={appCountry ? (visited ? "hsl(var(--primary))" : "hsl(var(--muted))") : "hsl(var(--muted) / 0.5)"}
-                        stroke="hsl(var(--card-background))"
+                        stroke="hsl(var(--background))" // Corrected stroke color
                         strokeWidth={0.5}
                         onClick={() => {
                           if (appCountry) {
