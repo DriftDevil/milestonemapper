@@ -1,18 +1,7 @@
 
-import type { NationalPark, MLBStadium, NFLStadium } from '@/types';
+import type { MLBStadium, NFLStadium } from '@/types';
 
-// Countries will be fetched from an API in page.tsx
-// US States will be fetched from an API in page.tsx
-
-export const nationalParks: NationalPark[] = [
-  { id: 'acad', name: 'Acadia National Park', state: 'Maine' },
-  { id: 'arch', name: 'Arches National Park', state: 'Utah' },
-  { id: 'badl', name: 'Badlands National Park', state: 'South Dakota' },
-  { id: 'yell', name: 'Yellowstone National Park', state: 'Wyoming, Montana, Idaho' },
-  { id: 'yose', name: 'Yosemite National Park', state: 'California' },
-  { id: 'zion', name: 'Zion National Park', state: 'Utah' },
-  // Add all 63 national parks
-];
+// Countries, US States, and National Parks will be fetched from APIs in page.tsx
 
 export const mlbBallparks: MLBStadium[] = [
   { id: "ARI", name: "Chase Field", team: "Arizona Diamondbacks", city: "Phoenix", state: "AZ" },
@@ -53,4 +42,3 @@ export const nflStadiums: NFLStadium[] = [
   { id: 'bal', name: 'M&T Bank Stadium', team: 'Baltimore Ravens', city: 'Baltimore', state: 'MD' },
   // Add all ~30-32 NFL stadiums
 ];
-

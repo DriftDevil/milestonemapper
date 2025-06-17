@@ -2,31 +2,31 @@
 "use client";
 
 import type { NationalPark, CategorySlug } from '@/types';
-import { useTravelData } from '@/hooks/useTravelData';
+// Removed: import { useTravelData } from '@/hooks/useTravelData';
 import { ItemToggle } from './ItemToggle';
 import { Input } from '@/components/ui/input';
 import { useState } from 'react';
 
 interface NationalParkTrackerProps {
   parks: NationalPark[];
+  categorySlug: CategorySlug;
+  isItemVisited: (category: CategorySlug, itemId: string) => boolean;
+  toggleItemVisited: (category: CategorySlug, itemId: string) => void;
 }
 
-export function NationalParkTracker({ parks }: NationalParkTrackerProps) {
-  const { toggleItemVisited, isItemVisited } = useTravelData();
-  const categorySlug: CategorySlug = 'national-parks';
+export function NationalParkTracker({ parks, categorySlug, isItemVisited, toggleItemVisited }: NationalParkTrackerProps) {
   const [searchTerm, setSearchTerm] = useState('');
 
   const filteredParks = parks.filter(park =>
     park.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    park.state.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (park.region && park.region.toLowerCase().includes(searchTerm.toLowerCase()))
+    park.state.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
     <div className="space-y-4">
       <Input
         type="text"
-        placeholder="Search by park name, state, or region..."
+        placeholder="Search by park name or state(s)..."
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
         className="w-full"

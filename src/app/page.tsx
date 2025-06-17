@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import type { CategorySlug, Country as CountryType, USState as USStateType, TrackableItem } from '@/types';
+import type { CategorySlug, Country as CountryType, USState as USStateType, NationalPark as NationalParkType, TrackableItem } from '@/types';
 import { CategoryCard } from "@/components/CategoryCard";
 import { GlobeIcon, StarIcon, MountainIcon, BaseballIcon, FootballIcon, MilestoneMapperIcon } from "@/components/icons";
 import { CountryTracker } from "@/components/trackers/CountryTracker";
@@ -49,8 +49,8 @@ const initialCategories: CategoryConfig[] = [
     slug: 'national-parks',
     title: "National Parks",
     icon: MountainIcon,
-    totalCount: localData.nationalParks.length,
-    data: localData.nationalParks,
+    totalCount: 0, // Updated after fetch
+    data: [] as NationalParkType[], // Updated after fetch
     TrackerComponent: NationalParkTracker,
     cardColor: "text-green-600",
   },
@@ -79,6 +79,7 @@ export default function HomePage() {
   const [categories, setCategories] = useState<CategoryConfig[]>(initialCategories);
   const [countriesLoading, setCountriesLoading] = useState(true);
   const [statesLoading, setStatesLoading] = useState(true);
+  const [nationalParksLoading, setNationalParksLoading] = useState(true);
 
   useEffect(() => {
     async function fetchCountries() {
@@ -120,7 +121,7 @@ export default function HomePage() {
     async function fetchStates() {
       const apiKey = process.env.NEXT_PUBLIC_CENSUS_API_KEY;
       if (!apiKey) {
-        console.error("Census API key is missing.");
+        console.warn("Census API key is missing. U.S. States data will not be loaded.");
         setCategories(prevCategories =>
           prevCategories.map(cat =>
             cat.slug === 'us-states'
@@ -137,12 +138,11 @@ export default function HomePage() {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
         const rawStatesData: string[][] = await response.json();
-        // The first row is headers, e.g., ["NAME", "state"]
         const formattedStates: USStateType[] = rawStatesData
-          .slice(1) // Skip header row
+          .slice(1) 
           .map(stateArray => ({
-            id: stateArray[1], // FIPS code, e.g., "01"
-            name: stateArray[0], // State name, e.g., "Alabama"
+            id: stateArray[1], 
+            name: stateArray[0], 
           }))
           .sort((a, b) => a.name.localeCompare(b.name));
 
@@ -167,11 +167,63 @@ export default function HomePage() {
       }
     }
 
+    async function fetchNationalParks() {
+      const apiKey = process.env.NEXT_PUBLIC_NPS_API_KEY;
+      if (!apiKey) {
+        console.warn("NPS API key is missing. National Parks data will not be loaded.");
+        setCategories(prevCategories =>
+          prevCategories.map(cat =>
+            cat.slug === 'national-parks'
+              ? { ...cat, data: [], totalCount: 0, error: "API key missing. Cannot load National Parks." }
+              : cat
+          )
+        );
+        setNationalParksLoading(false);
+        return;
+      }
+      try {
+        // Fetching only designated National Parks, limit 100 should be enough (current count is 63)
+        // Added fields=states to get the states information
+        const response = await fetch(`https://developer.nps.gov/api/v1/parks?limit=100&designationCode=NATP&fields=states&api_key=${apiKey}`);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const npsData: { data: Array<{ parkCode: string, fullName: string, states: string }> } = await response.json();
+        const formattedParks: NationalParkType[] = npsData.data
+          .map(park => ({
+            id: park.parkCode,
+            name: park.fullName,
+            state: park.states, // This is a comma-separated string like "CA,NV" or "WY"
+          }))
+          .sort((a, b) => a.name.localeCompare(b.name));
+
+        setCategories(prevCategories =>
+          prevCategories.map(cat =>
+            cat.slug === 'national-parks'
+              ? { ...cat, data: formattedParks, totalCount: formattedParks.length, error: undefined }
+              : cat
+          )
+        );
+      } catch (error) {
+        console.error("Failed to fetch National Parks:", error);
+        setCategories(prevCategories =>
+          prevCategories.map(cat =>
+            cat.slug === 'national-parks'
+              ? { ...cat, data: [], totalCount: 0, error: "Failed to load National Parks. Please try again later." }
+              : cat
+          )
+        );
+      } finally {
+        setNationalParksLoading(false);
+      }
+    }
+
     fetchCountries();
     fetchStates();
+    fetchNationalParks();
   }, []);
 
-  const overallLoading = !travelDataLoaded || countriesLoading || statesLoading;
+  const overallLoading = !travelDataLoaded || countriesLoading || statesLoading || nationalParksLoading;
 
   if (overallLoading) {
     return (
@@ -229,8 +281,8 @@ export default function HomePage() {
             if (category.slug === 'countries') trackerSpecificProps.countries = category.data;
             else if (category.slug === 'us-states') trackerSpecificProps.states = category.data;
             else if (category.slug === 'national-parks') trackerSpecificProps.parks = category.data;
-            else if (category.slug === 'mlb-ballparks') trackerSpecificProps.stadiums = category.data;
-            else if (category.slug === 'nfl-stadiums') trackerSpecificProps.stadiums = category.data;
+            else if (category.slug === 'mlb-ballparks') trackerSpecificProps.stadiums = category.data; // MLB still uses local data
+            else if (category.slug === 'nfl-stadiums') trackerSpecificProps.stadiums = category.data; // NFL still uses local data
 
             return (
               <CategoryCard

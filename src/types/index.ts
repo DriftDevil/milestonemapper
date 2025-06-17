@@ -2,7 +2,7 @@
 export type CategorySlug = 'countries' | 'us-states' | 'national-parks' | 'mlb-ballparks' | 'nfl-stadiums';
 
 export interface TrackableItem {
-  id: string; // For US States, this will be the FIPS code.
+  id: string; // For US States, this will be the FIPS code. For National Parks, parkCode.
   name: string;
 }
 
@@ -11,14 +11,13 @@ export interface Country extends TrackableItem {
 }
 
 export interface USState extends TrackableItem {
-  // 'code' (2-letter postal abbreviation) is removed as Census API doesn't provide it directly.
   // 'id' will be the FIPS code (e.g., "01")
   // 'name' will be the state name (e.g., "Alabama")
 }
 
 export interface NationalPark extends TrackableItem {
-  state: string; // State(s) where the park is located
-  region?: string; // Optional region
+  state: string; // State(s) where the park is located (e.g. "CA,NV" or "WY")
+  region?: string; // Optional region - not currently used from API
 }
 
 export interface MLBStadium extends TrackableItem {
@@ -48,3 +47,4 @@ export interface VisitedItems {
   'mlb-ballparks': Set<string>;
   'nfl-stadiums': Set<string>;
 }
+
