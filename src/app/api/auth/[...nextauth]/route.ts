@@ -4,37 +4,39 @@
 import NextAuth from 'next-auth';
 import type { AuthOptions } from 'next-auth';
 import type { Provider } from 'next-auth/providers/index';
-import OIDCProvider from 'next-auth/providers/oidc';
+// import OIDCProvider from 'next-auth/providers/oidc'; // Temporarily removed to fix build error
 import CredentialsProvider from 'next-auth/providers/credentials';
 import type { User } from '@/types';
 
 const providers: Provider[] = [];
 
-// Conditionally add the OIDC provider if all its environment variables are set.
-if (process.env.OIDC_CLIENT_ID && process.env.OIDC_CLIENT_SECRET && process.env.OIDC_ISSUER) {
-  providers.push(
-    OIDCProvider({
-      id: 'oidc',
-      name: "Authentik",
-      clientId: process.env.OIDC_CLIENT_ID,
-      clientSecret: process.env.OIDC_CLIENT_SECRET,
-      issuer: process.env.OIDC_ISSUER,
-      wellKnown: `${process.env.OIDC_ISSUER}/.well-known/openid-configuration`,
-      authorization: { params: { scope: "openid email profile" } },
-      idToken: true,
-      checks: ['pkce', 'state'],
-      profile(profile) {
-        return {
-          id: profile.sub,
-          name: profile.preferred_username || profile.name,
-          email: profile.email,
-          image: profile.picture,
-          username: profile.preferred_username || profile.name,
-        };
-      },
-    })
-  );
-}
+// // Conditionally add the OIDC provider if all its environment variables are set.
+// // Temporarily disabled to resolve a persistent "Module not found" build error.
+// // This indicates an issue with the node_modules installation.
+// if (process.env.OIDC_CLIENT_ID && process.env.OIDC_CLIENT_SECRET && process.env.OIDC_ISSUER) {
+//   providers.push(
+//     OIDCProvider({
+//       id: 'oidc',
+//       name: "Authentik",
+//       clientId: process.env.OIDC_CLIENT_ID,
+//       clientSecret: process.env.OIDC_CLIENT_SECRET,
+//       issuer: process.env.OIDC_ISSUER,
+//       wellKnown: `${process.env.OIDC_ISSUER}/.well-known/openid-configuration`,
+//       authorization: { params: { scope: "openid email profile" } },
+//       idToken: true,
+//       checks: ['pkce', 'state'],
+//       profile(profile) {
+//         return {
+//           id: profile.sub,
+//           name: profile.preferred_username || profile.name,
+//           email: profile.email,
+//           image: profile.picture,
+//           username: profile.preferred_username || profile.name,
+//         };
+//       },
+//     })
+//   );
+// }
 
 // Conditionally add the Credentials provider if its environment variable is set.
 if (process.env.NEXT_PUBLIC_API_URL) {
