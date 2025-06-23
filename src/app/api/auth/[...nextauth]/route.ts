@@ -3,18 +3,22 @@
 
 import NextAuth from 'next-auth';
 import type { AuthOptions } from 'next-auth';
+import type { Provider } from 'next-auth/providers/index';
 import OIDCProvider from 'next-auth/providers/oidc';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import type { User } from '@/types';
 
-export const authOptions: AuthOptions = {
-  providers: [
+const providers: Provider[] = [];
+
+// Conditionally add the OIDC provider if all its environment variables are set.
+if (process.env.OIDC_CLIENT_ID && process.env.OIDC_CLIENT_SECRET && process.env.OIDC_ISSUER) {
+  providers.push(
     OIDCProvider({
-      id: 'oidc', // Add a unique ID
+      id: 'oidc',
       name: "Authentik",
-      clientId: process.env.OIDC_CLIENT_ID!,
-      clientSecret: process.env.OIDC_CLIENT_SECRET!,
-      issuer: process.env.OIDC_ISSUER!,
+      clientId: process.env.OIDC_CLIENT_ID,
+      clientSecret: process.env.OIDC_CLIENT_SECRET,
+      issuer: process.env.OIDC_ISSUER,
       wellKnown: `${process.env.OIDC_ISSUER}/.well-known/openid-configuration`,
       authorization: { params: { scope: "openid email profile" } },
       idToken: true,
@@ -28,7 +32,13 @@ export const authOptions: AuthOptions = {
           username: profile.preferred_username || profile.name,
         };
       },
-    }),
+    })
+  );
+}
+
+// Conditionally add the Credentials provider if its environment variable is set.
+if (process.env.NEXT_PUBLIC_API_URL) {
+  providers.push(
     CredentialsProvider({
       name: 'Credentials',
       credentials: {
@@ -62,7 +72,12 @@ export const authOptions: AuthOptions = {
         }
       }
     })
-  ],
+  );
+}
+
+
+export const authOptions: AuthOptions = {
+  providers: providers,
   callbacks: {
     async jwt({ token, user, account }) {
       if (user) { // This is only called on initial sign in
