@@ -58,6 +58,11 @@ export async function POST(request: NextRequest) {
         secure: true,
         // `sameSite: 'none'` allows the browser to send this cookie with cross-site requests,
         // which is necessary because the app and the API are on different domains.
+        // This setting is also robust enough for production, even if the frontend and API are on subdomains
+        // of the same parent domain (e.g., app.example.com and api.example.com). While those are technically
+        // "same-site", using 'none' here works universally for any cross-origin scenario. For a more strict
+        // policy in that specific production setup, you could use `sameSite: 'lax'` and also set the
+        // `domain: '.huangtechhub.dev'` attribute. However, 'none' is a safe and universal default.
         sameSite: 'none',
     });
 
