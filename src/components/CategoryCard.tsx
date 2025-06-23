@@ -20,7 +20,7 @@ interface CategoryCardProps {
 
 export function CategoryCard({ title, icon: Icon, visitedCount, totalCount, children, cardColor }: CategoryCardProps) {
   return (
-    <Card className="flex flex-col shadow-lg hover:shadow-xl transition-shadow duration-300 ease-in-out">
+    <Card className="flex flex-col shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 ease-in-out">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-2xl font-headline">{title}</CardTitle>
@@ -34,7 +34,7 @@ export function CategoryCard({ title, icon: Icon, visitedCount, totalCount, chil
       <CardFooter>
         <Dialog>
           <DialogTrigger asChild>
-            <Button variant="outline" className="w-full">View & Update</Button>
+            <Button variant="secondary" className="w-full">View & Update</Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[600px] md:max-w-[750px] lg:max-w-[900px] max-h-[90vh] flex flex-col overflow-hidden">
             <DialogHeader>
