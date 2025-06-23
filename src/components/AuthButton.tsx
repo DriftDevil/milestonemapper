@@ -1,41 +1,27 @@
 
 "use client";
 
-import { useSession, signOut } from 'next-auth/react';
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Button } from './ui/button';
-import { Avatar, AvatarFallback } from './ui/avatar';
-import { Skeleton } from './ui/skeleton';
 
 export function AuthButton() {
-  const { data: session, status } = useSession();
+  const router = useRouter();
 
-  if (status === "loading") {
-    return <Skeleton className="h-9 w-24" />;
-  }
-
-  if (session?.user) {
-    const username = (session.user as any)?.username || session.user.name || session.user.email;
-    const fallback = username?.charAt(0).toUpperCase() || 'U';
-
-    return (
-      <div className="flex items-center gap-4">
-        <div className="flex items-center gap-2">
-           <Avatar className="h-8 w-8">
-            <AvatarFallback>{fallback}</AvatarFallback>
-          </Avatar>
-          <span className="text-sm font-medium">Welcome, {username}</span>
-        </div>
-        <Button variant="outline" size="sm" onClick={() => signOut()}>
-          Sign Out
-        </Button>
-      </div>
-    );
-  }
+  const handleSignOut = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+    } catch (error) {
+      console.error("Logout failed:", error);
+    } finally {
+      // Redirect to login page regardless of API call success
+      router.push('/login');
+      router.refresh(); // Force a full refresh to clear server-side state
+    }
+  };
 
   return (
-    <Button asChild variant="outline" size="sm">
-      <Link href="/login">Sign In</Link>
+    <Button variant="outline" size="sm" onClick={handleSignOut}>
+      Sign Out
     </Button>
   );
 }

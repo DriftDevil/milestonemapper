@@ -2,7 +2,6 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
 import type { CategorySlug, Country as CountryType, USState as USStateType, NationalPark as NationalParkType, TrackableItem } from '@/types';
 import { CategoryCard } from "@/components/CategoryCard";
 import { GlobeIcon, UsaFlagIcon, MountainIcon, BaseballIcon, FootballIcon, MilestoneMapperIcon } from "@/components/icons";
@@ -78,13 +77,6 @@ const initialCategories: CategoryConfig[] = [
 ];
 
 export default function HomePage() {
-  const { data: session, status } = useSession({
-    required: true,
-    onUnauthenticated() {
-      // This will automatically redirect to the login page defined in `authOptions`
-    },
-  });
-
   const {
     getVisitedCount,
     isLoaded: travelDataLoaded,
@@ -100,8 +92,6 @@ export default function HomePage() {
   const [nationalParksLoading, setNationalParksLoading] = useState(true);
 
   useEffect(() => {
-    if (status === 'authenticated') {
-      // Data fetching logic only runs if user is authenticated
       async function fetchCountries() {
         try {
           const response = await fetch('https://restcountries.com/v3.1/all?fields=name,cca2,ccn3');
@@ -152,12 +142,11 @@ export default function HomePage() {
       fetchCountries();
       fetchStates();
       fetchNationalParks();
-    }
-  }, [status]);
+  }, []);
 
-  const overallLoading = status === 'loading' || !travelDataLoaded || countriesLoading || statesLoading || nationalParksLoading;
+  const overallLoading = !travelDataLoaded || countriesLoading || statesLoading || nationalParksLoading;
 
-  if (overallLoading || !session?.user) {
+  if (overallLoading) {
     return (
       <div className="container mx-auto px-4 py-8">
         <header className="mb-12 text-center">

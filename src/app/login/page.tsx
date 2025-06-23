@@ -1,9 +1,8 @@
 
 "use client";
 
-import { useState, useEffect } from 'react';
-import { signIn } from 'next-auth/react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -13,40 +12,40 @@ import { MilestoneMapperIcon } from '@/components/icons';
 
 export default function LoginPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
 
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const callbackError = searchParams.get('error');
-    if (callbackError) {
-      // Handle errors passed in the URL, e.g., from server-side redirects
-      setError("Authentication failed. Please check your credentials and try again.");
-    }
-  }, [searchParams]);
-
   const handleLocalLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError(null); // Clear previous errors on a new attempt
+    setError(null);
 
-    const result = await signIn('credentials', {
-      redirect: false, // We handle the redirect manually to show errors
-      identifier,
-      password,
-    });
+    try {
+      const response = await fetch('/api/auth/password-login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ identifier, password }),
+      });
 
-    setLoading(false);
+      const data = await response.json();
 
-    if (result?.ok) {
-      router.push('/'); // On success, navigate to the main page
-    } else {
-      // For security, show a generic message for any kind of credential failure.
-      // `result.error` often contains internal keys like "CredentialsSignin" which aren't user-friendly.
-      setError('Invalid username or password. Please try again.');
+      if (response.ok && data.success) {
+        // On success, redirect to the main page.
+        // We use router.refresh() to ensure the server re-renders and can
+        // read the new session cookie we just set.
+        router.push('/');
+        router.refresh(); 
+      } else {
+        setError(data.message || 'An unexpected error occurred. Please try again.');
+      }
+    } catch (err) {
+      console.error('Login fetch error:', err);
+      setError('Could not connect to the server. Please check your network and try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
