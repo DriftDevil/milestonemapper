@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import { useSession } from 'next-auth/react';
 import type { CategorySlug, Country as CountryType, USState as USStateType, NationalPark as NationalParkType, TrackableItem } from '@/types';
 import { CategoryCard } from "@/components/CategoryCard";
 import { GlobeIcon, UsaFlagIcon, MountainIcon, BaseballIcon, FootballIcon, MilestoneMapperIcon } from "@/components/icons";
@@ -15,8 +16,6 @@ import { useTravelData } from "@/hooks/useTravelData";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { useAuth } from '@/context/AuthContext';
-import { useRouter } from 'next/navigation';
 import { AuthButton } from '@/components/AuthButton';
 
 interface CategoryConfig {
@@ -79,8 +78,13 @@ const initialCategories: CategoryConfig[] = [
 ];
 
 export default function HomePage() {
-  const auth = useAuth();
-  const router = useRouter();
+  const { data: session, status } = useSession({
+    required: true,
+    onUnauthenticated() {
+      // This will automatically redirect to the login page defined in `authOptions`
+    },
+  });
+
   const {
     getVisitedCount,
     isLoaded: travelDataLoaded,
@@ -96,13 +100,7 @@ export default function HomePage() {
   const [nationalParksLoading, setNationalParksLoading] = useState(true);
 
   useEffect(() => {
-    if (!auth.loading && !auth.user) {
-      router.push('/login');
-    }
-  }, [auth.loading, auth.user, router]);
-
-  useEffect(() => {
-    if (auth.user) {
+    if (status === 'authenticated') {
       // Data fetching logic only runs if user is authenticated
       async function fetchCountries() {
         try {
@@ -155,11 +153,11 @@ export default function HomePage() {
       fetchStates();
       fetchNationalParks();
     }
-  }, [auth.user]);
+  }, [status]);
 
-  const overallLoading = !travelDataLoaded || countriesLoading || statesLoading || nationalParksLoading || auth.loading;
+  const overallLoading = status === 'loading' || !travelDataLoaded || countriesLoading || statesLoading || nationalParksLoading;
 
-  if (overallLoading || !auth.user) {
+  if (overallLoading || !session?.user) {
     return (
       <div className="container mx-auto px-4 py-8">
         <header className="mb-12 text-center">

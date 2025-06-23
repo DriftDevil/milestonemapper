@@ -52,8 +52,10 @@ export interface VisitedItems {
 }
 
 export interface User {
-  id: number;
+  id: string | number;
   username: string;
   email: string;
-  provider: string;
+  provider?: string;
+  name?: string;
+  image?: string;
 }

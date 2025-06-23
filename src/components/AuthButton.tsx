@@ -1,24 +1,32 @@
 
 "use client";
 
+import { useSession, signOut } from 'next-auth/react';
 import Link from 'next/link';
-import { useAuth } from '@/context/AuthContext';
 import { Button } from './ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
+import { Avatar, AvatarFallback } from './ui/avatar';
+import { Skeleton } from './ui/skeleton';
 
 export function AuthButton() {
-  const { user, logout } = useAuth();
+  const { data: session, status } = useSession();
 
-  if (user) {
+  if (status === "loading") {
+    return <Skeleton className="h-9 w-24" />;
+  }
+
+  if (session?.user) {
+    const username = (session.user as any)?.username || session.user.name || session.user.email;
+    const fallback = username?.charAt(0).toUpperCase() || 'U';
+
     return (
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-2">
            <Avatar className="h-8 w-8">
-            <AvatarFallback>{user.username.charAt(0).toUpperCase()}</AvatarFallback>
+            <AvatarFallback>{fallback}</AvatarFallback>
           </Avatar>
-          <span className="text-sm font-medium">Welcome, {user.username}</span>
+          <span className="text-sm font-medium">Welcome, {username}</span>
         </div>
-        <Button variant="outline" size="sm" onClick={logout}>
+        <Button variant="outline" size="sm" onClick={() => signOut()}>
           Sign Out
         </Button>
       </div>

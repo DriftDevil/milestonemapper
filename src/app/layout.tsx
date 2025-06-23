@@ -3,8 +3,7 @@ import type {Metadata} from 'next';
 import { Playfair_Display, PT_Sans } from 'next/font/google';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
-import { ThemeProvider } from "@/components/ThemeProvider";
-import { AuthProvider } from '@/context/AuthContext';
+import { Providers } from '@/components/Providers';
 import { cn } from '@/lib/utils';
 
 const playfairDisplay = Playfair_Display({
@@ -39,17 +38,10 @@ export default function RootLayout({
         playfairDisplay.variable,
         ptSans.variable
       )}>
-        <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
-          <AuthProvider>
-            {children}
-          </AuthProvider>
+        <Providers>
+          {children}
           <Toaster />
-        </ThemeProvider>
+        </Providers>
       </body>
     </html>
   );
