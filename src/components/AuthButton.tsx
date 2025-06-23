@@ -13,7 +13,7 @@ export function AuthButton() {
     } finally {
       // A hard refresh is more reliable for ensuring the server
       // re-renders and can read the new session cookie.
-      window.location.href = '/login';
+      window.location.href = '/';
     }
   };
 
