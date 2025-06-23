@@ -35,42 +35,26 @@ export const authOptions: AuthOptions = {
                   }),
                 });
 
-                const responseText = await res.text();
-                let data;
-                try {
-                  data = JSON.parse(responseText);
-                } catch (e) {
-                  console.error(
-                    `[NextAuth] Non-JSON response from API: ${responseText.substring(
-                      0,
-                      100
-                    )}...`
-                  );
-                  throw new Error(
-                    'The server returned an unexpected response. Please try again.'
-                  );
-                }
-
+                // If the response is not OK (e.g., 401 Unauthorized, 500 Server Error),
+                // it's a failed login attempt.
                 if (!res.ok) {
-                  const errorMessage =
-                    data?.message || data?.error?.message || 'Invalid credentials. Please try again.';
-                  throw new Error(errorMessage);
+                  return null;
                 }
 
-                // If the response is OK but doesn't have the expected user/token data, it's still an error.
+                const data = await res.json();
+
+                // If the response is OK but doesn't have the expected user/token data, it's still a failure.
                 if (!data?.id || !data?.accessToken) {
                   console.error(
                     `[NextAuth] Invalid success response structure from API:`,
                     data
                   );
-                  throw new Error(
-                    'Authentication succeeded but required user data (id, accessToken) is missing.'
-                  );
+                  return null;
                 }
 
                 // Construct the user object for next-auth from the API response
                 const user = {
-                  id: data.id,
+                  id: data.id.toString(), // Ensure id is a string for next-auth
                   email: data.email,
                   name: data.name,
                   username: data.preferredUsername, // Map preferredUsername to username
@@ -81,11 +65,9 @@ export const authOptions: AuthOptions = {
                 return user;
 
               } catch (error: any) {
+                // This will catch network errors or if res.json() fails to parse
                 console.error(`[NextAuth] Authorization error:`, error.message);
-                throw new Error(
-                  error.message ||
-                    'An unexpected error occurred during login.'
-                );
+                return null;
               }
             },
           }),
