@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from 'next/link';
@@ -6,10 +7,17 @@ import { MilestoneMapperIcon, GlobeIcon, MountainIcon, TrophyIcon } from '@/comp
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { ComposableMap, Geographies, Geography, Graticule, Sphere } from 'react-simple-maps';
+import { useState, useEffect } from 'react';
 
 const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 
 export function LandingPage() {
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
   return (
     <div className="flex flex-col min-h-screen bg-background">
       <header className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
@@ -98,34 +106,36 @@ export function LandingPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="aspect-video bg-muted rounded-md flex items-center justify-center border overflow-hidden">
-                    <ComposableMap
-                      projectionConfig={{
-                        rotate: [-10, 0, 0],
-                        scale: 110,
-                      }}
-                      className="w-full h-full text-primary"
-                    >
-                      <Sphere stroke="hsl(var(--border))" strokeWidth={0.5} />
-                      <Graticule stroke="hsl(var(--border))" strokeWidth={0.5} strokeOpacity={0.5} />
-                      <Geographies geography={geoUrl}>
-                        {({ geographies }) =>
-                          geographies.map((geo) => (
-                            <Geography
-                              key={geo.rsmKey}
-                              geography={geo}
-                              fill="hsl(var(--primary) / 0.2)"
-                              stroke="currentColor"
-                              strokeWidth={0.5}
-                              style={{
-                                default: { outline: 'none' },
-                                hover: { outline: 'none' },
-                                pressed: { outline: 'none' },
-                              }}
-                            />
-                          ))
-                        }
-                      </Geographies>
-                    </ComposableMap>
+                    {isClient && (
+                      <ComposableMap
+                        projectionConfig={{
+                          rotate: [-10, 0, 0],
+                          scale: 110,
+                        }}
+                        className="w-full h-full text-primary"
+                      >
+                        <Sphere stroke="hsl(var(--border))" strokeWidth={0.5} />
+                        <Graticule stroke="hsl(var(--border))" strokeWidth={0.5} strokeOpacity={0.5} />
+                        <Geographies geography={geoUrl}>
+                          {({ geographies }) =>
+                            geographies.map((geo) => (
+                              <Geography
+                                key={geo.rsmKey}
+                                geography={geo}
+                                fill="hsl(var(--primary) / 0.2)"
+                                stroke="currentColor"
+                                strokeWidth={0.5}
+                                style={{
+                                  default: { outline: 'none' },
+                                  hover: { outline: 'none' },
+                                  pressed: { outline: 'none' },
+                                }}
+                              />
+                            ))
+                          }
+                        </Geographies>
+                      </ComposableMap>
+                    )}
                   </div>
                   <p className="text-muted-foreground text-sm mt-2">Visualize your travels across the globe.</p>
                 </CardContent>
