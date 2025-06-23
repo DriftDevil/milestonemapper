@@ -60,7 +60,7 @@ export default function LoginPage() {
           </div>
           <CardDescription>Enter your credentials to access your map.</CardDescription>
         </CardHeader>
-        <form onSubmit={handleLocalLogin}>
+        <form onSubmit={handleLocalLogin} method="POST">
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="identifier">Email or Username</Label>
