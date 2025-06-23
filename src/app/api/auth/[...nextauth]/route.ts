@@ -35,13 +35,11 @@ export const authOptions: AuthOptions = {
                   }),
                 });
 
-                // Read the response body once to avoid "body already consumed" errors.
                 const responseText = await res.text();
                 let data;
                 try {
                   data = JSON.parse(responseText);
                 } catch (e) {
-                  // The API returned non-JSON. This is an error.
                   console.error(
                     `[NextAuth] Non-JSON response from API: ${responseText.substring(
                       0,
@@ -53,33 +51,37 @@ export const authOptions: AuthOptions = {
                   );
                 }
 
-                // If the response was not OK (e.g., 401, 403, 500), throw an error with the message from the API.
                 if (!res.ok) {
                   const errorMessage =
-                    data?.error?.message ||
-                    'Invalid credentials. Please try again.';
+                    data?.message || data?.error?.message || 'Invalid credentials. Please try again.';
                   throw new Error(errorMessage);
                 }
 
-                // If the response is OK but doesn't have the expected user/jwt data, it's still an error.
-                if (!data?.user || !data?.jwt) {
+                // If the response is OK but doesn't have the expected user/token data, it's still an error.
+                if (!data?.id || !data?.accessToken) {
                   console.error(
                     `[NextAuth] Invalid success response structure from API:`,
                     data
                   );
                   throw new Error(
-                    'Authentication succeeded but user data is missing.'
+                    'Authentication succeeded but required user data (id, accessToken) is missing.'
                   );
                 }
 
-                // The response was successful and contains the expected data.
-                // Attach the JWT to the user object that next-auth will use.
-                return { ...data.user, jwt: data.jwt };
+                // Construct the user object for next-auth from the API response
+                const user = {
+                  id: data.id,
+                  email: data.email,
+                  name: data.name,
+                  username: data.preferredUsername, // Map preferredUsername to username
+                  isAdmin: data.isAdmin,
+                  jwt: data.accessToken, // Map accessToken to jwt
+                };
+                
+                return user;
+
               } catch (error: any) {
-                // This catches network errors (e.g., fetch failed) and errors thrown from the block above.
                 console.error(`[NextAuth] Authorization error:`, error.message);
-                // We re-throw it so next-auth can handle it and display it on the login page.
-                // Use the error's message if available, otherwise a generic one.
                 throw new Error(
                   error.message ||
                     'An unexpected error occurred during login.'
@@ -91,15 +93,13 @@ export const authOptions: AuthOptions = {
       : []),
   ],
   callbacks: {
-    async jwt({ token, user, account }) {
+    async jwt({ token, user }) {
       if (user) {
         // This is only called on initial sign in
         token.id = user.id;
-        token.username = (user as User).username;
-
-        if (account?.provider === 'credentials') {
-          token.jwt = (user as any).jwt;
-        }
+        token.username = (user as any).username;
+        token.isAdmin = (user as any).isAdmin;
+        token.jwt = (user as any).jwt;
       }
       return token;
     },
@@ -107,6 +107,7 @@ export const authOptions: AuthOptions = {
       if (session.user) {
         (session.user as any).id = token.id;
         (session.user as any).username = token.username;
+        (session.user as any).isAdmin = token.isAdmin;
         if (token.jwt) {
           (session as any).jwt = token.jwt;
         }

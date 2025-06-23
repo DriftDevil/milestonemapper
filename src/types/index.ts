@@ -58,4 +58,5 @@ export interface User {
   provider?: string;
   name?: string;
   image?: string;
+  isAdmin?: boolean;
 }
