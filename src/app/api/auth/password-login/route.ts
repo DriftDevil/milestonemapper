@@ -6,11 +6,14 @@ import logger from '@/lib/logger';
 
 const CONTEXT = "API Password Login";
 
-// This is now a mock login handler. It doesn't connect to a real database.
-// It will accept any non-empty username and password to allow for easy testing
-// of the authenticated state of the application.
+const EXTERNAL_API_URL = process.env.EXTERNAL_API_BASE_URL;
 
 export async function POST(request: NextRequest) {
+  if (!EXTERNAL_API_URL) {
+    logger.error(CONTEXT, 'Critical: EXTERNAL_API_BASE_URL is not set. Password login cannot function.');
+    return NextResponse.json({ success: false, message: 'API endpoint not configured.' }, { status: 500 });
+  }
+
   try {
     const { identifier, password } = await request.json();
 
@@ -19,12 +22,27 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, message: 'Email/Username and password are required.' }, { status: 400 });
     }
 
-    // In a real application, you would validate the credentials against a database.
-    // For this prototype, we'll consider any non-empty credentials as valid.
-    logger.info(CONTEXT, `Mock login successful for identifier: ${identifier}.`);
+    logger.info(CONTEXT, `Attempting login for identifier: ${identifier} to ${EXTERNAL_API_URL}/auth/local/login`);
 
-    // The "token" is just a placeholder value. The presence of the cookie is what matters.
-    const token = 'mock_session_token_for_milestone_mapper';
+    const apiResponse = await fetch(`${EXTERNAL_API_URL}/auth/local/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ identifier, password }),
+    });
+
+    const responseData = await apiResponse.json();
+
+    if (!apiResponse.ok) {
+        logger.error(CONTEXT, `External API login failed for ${identifier}. Status: ${apiResponse.status}`, responseData);
+        const message = responseData.message || 'Invalid credentials or external API error.';
+        return NextResponse.json({ success: false, message }, { status: apiResponse.status });
+    }
+
+    const token = responseData.accessToken;
+    if (!token) {
+      logger.error(CONTEXT, `accessToken not found in external API response for identifier ${identifier}.`, responseData);
+      return NextResponse.json({ success: false, message: 'Authentication service did not provide a valid token.' }, { status: 500 });
+    }
 
     const response = NextResponse.json({ success: true, message: "Login successful" });
 
@@ -40,7 +58,7 @@ export async function POST(request: NextRequest) {
     return response;
 
   } catch (error: any) {
-    logger.error(CONTEXT, 'Internal error in mock login handler:', error.message, error.stack);
+    logger.error(CONTEXT, 'Internal error in password login handler:', error.message, error.stack);
     return NextResponse.json({ success: false, message: 'An unexpected error occurred during login.' }, { status: 500 });
   }
 }
