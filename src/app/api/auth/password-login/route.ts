@@ -48,10 +48,10 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ success: false, message, details }, { status: apiResponse.status });
     }
 
-    // Standard Strapi v4 response includes a 'jwt' field. This is a common source of error.
-    const token = responseData.jwt;
+    // Check for token under common names like 'jwt', 'accessToken', or 'token'
+    const token = responseData.jwt || responseData.accessToken || responseData.token;
     if (!token) {
-      logger.error(CONTEXT, `JWT token not found in external API response for identifier ${identifier}. Full response:`, JSON.stringify(responseData));
+      logger.error(CONTEXT, `Token not found in external API response for identifier ${identifier}. Looked for 'jwt', 'accessToken', 'token'. Full response:`, JSON.stringify(responseData));
       return NextResponse.json({ success: false, message: 'Authentication service did not provide a valid token.' }, { status: 500 });
     }
 
