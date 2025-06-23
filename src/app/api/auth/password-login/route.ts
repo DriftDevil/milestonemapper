@@ -30,17 +30,28 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify({ identifier, password }),
     });
 
-    const responseData = await apiResponse.json();
+    const responseBodyText = await apiResponse.text();
+    let responseData;
+
+    try {
+        responseData = JSON.parse(responseBodyText);
+    } catch (e) {
+        logger.error(CONTEXT, `Failed to parse JSON response from external API. Status: ${apiResponse.status}. Body: ${responseBodyText}`);
+        return NextResponse.json({ success: false, message: 'Received an invalid response from the authentication service.' }, { status: 502 });
+    }
 
     if (!apiResponse.ok) {
         logger.error(CONTEXT, `External API login failed for ${identifier}. Status: ${apiResponse.status}`, responseData);
-        const message = responseData.message || 'Invalid credentials or external API error.';
-        return NextResponse.json({ success: false, message }, { status: apiResponse.status });
+        // Attempt to find a meaningful error message from a nested structure
+        const message = responseData.error?.message || responseData.message || 'Invalid credentials or external API error.';
+        const details = responseData.error?.details || 'No details provided.';
+        return NextResponse.json({ success: false, message, details }, { status: apiResponse.status });
     }
 
-    const token = responseData.accessToken;
+    // Standard Strapi v4 response includes a 'jwt' field. This is a common source of error.
+    const token = responseData.jwt;
     if (!token) {
-      logger.error(CONTEXT, `accessToken not found in external API response for identifier ${identifier}.`, responseData);
+      logger.error(CONTEXT, `JWT token not found in external API response for identifier ${identifier}. Full response:`, JSON.stringify(responseData));
       return NextResponse.json({ success: false, message: 'Authentication service did not provide a valid token.' }, { status: 500 });
     }
 
