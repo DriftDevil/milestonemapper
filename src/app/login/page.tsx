@@ -34,10 +34,9 @@ export default function LoginPage() {
 
       if (response.ok && data.success) {
         // On success, redirect to the main page.
-        // We use router.refresh() to ensure the server re-renders and can
-        // read the new session cookie we just set.
-        router.push('/');
-        router.refresh(); 
+        // A hard refresh is more reliable for ensuring the server
+        // re-renders and can read the new session cookie.
+        window.location.href = '/';
       } else {
         setError(data.message || 'An unexpected error occurred. Please try again.');
       }
