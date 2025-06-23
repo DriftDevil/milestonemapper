@@ -15,6 +15,9 @@ import { useTravelData } from "@/hooks/useTravelData";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { useAuth } from '@/context/AuthContext';
+import { useRouter } from 'next/navigation';
+import { AuthButton } from '@/components/AuthButton';
 
 interface CategoryConfig {
   slug: CategorySlug;
@@ -76,6 +79,8 @@ const initialCategories: CategoryConfig[] = [
 ];
 
 export default function HomePage() {
+  const auth = useAuth();
+  const router = useRouter();
   const {
     getVisitedCount,
     isLoaded: travelDataLoaded,
@@ -91,149 +96,70 @@ export default function HomePage() {
   const [nationalParksLoading, setNationalParksLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchCountries() {
-      try {
-        const response = await fetch('https://restcountries.com/v3.1/all?fields=name,cca2,ccn3');
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const rawCountries: Array<{ name: { common: string }, cca2: string, ccn3?: string }> = await response.json();
-        const formattedCountries: CountryType[] = rawCountries
-          .map(country => ({
-            id: country.cca2.toUpperCase(),
-            name: country.name.common,
-            code: country.cca2.toUpperCase(),
-            numericCode: country.ccn3,
-          }))
-          .sort((a, b) => a.name.localeCompare(b.name));
-
-        setCategories(prevCategories =>
-          prevCategories.map(cat =>
-            cat.slug === 'countries'
-              ? { ...cat, data: formattedCountries, totalCount: formattedCountries.length, error: undefined }
-              : cat
-          )
-        );
-      } catch (error) {
-        console.error("Failed to fetch countries:", error);
-        setCategories(prevCategories =>
-          prevCategories.map(cat =>
-            cat.slug === 'countries'
-              ? { ...cat, data: [], totalCount: 0, error: "Failed to load countries. Please try again later." }
-              : cat
-          )
-        );
-      } finally {
-        setCountriesLoading(false);
-      }
+    if (!auth.loading && !auth.user) {
+      router.push('/login');
     }
+  }, [auth.loading, auth.user, router]);
 
-    async function fetchStates() {
-      const apiKey = process.env.NEXT_PUBLIC_CENSUS_API_KEY;
-      if (!apiKey) {
-        console.warn("Census API key is missing. U.S. States data will not be loaded.");
-        setCategories(prevCategories =>
-          prevCategories.map(cat =>
-            cat.slug === 'us-states'
-              ? { ...cat, data: [], totalCount: 0, error: "API key missing. Cannot load U.S. States." }
-              : cat
-          )
-        );
-        setStatesLoading(false);
-        return;
-      }
-      try {
-        const response = await fetch(`https://api.census.gov/data/2023/geoinfo?get=NAME&for=state:*&key=${apiKey}`);
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+  useEffect(() => {
+    if (auth.user) {
+      // Data fetching logic only runs if user is authenticated
+      async function fetchCountries() {
+        try {
+          const response = await fetch('https://restcountries.com/v3.1/all?fields=name,cca2,ccn3');
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          const rawCountries: Array<{ name: { common: string }, cca2: string, ccn3?: string }> = await response.json();
+          const formattedCountries: CountryType[] = rawCountries
+            .map(country => ({
+              id: country.cca2.toUpperCase(),
+              name: country.name.common,
+              code: country.cca2.toUpperCase(),
+              numericCode: country.ccn3,
+            }))
+            .sort((a, b) => a.name.localeCompare(b.name));
+
+          setCategories(prevCategories =>
+            prevCategories.map(cat =>
+              cat.slug === 'countries'
+                ? { ...cat, data: formattedCountries, totalCount: formattedCountries.length, error: undefined }
+                : cat
+            )
+          );
+        } catch (error) {
+          console.error("Failed to fetch countries:", error);
+          setCategories(prevCategories =>
+            prevCategories.map(cat =>
+              cat.slug === 'countries'
+                ? { ...cat, data: [], totalCount: 0, error: "Failed to load countries. Please try again later." }
+                : cat
+            )
+          );
+        } finally {
+          setCountriesLoading(false);
         }
-        const rawStatesData: string[][] = await response.json();
-        const formattedStates: USStateType[] = rawStatesData
-          .slice(1)
-          .map(stateArray => ({
-            id: stateArray[1], // FIPS code for state
-            name: stateArray[0],
-          }))
-          .sort((a, b) => a.name.localeCompare(b.name));
+      }
 
-        setCategories(prevCategories =>
-          prevCategories.map(cat =>
-            cat.slug === 'us-states'
-              ? { ...cat, data: formattedStates, totalCount: formattedStates.length, error: undefined }
-              : cat
-          )
-        );
-      } catch (error) {
-        console.error("Failed to fetch U.S. states:", error);
-        setCategories(prevCategories =>
-          prevCategories.map(cat =>
-            cat.slug === 'us-states'
-              ? { ...cat, data: [], totalCount: 0, error: "Failed to load U.S. States. Please try again later." }
-              : cat
-          )
-        );
-      } finally {
+      async function fetchStates() {
+        setCategories(prev => prev.map(c => c.slug === 'us-states' ? {...c, error: 'State data is currently unavailable.'} : c));
         setStatesLoading(false);
       }
-    }
 
-    async function fetchNationalParks() {
-      const apiKey = process.env.NEXT_PUBLIC_NPS_API_KEY;
-      if (!apiKey) {
-        console.warn("NPS API key is missing. National Parks data will not be loaded.");
-        setCategories(prevCategories =>
-          prevCategories.map(cat =>
-            cat.slug === 'national-parks'
-              ? { ...cat, data: [], totalCount: 0, error: "API key missing. Cannot load National Parks." }
-              : cat
-          )
-        );
-        setNationalParksLoading(false);
-        return;
-      }
-      try {
-        const response = await fetch(`https://developer.nps.gov/api/v1/parks?limit=100&designationCode=NATP&fields=states&api_key=${apiKey}`);
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const npsData: { data: Array<{ parkCode: string, fullName: string, states: string }> } = await response.json();
-        const formattedParks: NationalParkType[] = npsData.data
-          .map(park => ({
-            id: park.parkCode,
-            name: park.fullName,
-            state: park.states,
-          }))
-          .sort((a, b) => a.name.localeCompare(b.name));
-
-        setCategories(prevCategories =>
-          prevCategories.map(cat =>
-            cat.slug === 'national-parks'
-              ? { ...cat, data: formattedParks, totalCount: formattedParks.length, error: undefined }
-              : cat
-          )
-        );
-      } catch (error) {
-        console.error("Failed to fetch National Parks:", error);
-        setCategories(prevCategories =>
-          prevCategories.map(cat =>
-            cat.slug === 'national-parks'
-              ? { ...cat, data: [], totalCount: 0, error: "Failed to load National Parks. Please try again later." }
-              : cat
-          )
-        );
-      } finally {
+      async function fetchNationalParks() {
+         setCategories(prev => prev.map(c => c.slug === 'national-parks' ? {...c, error: 'National Park data is currently unavailable.'} : c));
         setNationalParksLoading(false);
       }
+
+      fetchCountries();
+      fetchStates();
+      fetchNationalParks();
     }
+  }, [auth.user]);
 
-    fetchCountries();
-    fetchStates();
-    fetchNationalParks();
-  }, []);
+  const overallLoading = !travelDataLoaded || countriesLoading || statesLoading || nationalParksLoading || auth.loading;
 
-  const overallLoading = !travelDataLoaded || countriesLoading || statesLoading || nationalParksLoading;
-
-  if (overallLoading) {
+  if (overallLoading || !auth.user) {
     return (
       <div className="container mx-auto px-4 py-8">
         <header className="mb-12 text-center">
@@ -242,7 +168,7 @@ export default function HomePage() {
             <h1 className="text-5xl font-headline text-primary">Milestone Mapper</h1>
           </div>
           <p className="text-xl text-muted-foreground font-body">
-            Visually track your travel achievements and explore new horizons.
+            Loading your travel achievements...
           </p>
         </header>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -317,7 +243,8 @@ export default function HomePage() {
         </div>
       </div>
        <footer className="py-8 text-center text-muted-foreground">
-         <div className="mb-4">
+         <div className="mb-4 flex items-center justify-center gap-4">
+          <AuthButton />
           <ThemeToggle />
         </div>
         <p>&copy; {new Date().getFullYear()} Milestone Mapper. Happy travels!</p>

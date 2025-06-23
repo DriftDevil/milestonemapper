@@ -4,6 +4,7 @@ import { Playfair_Display, PT_Sans } from 'next/font/google';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { AuthProvider } from '@/context/AuthContext';
 import { cn } from '@/lib/utils';
 
 const playfairDisplay = Playfair_Display({
@@ -44,7 +45,9 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-          {children}
+          <AuthProvider>
+            {children}
+          </AuthProvider>
           <Toaster />
         </ThemeProvider>
       </body>

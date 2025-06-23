@@ -1,4 +1,5 @@
 
+
 export type CategorySlug = 'countries' | 'us-states' | 'national-parks' | 'mlb-ballparks' | 'nfl-stadiums';
 
 export interface TrackableItem {
@@ -50,3 +51,9 @@ export interface VisitedItems {
   'nfl-stadiums': Set<string>;
 }
 
+export interface User {
+  id: number;
+  username: string;
+  email: string;
+  provider: string;
+}
