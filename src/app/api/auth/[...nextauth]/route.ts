@@ -61,16 +61,27 @@ if (process.env.NEXT_PUBLIC_API_URL) {
               password: credentials.password,
             }),
           });
-
-          const data = await res.json();
-
-          if (res.ok && data.user) {
-            return { ...data.user, jwt: data.jwt };
-          } else {
-            throw new Error(data.error?.message || 'Invalid credentials');
+          
+          if (res.ok) {
+            const data = await res.json();
+            if (data.user) {
+              return { ...data.user, jwt: data.jwt };
+            }
           }
+          
+          // If the response is not ok, or if data.user is missing
+          // Try to parse the error message from the response body
+          try {
+            const errorData = await res.json();
+            throw new Error(errorData.error?.message || 'Invalid credentials.');
+          } catch (e) {
+            // If parsing the error fails (e.g., body is not JSON), throw a generic error.
+            throw new Error(`Server responded with ${res.status}. Please try again later.`);
+          }
+
         } catch (error: any) {
-          throw new Error(error.message || 'Login failed');
+          // This catches network errors or errors thrown from the block above.
+          throw new Error(error.message || 'Login failed. Could not connect to the server.');
         }
       }
     })
