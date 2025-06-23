@@ -42,12 +42,11 @@ export default function LoginPage() {
     }
   };
 
-  // OIDC login temporarily disabled to fix build error
-  // const handleOidcLogin = () => {
-  //   setLoading(true);
-  //   // The string 'oidc' must match the `id` of the OIDCProvider in the next-auth options
-  //   signIn('oidc'); 
-  // }
+  const handleOidcLogin = () => {
+    setLoading(true);
+    // The string 'oidc' must match the `id` of the OIDCProvider in the next-auth options
+    signIn('oidc'); 
+  }
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-background">
@@ -91,7 +90,15 @@ export default function LoginPage() {
           </CardContent>
           <CardFooter className="flex flex-col gap-4">
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Signing In...' : 'Sign In'}
+              {loading ? 'Signing In...' : 'Sign In with Credentials'}
+            </Button>
+            <div className="relative w-full flex items-center">
+              <div className="flex-grow border-t border-border"></div>
+              <span className="flex-shrink mx-4 text-xs text-muted-foreground">OR</span>
+              <div className="flex-grow border-t border-border"></div>
+            </div>
+            <Button variant="outline" className="w-full" onClick={handleOidcLogin} disabled={loading}>
+              Sign in with Authentik
             </Button>
           </CardFooter>
         </form>

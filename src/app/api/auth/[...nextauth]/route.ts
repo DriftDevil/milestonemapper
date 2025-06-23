@@ -4,39 +4,37 @@
 import NextAuth from 'next-auth';
 import type { AuthOptions } from 'next-auth';
 import type { Provider } from 'next-auth/providers/index';
-// import OIDCProvider from 'next-auth/providers/oidc'; // Temporarily removed to fix build error
+import OIDCProvider from 'next-auth/providers/oidc';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import type { User } from '@/types';
 
 const providers: Provider[] = [];
 
-// // Conditionally add the OIDC provider if all its environment variables are set.
-// // Temporarily disabled to resolve a persistent "Module not found" build error.
-// // This indicates an issue with the node_modules installation.
-// if (process.env.OIDC_CLIENT_ID && process.env.OIDC_CLIENT_SECRET && process.env.OIDC_ISSUER) {
-//   providers.push(
-//     OIDCProvider({
-//       id: 'oidc',
-//       name: "Authentik",
-//       clientId: process.env.OIDC_CLIENT_ID,
-//       clientSecret: process.env.OIDC_CLIENT_SECRET,
-//       issuer: process.env.OIDC_ISSUER,
-//       wellKnown: `${process.env.OIDC_ISSUER}/.well-known/openid-configuration`,
-//       authorization: { params: { scope: "openid email profile" } },
-//       idToken: true,
-//       checks: ['pkce', 'state'],
-//       profile(profile) {
-//         return {
-//           id: profile.sub,
-//           name: profile.preferred_username || profile.name,
-//           email: profile.email,
-//           image: profile.picture,
-//           username: profile.preferred_username || profile.name,
-//         };
-//       },
-//     })
-//   );
-// }
+// Conditionally add the OIDC provider if all its environment variables are set.
+if (process.env.OIDC_CLIENT_ID && process.env.OIDC_CLIENT_SECRET && process.env.OIDC_ISSUER) {
+  providers.push(
+    OIDCProvider({
+      id: 'oidc',
+      name: "Authentik",
+      clientId: process.env.OIDC_CLIENT_ID,
+      clientSecret: process.env.OIDC_CLIENT_SECRET,
+      issuer: process.env.OIDC_ISSUER,
+      wellKnown: `${process.env.OIDC_ISSUER}/.well-known/openid-configuration`,
+      authorization: { params: { scope: "openid email profile" } },
+      idToken: true,
+      checks: ['pkce', 'state'],
+      profile(profile) {
+        return {
+          id: profile.sub,
+          name: profile.preferred_username || profile.name,
+          email: profile.email,
+          image: profile.picture,
+          username: profile.preferred_username || profile.name,
+        };
+      },
+    })
+  );
+}
 
 // Conditionally add the Credentials provider if its environment variable is set.
 if (process.env.NEXT_PUBLIC_API_URL) {
@@ -51,9 +49,11 @@ if (process.env.NEXT_PUBLIC_API_URL) {
         if (!credentials?.identifier || !credentials?.password) {
           return null;
         }
+        
+        const loginUrl = `${process.env.NEXT_PUBLIC_API_URL}/auth/local/login`;
 
         try {
-          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/local/login`, {
+          const res = await fetch(loginUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -62,15 +62,27 @@ if (process.env.NEXT_PUBLIC_API_URL) {
             }),
           });
           
-          // Read the response body once, regardless of status, to avoid "body already consumed" errors.
-          // Gracefully handle cases where the response is not valid JSON.
-          const data = await res.json().catch(() => null);
+          // Read the response body once to avoid "body already consumed" errors.
+          const responseText = await res.text();
+          let data;
+          try {
+            data = JSON.parse(responseText);
+          } catch (e) {
+            // The API returned non-JSON. This is an error.
+            console.error(`[NextAuth] Non-JSON response from API: ${responseText.substring(0, 100)}...`);
+            throw new Error('The server returned an unexpected response. Please try again.');
+          }
 
-          // If the response was not OK, or if we couldn't get user data, throw an error.
-          // next-auth will catch this and pass the message to the login page.
-          if (!res.ok || !data?.user || !data?.jwt) {
+          // If the response was not OK (e.g., 401, 403, 500), throw an error with the message from the API.
+          if (!res.ok) {
             const errorMessage = data?.error?.message || 'Invalid credentials. Please try again.';
             throw new Error(errorMessage);
+          }
+
+          // If the response is OK but doesn't have the expected user/jwt data, it's still an error.
+          if (!data?.user || !data?.jwt) {
+            console.error(`[NextAuth] Invalid success response structure from API:`, data);
+            throw new Error('Authentication succeeded but user data is missing.');
           }
 
           // The response was successful and contains the expected data.
@@ -78,8 +90,10 @@ if (process.env.NEXT_PUBLIC_API_URL) {
           return { ...data.user, jwt: data.jwt };
 
         } catch (error: any) {
-          // This catches both network errors and the errors thrown from the block above.
+          // This catches network errors (e.g., fetch failed) and errors thrown from the block above.
+          console.error(`[NextAuth] Authorization error:`, error.message);
           // We re-throw it so next-auth can handle it and display it on the login page.
+          // Use the error's message if available, otherwise a generic one.
           throw new Error(error.message || 'An unexpected error occurred during login.');
         }
       }
