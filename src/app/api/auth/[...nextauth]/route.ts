@@ -62,26 +62,35 @@ if (process.env.NEXT_PUBLIC_API_URL) {
             }),
           });
           
-          if (res.ok) {
-            const data = await res.json();
-            if (data.user) {
-              return { ...data.user, jwt: data.jwt };
+          if (!res.ok) {
+            // The server returned an error. Try to parse it as JSON.
+            let errorJson;
+            try {
+              errorJson = await res.json();
+            } catch (jsonError) {
+              // The error response wasn't JSON. Use the status text.
+              throw new Error(res.statusText || `Server responded with ${res.status}.`);
             }
+            // The error response was JSON. Use the message from it.
+            throw new Error(errorJson.error?.message || 'Invalid credentials.');
           }
-          
-          // If the response is not ok, or if data.user is missing
-          // Try to parse the error message from the response body
-          try {
-            const errorData = await res.json();
-            throw new Error(errorData.error?.message || 'Invalid credentials.');
-          } catch (e) {
-            // If parsing the error fails (e.g., body is not JSON), throw a generic error.
-            throw new Error(`Server responded with ${res.status}. Please try again later.`);
+
+          // The response was successful.
+          const data = await res.json();
+
+          if (data.user && data.jwt) {
+            // Attach the JWT to the user object that next-auth will use.
+            return { ...data.user, jwt: data.jwt };
+          } else {
+            // The request was successful, but the response didn't have the expected user data.
+            throw new Error('Login successful, but no user data received.');
           }
 
         } catch (error: any) {
           // This catches network errors or errors thrown from the block above.
-          throw new Error(error.message || 'Login failed. Could not connect to the server.');
+          // We re-throw it so next-auth can handle it.
+          // Ensure a useful message is always available.
+          throw new Error(error.message || 'An unexpected error occurred during login.');
         }
       }
     })
