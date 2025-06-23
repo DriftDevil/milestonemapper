@@ -51,8 +51,8 @@ export async function POST(request: NextRequest) {
         httpOnly: true,
         path: '/',
         maxAge: 60 * 60 * 24 * 7, // 7 days
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
+        secure: true, // Must be true when SameSite is 'none'
+        sameSite: 'none', // Allows cookie to be set in cross-site contexts
     });
 
     logger.info(CONTEXT, `Session cookie set for ${identifier}.`);
@@ -60,9 +60,8 @@ export async function POST(request: NextRequest) {
 
   } catch (error: any) {
     logger.error(CONTEXT, 'Internal error in password login handler:', error.message, error.stack);
-    // Check if the error is due to JSON parsing, which can happen with non-JSON error responses (e.g., HTML error pages)
     if (error instanceof SyntaxError) {
-        return NextResponse.json({ success: false, message: 'Received an invalid response from the authentication service.' }, { status: 502 }); // Bad Gateway
+        return NextResponse.json({ success: false, message: 'Received an invalid response from the authentication service.' }, { status: 502 });
     }
     return NextResponse.json({ success: false, message: 'An unexpected error occurred during login.' }, { status: 500 });
   }
