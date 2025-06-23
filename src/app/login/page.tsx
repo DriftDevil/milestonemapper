@@ -1,7 +1,7 @@
-
 "use client";
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -50,7 +50,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-background">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-background p-4">
       <Card className="w-full max-w-sm">
         <CardHeader className="text-center">
           <div className="inline-flex items-center gap-2 mb-2 justify-center">
@@ -98,6 +98,9 @@ export default function LoginPage() {
           </CardFooter>
         </form>
       </Card>
+      <Link href="/" className="mt-6 text-sm text-muted-foreground hover:text-primary transition-colors">
+        &larr; Back to Homepage
+      </Link>
     </div>
   );
 }
