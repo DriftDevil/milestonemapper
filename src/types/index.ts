@@ -50,13 +50,3 @@ export interface VisitedItems {
   'mlb-ballparks': Set<string>;
   'nfl-stadiums': Set<string>;
 }
-
-export interface User {
-  id: string | number;
-  username: string;
-  email: string;
-  provider?: string;
-  name?: string;
-  image?: string;
-  isAdmin?: boolean;
-}

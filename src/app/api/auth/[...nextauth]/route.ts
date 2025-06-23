@@ -4,7 +4,7 @@
 import NextAuth from 'next-auth';
 import type { AuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
-import type { User } from '@/types';
+import type { User } from 'next-auth';
 
 export const authOptions: AuthOptions = {
   providers: [
@@ -35,39 +35,35 @@ export const authOptions: AuthOptions = {
                   }),
                 });
 
-                // If the response is not OK (e.g., 401 Unauthorized, 500 Server Error),
-                // it's a failed login attempt. NextAuth handles this by redirecting.
                 if (!res.ok) {
+                  // Log the error for debugging but return null to the client
+                  console.error(`[NextAuth] API Error: ${res.status} ${res.statusText}`);
                   return null;
                 }
 
                 const data = await res.json();
 
-                // If the response is OK but doesn't have the expected user/token data, it's still a failure.
                 if (!data?.id || !data?.accessToken) {
-                  console.error(
-                    `[NextAuth] Invalid success response structure from API:`,
-                    data
-                  );
+                  console.error(`[NextAuth] Invalid success response structure from API:`, data);
                   return null;
                 }
 
                 // Construct the user object for next-auth from the API response
-                // This object is passed to the 'jwt' callback.
-                const user = {
-                  id: data.id.toString(), // Ensure id is a string for next-auth
+                // This object must match the augmented `User` type in `next-auth.d.ts`
+                const user: User = {
+                  id: data.id.toString(),
                   email: data.email,
                   name: data.name,
-                  username: data.preferredUsername, // Map preferredUsername to username
+                  username: data.preferredUsername,
                   isAdmin: data.isAdmin,
-                  jwt: data.accessToken, // Map accessToken to jwt
+                  jwt: data.accessToken,
                 };
                 
                 return user;
 
               } catch (error: any) {
-                // This will catch network errors or if res.json() fails to parse
-                console.error(`[NextAuth] Authorization error:`, error.message);
+                // Catches network errors or if res.json() fails to parse
+                console.error(`[NextAuth] Authorization fetch error:`, error.message);
                 return null;
               }
             },
@@ -77,13 +73,14 @@ export const authOptions: AuthOptions = {
   ],
   callbacks: {
     async jwt({ token, user }) {
-      // The 'user' object is only available on initial sign-in.
-      // We persist its data to the token.
+      // On initial sign-in, the `user` object from `authorize` is available.
+      // We persist its properties to the token.
       if (user) {
         token.id = user.id;
-        token.username = (user as any).username;
-        token.isAdmin = (user as any).isAdmin;
-        token.jwt = (user as any).jwt;
+        token.username = user.username;
+        token.isAdmin = user.isAdmin;
+        token.jwt = user.jwt;
+        // Default properties like name and email are automatically handled by next-auth
       }
       return token;
     },
@@ -91,19 +88,19 @@ export const authOptions: AuthOptions = {
       // The session callback receives the token from the jwt callback.
       // We add the custom properties to the session object here.
       if (session.user) {
-        (session.user as any).id = token.id;
-        (session.user as any).username = token.username;
-        (session.user as any).isAdmin = token.isAdmin;
+        session.user.id = token.id;
+        session.user.username = token.username;
+        session.user.isAdmin = token.isAdmin;
       }
-       if (token.jwt) {
-          (session as any).jwt = token.jwt;
+      if (token.jwt) {
+        session.jwt = token.jwt;
       }
       return session;
     },
   },
   pages: {
     signIn: '/login',
-    error: '/login',
+    error: '/login', // Redirect to login on error
   },
   session: {
     strategy: 'jwt',
