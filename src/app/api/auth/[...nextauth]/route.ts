@@ -36,7 +36,7 @@ export const authOptions: AuthOptions = {
                 });
 
                 // If the response is not OK (e.g., 401 Unauthorized, 500 Server Error),
-                // it's a failed login attempt.
+                // it's a failed login attempt. NextAuth handles this by redirecting.
                 if (!res.ok) {
                   return null;
                 }
@@ -53,6 +53,7 @@ export const authOptions: AuthOptions = {
                 }
 
                 // Construct the user object for next-auth from the API response
+                // This object is passed to the 'jwt' callback.
                 const user = {
                   id: data.id.toString(), // Ensure id is a string for next-auth
                   email: data.email,
@@ -76,8 +77,9 @@ export const authOptions: AuthOptions = {
   ],
   callbacks: {
     async jwt({ token, user }) {
+      // The 'user' object is only available on initial sign-in.
+      // We persist its data to the token.
       if (user) {
-        // This is only called on initial sign in
         token.id = user.id;
         token.username = (user as any).username;
         token.isAdmin = (user as any).isAdmin;
@@ -86,13 +88,15 @@ export const authOptions: AuthOptions = {
       return token;
     },
     async session({ session, token }) {
+      // The session callback receives the token from the jwt callback.
+      // We add the custom properties to the session object here.
       if (session.user) {
         (session.user as any).id = token.id;
         (session.user as any).username = token.username;
         (session.user as any).isAdmin = token.isAdmin;
-        if (token.jwt) {
+      }
+       if (token.jwt) {
           (session as any).jwt = token.jwt;
-        }
       }
       return session;
     },
