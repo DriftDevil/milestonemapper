@@ -1,4 +1,3 @@
-
 import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
@@ -93,7 +92,7 @@ export function LandingPage() {
                   alt="Milestone Mapper Dashboard Screenshot"
                   width={1200}
                   height={750}
-                  className="rounded-lg shadow-2xl border"
+                  className="rounded-lg shadow-2xl border dark:brightness-75"
                   data-ai-hint="dashboard map"
                />
             </div>
