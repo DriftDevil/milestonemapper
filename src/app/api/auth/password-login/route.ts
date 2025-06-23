@@ -30,28 +30,18 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify({ identifier, password }),
     });
 
-    const responseBodyText = await apiResponse.text();
-    let responseData;
-
-    try {
-        responseData = JSON.parse(responseBodyText);
-    } catch (e) {
-        logger.error(CONTEXT, `Failed to parse JSON response from external API. Status: ${apiResponse.status}. Body: ${responseBodyText}`);
-        return NextResponse.json({ success: false, message: 'Received an invalid response from the authentication service.' }, { status: 502 });
-    }
+    const responseData = await apiResponse.json();
 
     if (!apiResponse.ok) {
-        logger.error(CONTEXT, `External API login failed for ${identifier}. Status: ${apiResponse.status}`, responseData);
-        // Attempt to find a meaningful error message from a nested structure
-        const message = responseData.error?.message || responseData.message || 'Invalid credentials or external API error.';
-        const details = responseData.error?.details || 'No details provided.';
-        return NextResponse.json({ success: false, message, details }, { status: apiResponse.status });
+        const errorMessage = responseData.message || 'Invalid credentials or external API error.';
+        logger.error(CONTEXT, `External API login failed for ${identifier}. Status: ${apiResponse.status}`, { error: errorMessage, details: responseData.details });
+        return NextResponse.json({ success: false, message: errorMessage }, { status: apiResponse.status });
     }
 
-    // Check for token under common names like 'jwt', 'accessToken', or 'token'
-    const token = responseData.jwt || responseData.accessToken || responseData.token;
+    const token = responseData.accessToken;
+    
     if (!token) {
-      logger.error(CONTEXT, `Token not found in external API response for identifier ${identifier}. Looked for 'jwt', 'accessToken', 'token'. Full response:`, JSON.stringify(responseData));
+      logger.error(CONTEXT, `Token 'accessToken' not found in external API response for identifier ${identifier}. Full response:`, JSON.stringify(responseData));
       return NextResponse.json({ success: false, message: 'Authentication service did not provide a valid token.' }, { status: 500 });
     }
 
@@ -70,6 +60,10 @@ export async function POST(request: NextRequest) {
 
   } catch (error: any) {
     logger.error(CONTEXT, 'Internal error in password login handler:', error.message, error.stack);
+    // Check if the error is due to JSON parsing, which can happen with non-JSON error responses (e.g., HTML error pages)
+    if (error instanceof SyntaxError) {
+        return NextResponse.json({ success: false, message: 'Received an invalid response from the authentication service.' }, { status: 502 }); // Bad Gateway
+    }
     return NextResponse.json({ success: false, message: 'An unexpected error occurred during login.' }, { status: 500 });
   }
 }
