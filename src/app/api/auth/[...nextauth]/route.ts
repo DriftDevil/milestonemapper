@@ -8,99 +8,92 @@ import type { User } from 'next-auth';
 
 export const authOptions: AuthOptions = {
   providers: [
-    // Conditionally add the Credentials provider if its environment variable is set.
-    // This check prevents the app from crashing if the API URL is not configured.
-    ...(process.env.NEXT_PUBLIC_API_URL
-      ? [
-          CredentialsProvider({
-            name: 'Credentials',
-            credentials: {
-              identifier: { label: 'Email or Username', type: 'text' },
-              password: { label: 'Password', type: 'password' },
-            },
-            async authorize(credentials) {
-              if (!credentials?.identifier || !credentials?.password) {
-                return null;
-              }
+    CredentialsProvider({
+      name: 'Credentials',
+      credentials: {
+        identifier: { label: 'Email or Username', type: 'text' },
+        password: { label: 'Password', type: 'password' },
+      },
+      async authorize(credentials) {
+        if (!credentials?.identifier || !credentials?.password) {
+          return null;
+        }
 
-              const loginUrl = `${process.env.NEXT_PUBLIC_API_URL}/auth/local/login`;
+        const loginUrl = `${process.env.NEXT_PUBLIC_API_URL}/auth/local/login`;
 
-              try {
-                const res = await fetch(loginUrl, {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({
-                    identifier: credentials.identifier,
-                    password: credentials.password,
-                  }),
-                });
+        try {
+          const res = await fetch(loginUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              identifier: credentials.identifier,
+              password: credentials.password,
+            }),
+          });
 
-                if (!res.ok) {
-                  // Log the error for debugging but return null to the client
-                  console.error(`[NextAuth] API Error: ${res.status} ${res.statusText}`);
-                  return null;
-                }
+          if (!res.ok) {
+            console.error(`[NextAuth] API Error: ${res.status} ${res.statusText}`);
+            return null;
+          }
 
-                const data = await res.json();
+          const data = await res.json();
 
-                if (!data?.id || !data?.accessToken) {
-                  console.error(`[NextAuth] Invalid success response structure from API:`, data);
-                  return null;
-                }
+          if (!data?.id || !data?.accessToken) {
+            console.error(`[NextAuth] Invalid success response structure from API:`, data);
+            return null;
+          }
+          
+          const user: User = {
+            id: data.id.toString(),
+            email: data.email,
+            name: data.name,
+            username: data.preferredUsername,
+            isAdmin: data.isAdmin,
+            jwt: data.accessToken,
+          };
+          
+          return user;
 
-                // Construct the user object for next-auth from the API response
-                // This object must match the augmented `User` type in `next-auth.d.ts`
-                const user: User = {
-                  id: data.id.toString(),
-                  email: data.email,
-                  name: data.name,
-                  username: data.preferredUsername,
-                  isAdmin: data.isAdmin,
-                  jwt: data.accessToken,
-                };
-                
-                return user;
-
-              } catch (error: any) {
-                // Catches network errors or if res.json() fails to parse
-                console.error(`[NextAuth] Authorization fetch error:`, error.message);
-                return null;
-              }
-            },
-          }),
-        ]
-      : []),
+        } catch (error) {
+          console.error(`[NextAuth] Authorization fetch error:`, error);
+          return null;
+        }
+      },
+    }),
   ],
   callbacks: {
+    // This callback is called whenever a JWT is created or updated.
     async jwt({ token, user }) {
-      // On initial sign-in, the `user` object from `authorize` is available.
-      // We persist its properties to the token.
+      // The `user` object is only passed on the initial sign-in.
       if (user) {
-        token.id = user.id;
-        token.username = user.username;
-        token.isAdmin = user.isAdmin;
-        token.jwt = user.jwt;
-        // Default properties like name and email are automatically handled by next-auth
+        // Persist the custom data from the user object to the token.
+        return {
+          ...token,
+          id: user.id,
+          username: user.username,
+          isAdmin: user.isAdmin,
+          jwt: user.jwt,
+        };
       }
+      // On subsequent requests, the token is returned as-is.
       return token;
     },
+    // This callback is called whenever a session is checked.
     async session({ session, token }) {
-      // The session callback receives the token from the jwt callback.
-      // We add the custom properties to the session object here.
-      if (session.user) {
-        session.user.id = token.id;
-        session.user.username = token.username;
-        session.user.isAdmin = token.isAdmin;
-      }
-      if (token.jwt) {
-        session.jwt = token.jwt;
+      // We pass the custom data from the token to the session object.
+      // Add extra checks to prevent crashes.
+      if (token && session.user) {
+        session.user.id = token.id as string;
+        session.user.username = token.username as string;
+        session.user.isAdmin = token.isAdmin as boolean;
+        session.jwt = token.jwt as string;
       }
       return session;
     },
   },
   pages: {
     signIn: '/login',
-    error: '/login', // Redirect to login on error
+    error: '/login',
   },
   session: {
     strategy: 'jwt',
