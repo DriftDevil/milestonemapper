@@ -86,15 +86,50 @@ export function LandingPage() {
               <h3 className="text-3xl font-headline">Visualize Your Progress</h3>
               <p className="text-muted-foreground mt-2">Interactive maps and progress bars make tracking fun.</p>
             </div>
-            <div className="relative w-full max-w-4xl mx-auto">
-               <Image
-                  src="https://placehold.co/1200x750.png"
-                  alt="Milestone Mapper Dashboard Screenshot"
-                  width={1200}
-                  height={750}
-                  className="rounded-lg shadow-2xl border dark:brightness-75"
-                  data-ai-hint="dashboard map"
-               />
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-5xl mx-auto">
+              {/* Mock Card 1: World Map */}
+              <Card className="transform hover:scale-105 transition-transform duration-300">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2"><GlobeIcon className="w-6 h-6 text-primary" /> Countries</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="aspect-video bg-muted rounded-md flex items-center justify-center border">
+                    <p className="text-muted-foreground text-sm">Interactive World Map</p>
+                  </div>
+                  <p className="text-muted-foreground text-sm mt-2">Visualize your travels across the globe.</p>
+                </CardContent>
+              </Card>
+
+              {/* Mock Card 2: National Parks */}
+              <Card className="transform hover:scale-105 transition-transform duration-300">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2"><MountainIcon className="w-6 h-6 text-primary" /> National Parks</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="aspect-video bg-muted rounded-md p-4 space-y-3 border">
+                    <div className="flex items-center gap-2"><div className="w-4 h-4 rounded-sm bg-primary/20 border"></div><div className="h-3 bg-primary/20 w-3/4 rounded"></div></div>
+                    <div className="flex items-center gap-2"><div className="w-4 h-4 rounded-sm bg-primary/20 border"></div><div className="h-3 bg-primary/20 w-1/2 rounded"></div></div>
+                    <div className="flex items-center gap-2"><div className="w-4 h-4 rounded-sm bg-primary border"></div><div className="h-3 bg-primary/80 w-5/6 rounded"></div></div>
+                  </div>
+                   <p className="text-muted-foreground text-sm mt-2">Check off parks and record visit dates.</p>
+                </CardContent>
+              </Card>
+
+              {/* Mock Card 3: Stadiums */}
+              <Card className="transform hover:scale-105 transition-transform duration-300">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2"><TrophyIcon className="w-6 h-6 text-primary" /> Stadiums</CardTitle>
+                </CardHeader>
+                <CardContent>
+                   <div className="aspect-video bg-muted rounded-md flex flex-col justify-center p-4 border">
+                    <p className="text-sm font-medium text-muted-foreground mb-1">MLB Ballparks</p>
+                    <div className="h-4 w-full bg-primary/20 rounded-full"><div className="h-4 w-2/3 bg-primary rounded-full"></div></div>
+                    <p className="text-sm font-medium text-muted-foreground mt-4 mb-1">NFL Stadiums</p>
+                    <div className="h-4 w-full bg-primary/20 rounded-full"><div className="h-4 w-1/2 bg-primary rounded-full"></div></div>
+                  </div>
+                  <p className="text-muted-foreground text-sm mt-2">Track your visits to every ballpark and stadium.</p>
+                </CardContent>
+              </Card>
             </div>
           </div>
         </section>
