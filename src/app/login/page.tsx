@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -14,20 +14,27 @@ import { MilestoneMapperIcon } from '@/components/icons';
 export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const callbackError = searchParams.get('error');
 
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(callbackError ? "Authentication failed. Please try again." : null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const callbackError = searchParams.get('error');
+    if (callbackError) {
+      // Handle errors passed in the URL, e.g., from server-side redirects
+      setError("Authentication failed. Please check your credentials and try again.");
+    }
+  }, [searchParams]);
 
   const handleLocalLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError(null);
+    setError(null); // Clear previous errors on a new attempt
 
     const result = await signIn('credentials', {
-      redirect: false,
+      redirect: false, // We handle the redirect manually to show errors
       identifier,
       password,
     });
@@ -35,9 +42,11 @@ export default function LoginPage() {
     setLoading(false);
 
     if (result?.ok) {
-      router.push('/');
+      router.push('/'); // On success, navigate to the main page
     } else {
-      setError(result?.error || 'Invalid credentials. Please try again.');
+      // For security, show a generic message for any kind of credential failure.
+      // `result.error` often contains internal keys like "CredentialsSignin" which aren't user-friendly.
+      setError('Invalid username or password. Please try again.');
     }
   };
 
@@ -47,9 +56,9 @@ export default function LoginPage() {
         <CardHeader className="text-center">
           <div className="inline-flex items-center gap-2 mb-2 justify-center">
             <MilestoneMapperIcon className="w-8 h-8 text-primary" />
-            <CardTitle className="text-3xl font-headline">Milestone Mapper</CardTitle>
+            <CardTitle className="text-3xl font-headline">Welcome Back</CardTitle>
           </div>
-          <CardDescription>Sign in to your account</CardDescription>
+          <CardDescription>Enter your credentials to access your map.</CardDescription>
         </CardHeader>
         <form onSubmit={handleLocalLogin}>
           <CardContent className="space-y-4">
@@ -62,6 +71,7 @@ export default function LoginPage() {
                 onChange={(e) => setIdentifier(e.target.value)}
                 required
                 disabled={loading}
+                autoComplete="username"
               />
             </div>
             <div className="space-y-2">
@@ -73,6 +83,7 @@ export default function LoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 disabled={loading}
+                autoComplete="current-password"
               />
             </div>
              {error && (
