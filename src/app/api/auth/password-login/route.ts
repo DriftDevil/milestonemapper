@@ -1,7 +1,6 @@
 
 'use server';
 import { NextRequest, NextResponse } from 'next/server';
-import type { ResponseCookie } from 'next/dist/compiled/@edge-runtime/cookies';
 import logger from '@/lib/logger';
 
 const CONTEXT = "API Password Login";
@@ -70,22 +69,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, message: 'Authentication service did not provide an accessToken.', details: 'Check server logs for the full response from the authentication service.' }, { status: 500 });
     }
 
-    const cookieOpts: Omit<ResponseCookie, 'name' | 'value'> = {
-      httpOnly: true,
-      path: '/',
-      maxAge: 60 * 60 * 24 * 7, // 7 days
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-    };
-
-    const sessionTokenCookie: ResponseCookie = {
-        name: 'session_token',
-        value: token,
-        ...cookieOpts,
-    } as ResponseCookie;
-
     const response = NextResponse.json({ success: true, message: "Login successful" });
-    response.cookies.set(sessionTokenCookie);
+    response.cookies.set('session_token', token, {
+        httpOnly: true,
+        path: '/',
+        maxAge: 60 * 60 * 24 * 7, // 7 days
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+    });
 
     logger.info(CONTEXT, `Successfully processed login for ${identifier}. Returning JSON success response with Set-Cookie header.`);
     return response;

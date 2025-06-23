@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from 'react';
@@ -7,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { MilestoneMapperIcon } from '@/components/icons';
 
 export default function LoginPage() {
@@ -16,7 +17,7 @@ export default function LoginPage() {
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<{title: string, description?: string} | null>(null);
 
   const handleLocalLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,11 +39,17 @@ export default function LoginPage() {
         // re-renders and can read the new session cookie.
         window.location.href = '/';
       } else {
-        setError(data.message || 'An unexpected error occurred. Please try again.');
+        setError({
+          title: data.message || 'Login Failed',
+          description: data.details || 'An unexpected error occurred. Please try again.'
+        });
       }
     } catch (err) {
       console.error('Login fetch error:', err);
-      setError('Could not connect to the server. Please check your network and try again.');
+      setError({
+        title: 'Connection Error',
+        description: 'Could not connect to the server. Please check your network and try again.'
+      });
     } finally {
       setLoading(false);
     }
@@ -86,7 +93,8 @@ export default function LoginPage() {
             </div>
              {error && (
               <Alert variant="destructive" className="mt-4">
-                <AlertDescription>{error}</AlertDescription>
+                <AlertTitle>{error.title}</AlertTitle>
+                {error.description && <AlertDescription>{error.description}</AlertDescription>}
               </Alert>
             )}
           </CardContent>

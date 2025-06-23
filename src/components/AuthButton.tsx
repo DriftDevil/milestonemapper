@@ -1,11 +1,9 @@
 
 "use client";
 
-import { useRouter } from 'next/navigation';
 import { Button } from './ui/button';
 
 export function AuthButton() {
-  const router = useRouter();
 
   const handleSignOut = async () => {
     try {
@@ -13,9 +11,9 @@ export function AuthButton() {
     } catch (error) {
       console.error("Logout failed:", error);
     } finally {
-      // Redirect to login page regardless of API call success
-      router.push('/login');
-      router.refresh(); // Force a full refresh to clear server-side state
+      // A hard refresh is more reliable for ensuring the server
+      // re-renders and can read the new session cookie.
+      window.location.href = '/login';
     }
   };
 
