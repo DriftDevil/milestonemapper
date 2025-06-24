@@ -16,6 +16,17 @@ interface WorldMapProps {
 }
 
 export function WorldMap({ allCountries, isItemVisited, categorySlug, toggleItemVisited }: WorldMapProps) {
+  // Create a lookup map for efficient access. Key is the uppercase country code (cca2).
+  const countryCodeMap = React.useMemo(() => {
+    const map = new Map<string, Country>();
+    for (const country of allCountries) {
+      if (country.code) {
+        map.set(country.code.toUpperCase(), country);
+      }
+    }
+    return map;
+  }, [allCountries]);
+
   return (
     <TooltipProvider>
       <ComposableMap
@@ -32,15 +43,11 @@ export function WorldMap({ allCountries, isItemVisited, categorySlug, toggleItem
           <Geographies geography={geoUrl}>
             {({ geographies }) =>
               geographies.map(geo => {
-                // The world-atlas geography object has the two-letter code in properties.iso_a2
                 const mapCountryCode = geo.properties.iso_a2;
                 
-                // Find the corresponding country in our application data using a case-insensitive match.
-                // This is more robust in case of data inconsistencies.
-                const appCountry = allCountries.find(
-                  c => c.code && mapCountryCode && c.code.toUpperCase() === mapCountryCode.toUpperCase()
-                );
-                
+                // Find the country using the pre-built map.
+                const appCountry = mapCountryCode ? countryCodeMap.get(mapCountryCode.toUpperCase()) : undefined;
+
                 const visited = appCountry ? isItemVisited(categorySlug, appCountry) : false;
                 const displayName = appCountry ? appCountry.name : geo.properties.name;
 
@@ -52,11 +59,7 @@ export function WorldMap({ allCountries, isItemVisited, categorySlug, toggleItem
                         fill={appCountry ? (visited ? "hsl(var(--primary))" : "hsl(var(--muted))") : "hsl(var(--muted) / 0.5)"}
                         stroke="hsl(var(--background))"
                         strokeWidth={0.5}
-                        onClick={() => {
-                          if (appCountry) {
-                            toggleItemVisited(categorySlug, appCountry);
-                          }
-                        }}
+                        onClick={() => appCountry && toggleItemVisited(categorySlug, appCountry)}
                         style={{
                           default: { outline: "none", transition: "fill 0.2s ease-in-out" },
                           hover: {
