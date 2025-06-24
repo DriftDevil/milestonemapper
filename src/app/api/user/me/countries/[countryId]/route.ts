@@ -36,8 +36,7 @@ export async function POST(request: NextRequest, { params }: { params: { country
     const url = new URL(`/user/me/countries/${countryId}`, EXTERNAL_API_URL).toString();
     
     try {
-        // The request might have an optional body with notes/date
-        const body = await request.json().catch(() => ({})); // Gracefully handle empty body
+        const body = await request.json().catch(() => ({}));
         
         const apiResponse = await fetch(url, {
             method: 'POST',
@@ -46,12 +45,19 @@ export async function POST(request: NextRequest, { params }: { params: { country
             cache: 'no-store',
         });
         
-        const data = await apiResponse.json();
-        
-        if (!apiResponse.ok) {
-            return NextResponse.json(data, { status: apiResponse.status });
+        const responseText = await apiResponse.text();
+
+        if (!responseText) {
+            return new NextResponse(null, { status: apiResponse.status });
         }
-        return NextResponse.json(data, { status: apiResponse.status });
+
+        try {
+            const data = JSON.parse(responseText);
+            return NextResponse.json(data, { status: apiResponse.status });
+        } catch (e) {
+            logger.error(CONTEXT, 'Failed to parse JSON from backend on POST, returning as text.', { status: apiResponse.status, body: responseText });
+            return new Response(responseText, { status: apiResponse.status });
+        }
 
     } catch (error: any) {
         logger.error(CONTEXT, `Error forwarding POST request to ${url}:`, error.message);
@@ -93,12 +99,19 @@ export async function DELETE(request: NextRequest, { params }: { params: { count
             cache: 'no-store',
         });
         
-        if (apiResponse.status === 204 || apiResponse.status === 200) {
-           return new NextResponse(null, { status: 204 });
+        const responseText = await apiResponse.text();
+
+        if (!responseText) {
+            return new NextResponse(null, { status: apiResponse.status });
         }
         
-        const data = await apiResponse.json();
-        return NextResponse.json(data, { status: apiResponse.status });
+        try {
+            const data = JSON.parse(responseText);
+            return NextResponse.json(data, { status: apiResponse.status });
+        } catch (e) {
+            logger.error(CONTEXT, 'Failed to parse JSON from backend on DELETE, returning as text.', { status: apiResponse.status, body: responseText });
+            return new Response(responseText, { status: apiResponse.status });
+        }
 
     } catch (error: any) {
         logger.error(CONTEXT, `Error forwarding DELETE request to ${url}:`, error.message);
