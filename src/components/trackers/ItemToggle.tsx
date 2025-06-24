@@ -11,7 +11,7 @@ import { CalendarDaysIcon } from "@/components/icons"; // Import CalendarDaysIco
 interface ItemToggleProps {
   item: TrackableItem;
   isChecked: boolean;
-  onToggle: (itemId: string) => void;
+  onToggle: (item: TrackableItem) => void;
   details?: React.ReactNode;
   categorySlug?: CategorySlug;
   visitDate?: string;
@@ -47,7 +47,7 @@ export function ItemToggle({
           <Checkbox
             id={uniqueId}
             checked={isChecked}
-            onCheckedChange={() => onToggle(item.id)}
+            onCheckedChange={() => onToggle(item)}
             aria-label={`Mark ${item.name} as visited`}
           />
           <Label htmlFor={uniqueId} className="text-sm font-medium cursor-pointer flex items-center">

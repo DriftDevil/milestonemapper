@@ -1,7 +1,7 @@
 
 "use client";
 
-import type { USState, CategorySlug } from '@/types';
+import type { USState, CategorySlug, TrackableItem } from '@/types';
 import { ItemToggle } from './ItemToggle';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -25,8 +25,8 @@ import { useState } from 'react';
 interface StateTrackerProps {
   states: USState[];
   categorySlug: CategorySlug;
-  isItemVisited: (category: CategorySlug, itemId: string) => boolean;
-  toggleItemVisited: (category: CategorySlug, itemId: string) => void;
+  isItemVisited: (category: CategorySlug, item: TrackableItem) => boolean;
+  toggleItemVisited: (category: CategorySlug, item: TrackableItem) => void;
   clearCategoryVisited: (category: CategorySlug) => void;
 }
 
@@ -42,7 +42,7 @@ export function StateTracker({ states, categorySlug, isItemVisited, toggleItemVi
       if (showVisited) {
         return true; 
       }
-      return !isItemVisited(categorySlug, state.id); 
+      return !isItemVisited(categorySlug, state); 
     });
 
   return (
@@ -101,8 +101,8 @@ export function StateTracker({ states, categorySlug, isItemVisited, toggleItemVi
               <ItemToggle
                 key={state.id}
                 item={state}
-                isChecked={isItemVisited(categorySlug, state.id)}
-                onToggle={() => toggleItemVisited(categorySlug, state.id)}
+                isChecked={isItemVisited(categorySlug, state)}
+                onToggle={() => toggleItemVisited(categorySlug, state)}
               />
             ))}
           </div>

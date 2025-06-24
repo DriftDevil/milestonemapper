@@ -1,17 +1,18 @@
+
 "use client";
 
 import * as React from 'react';
 import { ComposableMap, Geographies, Geography, Sphere, Graticule, ZoomableGroup } from "react-simple-maps";
-import type { Country, CategorySlug } from '@/types';
+import type { Country, CategorySlug, TrackableItem } from '@/types';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 
 interface WorldMapProps {
   allCountries: Country[];
-  isItemVisited: (category: CategorySlug, itemId: string) => boolean;
+  isItemVisited: (category: CategorySlug, item: TrackableItem) => boolean;
   categorySlug: CategorySlug;
-  toggleItemVisited: (category: CategorySlug, itemId: string) => void;
+  toggleItemVisited: (category: CategorySlug, item: TrackableItem) => void;
 }
 
 export function WorldMap({ allCountries, isItemVisited, categorySlug, toggleItemVisited }: WorldMapProps) {
@@ -36,7 +37,7 @@ export function WorldMap({ allCountries, isItemVisited, categorySlug, toggleItem
                 // Find the corresponding country in our application data using the numeric code
                 const appCountry = allCountries.find(c => c.numericCode === mapCountryNumericId);
                 
-                const visited = appCountry ? isItemVisited(categorySlug, appCountry.id) : false;
+                const visited = appCountry ? isItemVisited(categorySlug, appCountry) : false;
                 const displayName = appCountry ? appCountry.name : geo.properties.name;
 
                 return (
@@ -49,7 +50,7 @@ export function WorldMap({ allCountries, isItemVisited, categorySlug, toggleItem
                         strokeWidth={0.5}
                         onClick={() => {
                           if (appCountry) {
-                            toggleItemVisited(categorySlug, appCountry.id); // Use the app's ID (cca2) for toggling
+                            toggleItemVisited(categorySlug, appCountry);
                           }
                         }}
                         style={{

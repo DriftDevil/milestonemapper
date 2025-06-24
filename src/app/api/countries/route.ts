@@ -39,14 +39,14 @@ export async function GET() {
     // Map the response from our backend to our application's frontend Country type.
     // The key is that the frontend application uses the 'cca2' code as the 'id'.
     const mappedCountries: Country[] = data.map((country: any) => ({
-      id: country.code, // Use cca2 as the unique ID for the frontend
+      id: country.id, // This is the UUID from the user's backend
       name: country.name,
-      code: country.code,
+      code: country.code, // This is cca2
       numericCode: country.ccn3, // Required for the world map component
       region: country.region,
       subregion: country.subregion,
       population: country.population,
-      flagUrl: country.flagUrl, // New field from our backend
+      flagUrl: country.flagUrl,
     }));
 
     return NextResponse.json(mappedCountries);

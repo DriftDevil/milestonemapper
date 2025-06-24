@@ -1,7 +1,7 @@
 
 "use client";
 
-import type { NFLStadium, CategorySlug } from '@/types';
+import type { NFLStadium, CategorySlug, TrackableItem } from '@/types';
 import { ItemToggle } from './ItemToggle';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -23,8 +23,8 @@ import { useState } from 'react';
 interface NflStadiumTrackerProps {
   stadiums: NFLStadium[];
   categorySlug: CategorySlug;
-  isItemVisited: (category: CategorySlug, itemId: string) => boolean;
-  toggleItemVisited: (category: CategorySlug, itemId: string) => void;
+  isItemVisited: (category: CategorySlug, item: TrackableItem) => boolean;
+  toggleItemVisited: (category: CategorySlug, item: TrackableItem) => void;
   clearCategoryVisited: (category: CategorySlug) => void;
 }
 
@@ -42,7 +42,7 @@ export function NflStadiumTracker({ stadiums, categorySlug, isItemVisited, toggl
       if (showVisited) {
         return true;
       }
-      return !isItemVisited(categorySlug, stadium.id);
+      return !isItemVisited(categorySlug, stadium);
     });
 
   return (
@@ -94,8 +94,8 @@ export function NflStadiumTracker({ stadiums, categorySlug, isItemVisited, toggl
           <ItemToggle
             key={stadium.id}
             item={stadium}
-            isChecked={isItemVisited(categorySlug, stadium.id)}
-            onToggle={() => toggleItemVisited(categorySlug, stadium.id)}
+            isChecked={isItemVisited(categorySlug, stadium)}
+            onToggle={() => toggleItemVisited(categorySlug, stadium)}
             details={
               <div className="text-right">
                 <p>{stadium.team}</p>

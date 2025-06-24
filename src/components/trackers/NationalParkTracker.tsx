@@ -1,7 +1,7 @@
 
 "use client";
 
-import type { NationalPark, CategorySlug } from '@/types';
+import type { NationalPark, CategorySlug, TrackableItem } from '@/types';
 import { ItemToggle } from './ItemToggle';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -23,8 +23,8 @@ import { useState } from 'react';
 interface NationalParkTrackerProps {
   parks: NationalPark[];
   categorySlug: CategorySlug;
-  isItemVisited: (category: CategorySlug, itemId: string) => boolean;
-  toggleItemVisited: (category: CategorySlug, itemId: string) => void;
+  isItemVisited: (category: CategorySlug, item: TrackableItem) => boolean;
+  toggleItemVisited: (category: CategorySlug, item: TrackableItem) => void;
   setNationalParkVisitDate: (parkId: string, date: string | null) => void;
   getNationalParkVisitDate: (parkId: string) => string | undefined;
   clearCategoryVisited: (category: CategorySlug) => void;
@@ -51,21 +51,21 @@ export function NationalParkTracker({
       if (showVisited) {
         return true;
       }
-      return !isItemVisited(categorySlug, park.id);
+      return !isItemVisited(categorySlug, park);
     });
 
-  const handleToggle = (parkId: string) => {
-    const currentlyVisited = isItemVisited(categorySlug, parkId);
-    toggleItemVisited(categorySlug, parkId);
+  const handleToggle = (park: NationalPark) => {
+    const currentlyVisited = isItemVisited(categorySlug, park);
+    toggleItemVisited(categorySlug, park);
     if (currentlyVisited) { 
-      setNationalParkVisitDate(parkId, null); 
+      setNationalParkVisitDate(park.id, null); 
     }
   };
 
-  const handleDateChange = (parkId: string, date: string) => {
-    setNationalParkVisitDate(parkId, date);
-    if (date && !isItemVisited(categorySlug, parkId)) {
-      toggleItemVisited(categorySlug, parkId); 
+  const handleDateChange = (park: NationalPark, date: string) => {
+    setNationalParkVisitDate(park.id, date);
+    if (date && !isItemVisited(categorySlug, park)) {
+      toggleItemVisited(categorySlug, park); 
     }
   };
 
@@ -119,11 +119,11 @@ export function NationalParkTracker({
             key={park.id}
             item={park}
             categorySlug={categorySlug}
-            isChecked={isItemVisited(categorySlug, park.id)}
-            onToggle={() => handleToggle(park.id)}
+            isChecked={isItemVisited(categorySlug, park)}
+            onToggle={() => handleToggle(park)}
             details={<span className="text-xs">{park.state}</span>}
             visitDate={getNationalParkVisitDate(park.id)}
-            onDateChange={handleDateChange}
+            onDateChange={(itemId, date) => handleDateChange(park, date)}
           />
         ))}
       </div>

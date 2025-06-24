@@ -1,7 +1,7 @@
 
 "use client";
 
-import type { Country, CategorySlug } from '@/types';
+import type { Country, CategorySlug, TrackableItem } from '@/types';
 import { ItemToggle } from './ItemToggle';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -25,8 +25,8 @@ import { useState } from 'react';
 interface CountryTrackerProps {
   countries: Country[];
   categorySlug: CategorySlug;
-  isItemVisited: (category: CategorySlug, itemId: string) => boolean;
-  toggleItemVisited: (category: CategorySlug, itemId: string) => void;
+  isItemVisited: (category: CategorySlug, item: TrackableItem) => boolean;
+  toggleItemVisited: (category: CategorySlug, item: TrackableItem) => void;
   clearCategoryVisited: (category: CategorySlug) => void;
 }
 
@@ -42,7 +42,7 @@ export function CountryTracker({ countries, categorySlug, isItemVisited, toggleI
       if (showVisited) {
         return true;
       }
-      return !isItemVisited(categorySlug, country.id);
+      return !isItemVisited(categorySlug, country);
     });
 
   return (
@@ -101,8 +101,8 @@ export function CountryTracker({ countries, categorySlug, isItemVisited, toggleI
               <ItemToggle
                 key={country.id}
                 item={country}
-                isChecked={isItemVisited(categorySlug, country.id)}
-                onToggle={() => toggleItemVisited(categorySlug, country.id)}
+                isChecked={isItemVisited(categorySlug, country)}
+                onToggle={() => toggleItemVisited(categorySlug, country)}
                 details={<span className="font-mono text-xs">{country.code}</span>}
               />
             ))}
