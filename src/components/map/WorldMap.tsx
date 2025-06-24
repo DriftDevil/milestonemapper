@@ -35,8 +35,11 @@ export function WorldMap({ allCountries, isItemVisited, categorySlug, toggleItem
                 // The world-atlas geography object has the two-letter code in properties.iso_a2
                 const mapCountryCode = geo.properties.iso_a2;
                 
-                // Find the corresponding country in our application data using the two-letter code
-                const appCountry = allCountries.find(c => c.code === mapCountryCode);
+                // Find the corresponding country in our application data using a case-insensitive match.
+                // This is more robust in case of data inconsistencies.
+                const appCountry = allCountries.find(
+                  c => c.code && mapCountryCode && c.code.toUpperCase() === mapCountryCode.toUpperCase()
+                );
                 
                 const visited = appCountry ? isItemVisited(categorySlug, appCountry) : false;
                 const displayName = appCountry ? appCountry.name : geo.properties.name;
