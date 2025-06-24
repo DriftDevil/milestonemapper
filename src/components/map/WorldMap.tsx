@@ -26,14 +26,6 @@ export function WorldMap({ allCountries, isItemVisited, categorySlug, toggleItem
     return map;
   }, [allCountries]);
 
-  const handleCountryClick = (geo: any) => {
-    const mapCountryCode = geo.properties.iso_a2;
-    const appCountry = mapCountryCode ? countryCodeMap.get(mapCountryCode.toUpperCase()) : undefined;
-    if (appCountry) {
-      toggleItemVisited(categorySlug, appCountry);
-    }
-  };
-
   return (
     <TooltipProvider>
       <ComposableMap
@@ -63,7 +55,11 @@ export function WorldMap({ allCountries, isItemVisited, categorySlug, toggleItem
                         fill={appCountry ? (visited ? "hsl(var(--primary))" : "hsl(var(--muted))") : "hsl(var(--muted) / 0.5)"}
                         stroke="hsl(var(--background))"
                         strokeWidth={0.5}
-                        onClick={() => handleCountryClick(geo)}
+                        onClick={() => {
+                          if (appCountry) {
+                            toggleItemVisited(categorySlug, appCountry);
+                          }
+                        }}
                         style={{
                           default: { outline: "none", transition: "fill 0.2s ease-in-out" },
                           hover: {
