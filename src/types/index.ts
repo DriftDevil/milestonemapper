@@ -2,7 +2,7 @@
 export type CategorySlug = 'countries' | 'us-states' | 'national-parks' | 'mlb-ballparks' | 'nfl-stadiums';
 
 export interface TrackableItem {
-  id: string; // For Countries this is cca2, for US States FIPS code, for others a custom ID.
+  id: string; // For Countries this is the UUID, for US States FIPS code, for others a custom ID.
   name: string;
 }
 
@@ -22,7 +22,7 @@ export interface UserCountry {
   visitedAt: string | null;
   notes: string | null;
   createdAt: string;
-  country: Country; // The nested country object, which should contain the 'id' (cca2) we need
+  country: Country; // The nested country object
 }
 
 export interface USState extends TrackableItem {
@@ -56,7 +56,7 @@ export interface Category {
 }
 
 export interface VisitedItems {
-  countries: Map<string, string>; // countryId (cca2) -> userCountry relationId (UUID)
+  countries: Set<string>; // countryId (UUID)
   'us-states': Set<string>;
   'national-parks': Set<string>;
   'national-parks-dates': Map<string, string>; // parkId -> date string (YYYY-MM-DD)

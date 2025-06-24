@@ -67,11 +67,9 @@ export async function DELETE(request: NextRequest, { params }: { params: { count
         return NextResponse.json({ message: 'API endpoint not configured.' }, { status: 500 });
     }
 
-    // Note: The parameter is named countryId due to the file's dynamic route segment, 
-    // but for the DELETE operation, its value is the user-country relationId.
-    const relationId = params.countryId;
-    if (!relationId) {
-        return NextResponse.json({ message: 'Country relation ID is required.' }, { status: 400 });
+    const { countryId } = params;
+    if (!countryId) {
+        return NextResponse.json({ message: 'Country ID is required.' }, { status: 400 });
     }
     
     const cookieStore = await cookies();
@@ -86,7 +84,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { count
         'Accept': 'application/json'
     };
     
-    const url = new URL(`/user/me/countries/${relationId}`, EXTERNAL_API_URL).toString();
+    const url = new URL(`/user/me/countries/${countryId}`, EXTERNAL_API_URL).toString();
     
     try {
         const apiResponse = await fetch(url, {

@@ -6,9 +6,9 @@ import type { CategorySlug, VisitedItems, UserCountry, TrackableItem, Country } 
 
 const LOCAL_STORAGE_KEY = 'milestoneMapperData';
 
-// Initialize with an empty map for countries, which will be populated from the API.
+// Initialize with an empty set for countries, which will be populated from the API.
 const initialVisitedItems: VisitedItems = {
-  countries: new Map<string, string>(), // countryId (UUID) -> userCountry relationId (UUID for deletion)
+  countries: new Set<string>(),
   'us-states': new Set<string>(),
   'national-parks': new Set<string>(),
   'national-parks-dates': new Map<string, string>(),
@@ -23,7 +23,7 @@ export function useTravelData() {
   // Function to fetch visited countries from our backend
   const fetchVisitedCountries = useCallback(async () => {
     try {
-      const response = await fetch('/api/user/me/countries');
+      const response = await fetch('/api/user/me/countries', { cache: 'no-store' });
       if (!response.ok) {
         if (response.status === 401) {
           // Unauthorized, no need to log an error.
@@ -33,12 +33,12 @@ export function useTravelData() {
       }
       const userCountries: UserCountry[] = await response.json();
       
-      // The key is the country's UUID ('countryId'), value is the relation ID for deletion.
-      const countriesMap = new Map(userCountries.map(uc => [uc.countryId, uc.id]));
+      // The key is the country's UUID.
+      const countriesSet = new Set(userCountries.map(uc => uc.countryId));
       
       setVisitedItems(prev => ({
         ...prev,
-        countries: countriesMap,
+        countries: countriesSet,
       }));
     } catch (error) {
       console.error("Failed to fetch visited countries:", error);
@@ -110,11 +110,8 @@ export function useTravelData() {
       const isVisited = visitedItems.countries.has(item.id);
       try {
         if (isVisited) {
-          // UN-VISIT: Use the relationId for the DELETE request.
-          const relationId = visitedItems.countries.get(item.id);
-          if (relationId) {
-            await fetch(`/api/user/me/countries/${relationId}`, { method: 'DELETE' });
-          }
+          // UN-VISIT: Use the country's UUID for the DELETE request.
+          await fetch(`/api/user/me/countries/${item.id}`, { method: 'DELETE' });
         } else {
           // VISIT: Use the country's own UUID for the POST request.
           await fetch(`/api/user/me/countries/${item.id}`, {
@@ -189,8 +186,8 @@ export function useTravelData() {
   const clearCategoryVisited = useCallback(async (category: CategorySlug) => {
      if (category === 'countries') {
         try {
-            const deletePromises = Array.from(visitedItems.countries.values()).map(relationId =>
-                fetch(`/api/user/me/countries/${relationId}`, { method: 'DELETE' })
+            const deletePromises = Array.from(visitedItems.countries).map(countryId =>
+                fetch(`/api/user/me/countries/${countryId}`, { method: 'DELETE' })
             );
             await Promise.all(deletePromises);
             await fetchVisitedCountries();
