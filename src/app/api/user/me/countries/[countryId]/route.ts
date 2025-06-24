@@ -20,7 +20,7 @@ export async function POST(request: NextRequest, { params }: { params: { country
         return NextResponse.json({ message: 'Country ID is required.' }, { status: 400 });
     }
     
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const token = cookieStore.get('session_token')?.value;
 
     if (!token) {
@@ -43,6 +43,7 @@ export async function POST(request: NextRequest, { params }: { params: { country
             method: 'POST',
             headers,
             body: JSON.stringify(body),
+            cache: 'no-store',
         });
         
         const data = await apiResponse.json();
@@ -73,7 +74,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { count
         return NextResponse.json({ message: 'Country relation ID is required.' }, { status: 400 });
     }
     
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const token = cookieStore.get('session_token')?.value;
 
     if (!token) {
@@ -91,6 +92,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { count
         const apiResponse = await fetch(url, {
             method: 'DELETE',
             headers,
+            cache: 'no-store',
         });
         
         if (apiResponse.status === 204 || apiResponse.status === 200) {

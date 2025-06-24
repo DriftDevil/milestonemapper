@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ message: 'API endpoint not configured.' }, { status: 500 });
     }
 
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const token = cookieStore.get('session_token')?.value;
 
     if (!token) {
@@ -30,7 +30,8 @@ export async function GET(request: NextRequest) {
             headers: { 
                 'Authorization': `Bearer ${token}`,
                 'Accept': 'application/json'
-            }
+            },
+            cache: 'no-store',
         });
         
         const data = await apiResponse.json();
