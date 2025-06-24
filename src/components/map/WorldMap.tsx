@@ -19,7 +19,7 @@ export function WorldMap({ allCountries, isItemVisited, categorySlug, toggleItem
   const countryCodeMap = React.useMemo(() => {
     const map = new Map<string, Country>();
     for (const country of allCountries) {
-      if (country.code) {
+      if (country.code && typeof country.code === 'string' && country.code.trim() !== '') {
         map.set(country.code.toUpperCase(), country);
       }
     }
@@ -44,42 +44,59 @@ export function WorldMap({ allCountries, isItemVisited, categorySlug, toggleItem
               geographies.map(geo => {
                 const mapCountryCode = geo.properties.iso_a2;
                 const appCountry = mapCountryCode ? countryCodeMap.get(mapCountryCode.toUpperCase()) : undefined;
-                const visited = appCountry ? isItemVisited(categorySlug, appCountry) : false;
-                const displayName = appCountry ? appCountry.name : geo.properties.name;
 
-                return (
-                  <Tooltip key={geo.rsmKey} delayDuration={100}>
-                    <TooltipTrigger asChild>
-                      <Geography
-                        geography={geo}
-                        fill={appCountry ? (visited ? "hsl(var(--primary))" : "hsl(var(--muted))") : "hsl(var(--muted) / 0.5)"}
-                        stroke="hsl(var(--background))"
-                        strokeWidth={0.5}
-                        onClick={() => {
-                          if (appCountry) {
-                            toggleItemVisited(categorySlug, appCountry);
-                          }
-                        }}
-                        style={{
-                          default: { outline: "none", transition: "fill 0.2s ease-in-out" },
-                          hover: {
-                            outline: "none",
-                            fill: appCountry ? (visited ? "hsl(var(--primary) / 0.8)" : "hsl(var(--accent))") : "hsl(var(--muted) / 0.6)",
-                            cursor: appCountry ? "pointer" : "default"
-                          },
-                          pressed: {
-                            outline: "none",
-                            fill: appCountry ? (visited ? "hsl(var(--primary) / 0.7)" : "hsl(var(--accent) / 0.8)") : "hsl(var(--muted) / 0.6)"
-                          },
-                        }}
-                        aria-label={displayName || "Unknown territory"}
-                      />
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>{displayName || "Unknown territory"} - {appCountry ? (visited ? "Visited" : "Not Visited") : "Data not tracked"}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                );
+                if (appCountry) {
+                  // This is a country we are tracking. Make it interactive.
+                  const visited = isItemVisited(categorySlug, appCountry);
+                  const displayName = appCountry.name;
+
+                  return (
+                    <Tooltip key={geo.rsmKey} delayDuration={100}>
+                      <TooltipTrigger asChild>
+                        <Geography
+                          geography={geo}
+                          fill={visited ? "hsl(var(--primary))" : "hsl(var(--muted))"}
+                          stroke="hsl(var(--background))"
+                          strokeWidth={0.5}
+                          onClick={() => toggleItemVisited(categorySlug, appCountry)}
+                          style={{
+                            default: { outline: "none", transition: "fill 0.2s ease-in-out" },
+                            hover: {
+                              outline: "none",
+                              fill: visited ? "hsl(var(--primary) / 0.8)" : "hsl(var(--accent))",
+                              cursor: "pointer"
+                            },
+                            pressed: {
+                              outline: "none",
+                              fill: visited ? "hsl(var(--primary) / 0.7)" : "hsl(var(--accent) / 0.8)"
+                            },
+                          }}
+                          aria-label={displayName}
+                        />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>{displayName} - {visited ? "Visited" : "Not Visited"}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  );
+                } else {
+                  // This is a territory we are not tracking (e.g., Antarctica). Make it non-interactive.
+                  return (
+                    <Geography
+                      key={geo.rsmKey}
+                      geography={geo}
+                      fill="hsl(var(--muted) / 0.5)"
+                      stroke="hsl(var(--background))"
+                      strokeWidth={0.5}
+                      style={{
+                        default: { outline: "none" },
+                        hover: { outline: "none", cursor: "default" },
+                        pressed: { outline: "none" },
+                      }}
+                      aria-label={geo.properties.name || "Unknown territory"}
+                    />
+                  );
+                }
               })
             }
           </Geographies>
