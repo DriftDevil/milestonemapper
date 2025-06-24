@@ -3,7 +3,6 @@
 import * as React from 'react';
 import { ComposableMap, Geographies, Geography, Sphere, Graticule } from "react-simple-maps";
 import type { Country, CategorySlug, TrackableItem } from '@/types';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 // The URL to the map shape data
 const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
@@ -31,7 +30,6 @@ export function WorldMap({ allCountries, isItemVisited, categorySlug, toggleItem
     }, [allCountries]);
 
   return (
-    <TooltipProvider>
       <ComposableMap
         projection="geoMercator"
         className="w-full h-full"
@@ -40,8 +38,6 @@ export function WorldMap({ allCountries, isItemVisited, categorySlug, toggleItem
           scale: 120
         }}
       >
-        {/* The complex ZoomableGroup was removed as it was interfering with click events.
-            This simplified structure is more robust for interactivity. */}
         <Sphere stroke="hsl(var(--border))" strokeWidth={0.5} fill="transparent" />
         <Graticule stroke="hsl(var(--border))" strokeWidth={0.5} strokeOpacity={0.5} />
         <Geographies geography={geoUrl}>
@@ -70,35 +66,26 @@ export function WorldMap({ allCountries, isItemVisited, categorySlug, toggleItem
 
               // If it's a country we track, make it fully interactive.
               const visited = isItemVisited(categorySlug, appCountry);
-              const countryName = appCountry.name;
 
               return (
-                <Tooltip key={geo.rsmKey} delayDuration={100}>
-                  <TooltipTrigger asChild>
-                    <Geography
-                      geography={geo}
-                      fill={visited ? "hsl(var(--primary))" : "hsl(var(--muted))"}
-                      stroke="hsl(var(--background))"
-                      strokeWidth={0.5}
-                      // This onClick now reliably targets the correct country object.
-                      onClick={() => toggleItemVisited(categorySlug, appCountry)}
-                      style={{
-                        default: { outline: "none", transition: "fill 0.2s ease-in-out" },
-                        hover: { outline: "none", fill: visited ? "hsl(var(--primary) / 0.8)" : "hsl(var(--accent))", cursor: "pointer" },
-                        pressed: { outline: "none", fill: visited ? "hsl(var(--primary) / 0.7)" : "hsl(var(--accent) / 0.8)" },
-                      }}
-                      aria-label={countryName}
-                    />
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>{countryName} - {visited ? "Visited" : "Click to mark as visited"}</p>
-                  </TooltipContent>
-                </Tooltip>
+                <Geography
+                  key={geo.rsmKey}
+                  geography={geo}
+                  fill={visited ? "hsl(var(--primary))" : "hsl(var(--muted))"}
+                  stroke="hsl(var(--background))"
+                  strokeWidth={0.5}
+                  onClick={() => toggleItemVisited(categorySlug, appCountry)}
+                  style={{
+                    default: { outline: "none", transition: "fill 0.2s ease-in-out" },
+                    hover: { outline: "none", fill: visited ? "hsl(var(--primary) / 0.8)" : "hsl(var(--accent))", cursor: "pointer" },
+                    pressed: { outline: "none", fill: visited ? "hsl(var(--primary) / 0.7)" : "hsl(var(--accent) / 0.8)" },
+                  }}
+                  aria-label={appCountry.name}
+                />
               );
             })
           }
         </Geographies>
       </ComposableMap>
-    </TooltipProvider>
   );
 }
