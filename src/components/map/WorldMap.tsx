@@ -16,7 +16,6 @@ interface WorldMapProps {
 }
 
 export function WorldMap({ allCountries, isItemVisited, categorySlug, toggleItemVisited }: WorldMapProps) {
-  // Create a lookup map for efficient access. Key is the uppercase country code (cca2).
   const countryCodeMap = React.useMemo(() => {
     const map = new Map<string, Country>();
     for (const country of allCountries) {
@@ -26,6 +25,14 @@ export function WorldMap({ allCountries, isItemVisited, categorySlug, toggleItem
     }
     return map;
   }, [allCountries]);
+
+  const handleCountryClick = (geo: any) => {
+    const mapCountryCode = geo.properties.iso_a2;
+    const appCountry = mapCountryCode ? countryCodeMap.get(mapCountryCode.toUpperCase()) : undefined;
+    if (appCountry) {
+      toggleItemVisited(categorySlug, appCountry);
+    }
+  };
 
   return (
     <TooltipProvider>
@@ -44,10 +51,7 @@ export function WorldMap({ allCountries, isItemVisited, categorySlug, toggleItem
             {({ geographies }) =>
               geographies.map(geo => {
                 const mapCountryCode = geo.properties.iso_a2;
-                
-                // Find the country using the pre-built map.
                 const appCountry = mapCountryCode ? countryCodeMap.get(mapCountryCode.toUpperCase()) : undefined;
-
                 const visited = appCountry ? isItemVisited(categorySlug, appCountry) : false;
                 const displayName = appCountry ? appCountry.name : geo.properties.name;
 
@@ -59,7 +63,7 @@ export function WorldMap({ allCountries, isItemVisited, categorySlug, toggleItem
                         fill={appCountry ? (visited ? "hsl(var(--primary))" : "hsl(var(--muted))") : "hsl(var(--muted) / 0.5)"}
                         stroke="hsl(var(--background))"
                         strokeWidth={0.5}
-                        onClick={() => appCountry && toggleItemVisited(categorySlug, appCountry)}
+                        onClick={() => handleCountryClick(geo)}
                         style={{
                           default: { outline: "none", transition: "fill 0.2s ease-in-out" },
                           hover: {

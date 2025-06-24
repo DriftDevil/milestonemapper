@@ -1,3 +1,4 @@
+
 'use server';
 
 import { NextResponse } from 'next/server';
@@ -5,43 +6,52 @@ import logger from '@/lib/logger';
 import type { Country } from '@/types';
 
 const CONTEXT = "API All Countries";
+const EXTERNAL_API_URL = process.env.EXTERNAL_API_BASE_URL;
 
-// This route handler now fetches a master list of all countries from a public API.
-// It is used by the dashboard to populate the country tracker and map.
+// This route handler now fetches a master list of all countries from our own backend.
 export async function GET() {
+  if (!EXTERNAL_API_URL) {
+    logger.error(CONTEXT, 'Critical: EXTERNAL_API_BASE_URL is not set.');
+    return NextResponse.json({ message: 'API endpoint not configured.' }, { status: 500 });
+  }
+
+  const countriesUrl = new URL('/v1/countries', EXTERNAL_API_URL).toString();
+
   try {
-    const apiResponse = await fetch('https://restcountries.com/v3.1/all?fields=name,cca2,ccn3,region,subregion,population', {
+    // This is a public endpoint, so no auth token is needed.
+    const apiResponse = await fetch(countriesUrl, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
       },
-      // Cache for a day
-      next: { revalidate: 86400 }
+      // Re-fetch data on every request to ensure freshness from the backend
+      cache: 'no-store',
     });
 
     if (!apiResponse.ok) {
       const errorData = await apiResponse.text();
-      logger.error(CONTEXT, `RestCountries API error! Status: ${apiResponse.status}`, errorData);
-      return NextResponse.json({ message: 'Failed to fetch country data from external source.' }, { status: apiResponse.status });
+      logger.error(CONTEXT, `Backend API error! Status: ${apiResponse.status}`, errorData);
+      return NextResponse.json({ message: 'Failed to fetch country data from backend.' }, { status: apiResponse.status });
     }
 
     const data = await apiResponse.json();
 
-    // Map the response to our application's Country type
+    // Map the response from our backend to our application's frontend Country type.
+    // The key is that the frontend application uses the 'cca2' code as the 'id'.
     const mappedCountries: Country[] = data.map((country: any) => ({
-      id: country.cca2, // Use cca2 as the unique ID
-      name: country.name.common,
-      code: country.cca2,
-      numericCode: country.ccn3,
+      id: country.id, // This is the UUID from the user's backend
+      name: country.name,
+      code: country.code, // This is cca2
       region: country.region,
       subregion: country.subregion,
       population: country.population,
+      flagUrl: country.flagUrl,
     }));
 
     return NextResponse.json(mappedCountries);
 
   } catch (error: any) {
-    logger.error(CONTEXT, 'Error fetching countries from RestCountries API:', error.message);
+    logger.error(CONTEXT, 'Error fetching countries from backend API:', error.message);
     return NextResponse.json({ message: 'An unexpected error occurred while fetching country data.' }, { status: 500 });
   }
 }
