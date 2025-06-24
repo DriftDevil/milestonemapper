@@ -27,6 +27,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { relat
 
     const headers = {
         'Authorization': `Bearer ${token}`,
+        'Accept': 'application/json'
     };
     
     const url = `${EXTERNAL_API_URL}/user/me/countries/${relationId}`;

@@ -26,7 +26,10 @@ export async function GET(request: NextRequest) {
     try {
         const apiResponse = await fetch(url, {
             method: 'GET',
-            headers: { 'Authorization': `Bearer ${token}` }
+            headers: { 
+                'Authorization': `Bearer ${token}`,
+                'Accept': 'application/json'
+            }
         });
         
         const data = await apiResponse.json();
@@ -64,7 +67,8 @@ export async function POST(request: NextRequest) {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
             },
             body: JSON.stringify(body)
         });
