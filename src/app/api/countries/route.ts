@@ -3,35 +3,46 @@
 
 import { NextResponse } from 'next/server';
 import logger from '@/lib/logger';
+import type { Country } from '@/types';
 
-const CONTEXT = "API Countries";
-const EXTERNAL_API_URL = process.env.EXTERNAL_API_BASE_URL;
+const CONTEXT = "API All Countries";
 
+// This route handler now fetches a master list of all countries from a public API.
+// It is used by the dashboard to populate the country tracker and map.
 export async function GET() {
-  if (!EXTERNAL_API_URL) {
-    logger.error(CONTEXT, 'EXTERNAL_API_BASE_URL is not set.');
-    return NextResponse.json({ message: 'API endpoint not configured.' }, { status: 500 });
-  }
-
   try {
-    const apiResponse = await fetch(`${EXTERNAL_API_URL}/countries`, {
+    const apiResponse = await fetch('https://restcountries.com/v3.1/all?fields=name,cca2,ccn3,region,subregion,population', {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
       },
-      // Cache for an hour
-      next: { revalidate: 3600 }
+      // Cache for a day
+      next: { revalidate: 86400 }
     });
+
+    if (!apiResponse.ok) {
+      const errorData = await apiResponse.text();
+      logger.error(CONTEXT, `RestCountries API error! Status: ${apiResponse.status}`, errorData);
+      return NextResponse.json({ message: 'Failed to fetch country data from external source.' }, { status: apiResponse.status });
+    }
 
     const data = await apiResponse.json();
 
-    if (!apiResponse.ok) {
-      return NextResponse.json(data, { status: apiResponse.status });
-    }
+    // Map the response to our application's Country type
+    const mappedCountries: Country[] = data.map((country: any) => ({
+      id: country.cca2, // Use cca2 as the unique ID
+      name: country.name.common,
+      code: country.cca2,
+      numericCode: country.ccn3,
+      region: country.region,
+      subregion: country.subregion,
+      population: country.population,
+    }));
 
-    return NextResponse.json(data);
+    return NextResponse.json(mappedCountries);
+
   } catch (error: any) {
-    logger.error(CONTEXT, 'Error fetching countries:', error.message);
-    return NextResponse.json({ message: 'An unexpected error occurred.' }, { status: 500 });
+    logger.error(CONTEXT, 'Error fetching countries from RestCountries API:', error.message);
+    return NextResponse.json({ message: 'An unexpected error occurred while fetching country data.' }, { status: 500 });
   }
 }
