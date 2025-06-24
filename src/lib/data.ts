@@ -1,24 +1,5 @@
-import type { MLBStadium, NFLStadium, USState, NationalPark } from '@/types';
 
-export const usStates: USState[] = [
-  { id: "01", name: "Alabama" }, { id: "02", name: "Alaska" }, { id: "04", name: "Arizona" },
-  { id: "05", name: "Arkansas" }, { id: "06", name: "California" }, { id: "08", name: "Colorado" },
-  { id: "09", name: "Connecticut" }, { id: "10", name: "Delaware" }, { id: "12", name: "Florida" },
-  { id: "13", name: "Georgia" }, { id: "15", name: "Hawaii" }, { id: "16", name: "Idaho" },
-  { id: "17", name: "Illinois" }, { id: "18", name: "Indiana" }, { id: "19", name: "Iowa" },
-  { id: "20", name: "Kansas" }, { id: "21", name: "Kentucky" }, { id: "22", name: "Louisiana" },
-  { id: "23", name: "Maine" }, { id: "24", name: "Maryland" }, { id: "25", name: "Massachusetts" },
-  { id: "26", name: "Michigan" }, { id: "27", name: "Minnesota" }, { id: "28", name: "Mississippi" },
-  { id: "29", name: "Missouri" }, { id: "30", name: "Montana" }, { id: "31", name: "Nebraska" },
-  { id: "32", name: "Nevada" }, { id: "33", name: "New Hampshire" }, { id: "34", name: "New Jersey" },
-  { id: "35", name: "New Mexico" }, { id: "36", name: "New York" }, { id: "37", name: "North Carolina" },
-  { id: "38", name: "North Dakota" }, { id: "39", name: "Ohio" }, { id: "40", name: "Oklahoma" },
-  { id: "41", name: "Oregon" }, { id: "42", name: "Pennsylvania" }, { id: "44", name: "Rhode Island" },
-  { id: "45", name: "South Carolina" }, { id: "46", name: "South Dakota" }, { id: "47", name: "Tennessee" },
-  { id: "48", name: "Texas" }, { id: "49", name: "Utah" }, { id: "50", name: "Vermont" },
-  { id: "51", name: "Virginia" }, { id: "53", name: "Washington" }, { id: "54", name: "West Virginia" },
-  { id: "55", name: "Wisconsin" }, { id: "56", name: "Wyoming" }
-];
+import type { MLBStadium, NFLStadium, USState, NationalPark } from '@/types';
 
 export const nationalParks: NationalPark[] = [
     { id: "acad", name: "Acadia", state: "ME" }, { id: "arch", name: "Arches", state: "UT" },
@@ -43,7 +24,7 @@ export const nationalParks: NationalPark[] = [
     { id: "olym", name: "Olympic", state: "WA" }, { id: "pefo", name: "Petrified Forest", state: "AZ" },
     { id: "pinn", name: "Pinnacles", state: "CA" }, { id: "redw", name: "Redwood", state: "CA" },
     { id: "romo", name: "Rocky Mountain", state: "CO" }, { id: "sagu", name: "Saguaro", state: "AZ" },
-    { id: "sequ", name: "Sequoia &amp; Kings Canyon", state: "CA" }, { id: "shen", name: "Shenandoah", state: "VA" },
+    { id: "sequ", name: "Sequoia & Kings Canyon", state: "CA" }, { id: "shen", name: "Shenandoah", state: "VA" },
     { id: "thro", name: "Theodore Roosevelt", state: "ND" }, { id: "viis", name: "Virgin Islands", state: "VI" },
     { id: "voya", name: "Voyageurs", state: "MN" }, { id: "wica", name: "Wind Cave", state: "SD" },
     { id: "wrst", name: "Wrangell-St. Elias", state: "AK" }, { id: "yell", name: "Yellowstone", state: "WY,MT,ID" },
@@ -91,13 +72,13 @@ export const mlbBallparks: MLBStadium[] = [
 export const nflStadiums: NFLStadium[] = [
   { id: "arizona-cardinals", name: "State Farm Stadium", team: "Arizona Cardinals", city: "Glendale", state: "Arizona" },
   { id: "atlanta-falcons", name: "Mercedes-Benz Stadium", team: "Atlanta Falcons", city: "Atlanta", state: "Georgia" },
-  { id: "baltimore-ravens", name: "M&amp;T Bank Stadium", team: "Baltimore Ravens", city: "Baltimore", state: "Maryland" },
+  { id: "baltimore-ravens", name: "M&T Bank Stadium", team: "Baltimore Ravens", city: "Baltimore", state: "Maryland" },
   { id: "buffalo-bills", name: "Highmark Stadium", team: "Buffalo Bills", city: "Orchard Park", state: "New York" },
   { id: "carolina-panthers", name: "Bank of America Stadium", team: "Carolina Panthers", city: "Charlotte", state: "North Carolina" },
   { id: "chicago-bears", name: "Soldier Field", team: "Chicago Bears", city: "Chicago", state: "Illinois" },
   { id: "cincinnati-bengals", name: "Paycor Stadium", team: "Cincinnati Bengals", city: "Cincinnati", state: "Ohio" },
   { id: "cleveland-browns", name: "Cleveland Browns Stadium", team: "Cleveland Browns", city: "Cleveland", state: "Ohio" },
-  { id: "dallas-cowboys", name: "AT&amp;T Stadium", team: "Dallas Cowboys", city: "Arlington", state: "Texas" },
+  { id: "dallas-cowboys", name: "AT&T Stadium", team: "Dallas Cowboys", city: "Arlington", state: "Texas" },
   { id: "denver-broncos", name: "Empower Field at Mile High", team: "Denver Broncos", city: "Denver", state: "Colorado" },
   { id: "detroit-lions", name: "Ford Field", team: "Detroit Lions", city: "Detroit", state: "Michigan" },
   { id: "green-bay-packers", name: "Lambeau Field", team: "Green Bay Packers", city: "Green Bay", state: "Wisconsin" },

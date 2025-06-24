@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -42,8 +43,8 @@ const initialCategories: CategoryConfig[] = [
     slug: 'us-states',
     title: "U.S. States",
     icon: UsaFlagIcon,
-    totalCount: localData.usStates.length,
-    data: localData.usStates,
+    totalCount: 0, // Will be fetched
+    data: [] as USStateType[], // will be fetched
     TrackerComponent: StateTracker,
     cardColor: "text-red-500",
   },
@@ -88,11 +89,11 @@ export function Dashboard() {
   } = useTravelData();
   const [categories, setCategories] = useState<CategoryConfig[]>(initialCategories);
   const [countriesLoading, setCountriesLoading] = useState(true);
+  const [statesLoading, setStatesLoading] = useState(true);
 
   useEffect(() => {
       async function fetchCountries() {
         try {
-          // This API route now fetches the master list of all countries from a public API
           const allCountriesRes = await fetch('/api/countries');
 
           if (!allCountriesRes.ok) {
@@ -124,10 +125,43 @@ export function Dashboard() {
         }
       }
 
+      async function fetchStates() {
+        try {
+          const allStatesRes = await fetch('/api/us-states');
+
+          if (!allStatesRes.ok) {
+            const errorBody = await allStatesRes.json();
+            throw new Error(errorBody.message || `API error! status: ${allStatesRes.status}`);
+          }
+          
+          const allStatesData: USStateType[] = await allStatesRes.json();
+          
+          setCategories(prevCategories =>
+            prevCategories.map(cat =>
+              cat.slug === 'us-states'
+                ? { ...cat, data: allStatesData, totalCount: allStatesData.length, error: undefined }
+                : cat
+            )
+          );
+        } catch (error: any) {
+          console.error("Failed to fetch US states:", error.message);
+          setCategories(prevCategories =>
+            prevCategories.map(cat =>
+              cat.slug === 'us-states'
+                ? { ...cat, data: [], totalCount: 0, error: `Failed to load U.S. States data. Please try again later. (${error.message})` }
+                : cat
+            )
+          );
+        } finally {
+          setStatesLoading(false);
+        }
+      }
+
       fetchCountries();
+      fetchStates();
   }, []);
 
-  const overallLoading = !travelDataLoaded || countriesLoading;
+  const overallLoading = !travelDataLoaded || countriesLoading || statesLoading;
 
   if (overallLoading) {
     return (
