@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
     
-    const url = `${EXTERNAL_API_URL}/user/me/countries`;
+    const url = new URL('/user/me/countries', EXTERNAL_API_URL).toString();
     
     try {
         const apiResponse = await fetch(url, {
@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
     
-    const url = `${EXTERNAL_API_URL}/user/me/countries`;
+    const url = new URL('/user/me/countries', EXTERNAL_API_URL).toString();
     
     try {
         const body = await request.json();

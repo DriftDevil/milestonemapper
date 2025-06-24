@@ -30,7 +30,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { relat
         'Accept': 'application/json'
     };
     
-    const url = `${EXTERNAL_API_URL}/user/me/countries/${relationId}`;
+    const url = new URL(`/user/me/countries/${relationId}`, EXTERNAL_API_URL).toString();
     
     try {
         const apiResponse = await fetch(url, {
