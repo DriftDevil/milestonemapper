@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -28,13 +27,14 @@ interface CategoryConfig {
   error?: string;
 }
 
+// Data for categories that are stored locally
 const initialCategories: CategoryConfig[] = [
   {
     slug: 'countries',
     title: "Countries",
     icon: GlobeIcon,
-    totalCount: 0,
-    data: [] as CountryType[],
+    totalCount: 0, // Will be fetched
+    data: [] as CountryType[], // Will be fetched
     TrackerComponent: CountryTracker,
     cardColor: "text-blue-500",
   },
@@ -42,8 +42,8 @@ const initialCategories: CategoryConfig[] = [
     slug: 'us-states',
     title: "U.S. States",
     icon: UsaFlagIcon,
-    totalCount: 0,
-    data: [] as USStateType[],
+    totalCount: localData.usStates.length,
+    data: localData.usStates,
     TrackerComponent: StateTracker,
     cardColor: "text-red-500",
   },
@@ -51,8 +51,8 @@ const initialCategories: CategoryConfig[] = [
     slug: 'national-parks',
     title: "National Parks",
     icon: MountainIcon,
-    totalCount: 0,
-    data: [] as NationalParkType[],
+    totalCount: localData.nationalParks.length,
+    data: localData.nationalParks,
     TrackerComponent: NationalParkTracker,
     cardColor: "text-green-600",
   },
@@ -88,55 +88,25 @@ export function Dashboard() {
   } = useTravelData();
   const [categories, setCategories] = useState<CategoryConfig[]>(initialCategories);
   const [countriesLoading, setCountriesLoading] = useState(true);
-  const [statesLoading, setStatesLoading] = useState(true);
-  const [nationalParksLoading, setNationalParksLoading] = useState(true);
 
   useEffect(() => {
       async function fetchCountries() {
         try {
-          const backendRes = await fetch('/api/countries');
+          // This API route now fetches the master list of all countries from a public API
+          const allCountriesRes = await fetch('/api/countries');
 
-          if (!backendRes.ok) {
-            throw new Error(`Backend API error! status: ${backendRes.status}`);
+          if (!allCountriesRes.ok) {
+            throw new Error(`API error! status: ${allCountriesRes.status}`);
           }
           
-          const backendCountries: CountryType[] = await backendRes.json();
+          const allCountriesData: CountryType[] = await allCountriesRes.json();
+          
+          const sortedCountries = allCountriesData.sort((a, b) => a.name.localeCompare(b.name));
 
-          // Handle case where backend countries table is not seeded
-          if (!backendCountries || backendCountries.length === 0) {
-            console.warn("Backend returned no countries. The 'countries' feature requires data seeding.");
-            setCategories(prevCategories =>
-              prevCategories.map(cat =>
-                cat.slug === 'countries'
-                  ? { ...cat, data: [], totalCount: 0, error: "Country data is not available from the backend. Please seed the database." }
-                  : cat
-              )
-            );
-            return;
-          }
-
-          // If we have countries, proceed to get geo data to enrich them
-          const geoRes = await fetch('https://restcountries.com/v3.1/all?fields=cca2,ccn3');
-          if (!geoRes.ok) {
-             throw new Error(`RestCountries API error! status: ${geoRes.status}`);
-          }
-          const geoCountries: Array<{ cca2: string, ccn3: string }> = await geoRes.json();
-
-          // Create a map for quick lookup of numeric codes
-          const geoMap = new Map(geoCountries.map(c => [c.cca2, c.ccn3]));
-
-          // Merge backend data with geographic data
-          const mergedCountries: CountryType[] = backendCountries
-            .map(country => ({
-              ...country,
-              numericCode: geoMap.get(country.code),
-            }))
-            .sort((a, b) => a.name.localeCompare(b.name));
-            
           setCategories(prevCategories =>
             prevCategories.map(cat =>
               cat.slug === 'countries'
-                ? { ...cat, data: mergedCountries, totalCount: mergedCountries.length, error: undefined }
+                ? { ...cat, data: sortedCountries, totalCount: sortedCountries.length, error: undefined }
                 : cat
             )
           );
@@ -145,7 +115,7 @@ export function Dashboard() {
           setCategories(prevCategories =>
             prevCategories.map(cat =>
               cat.slug === 'countries'
-                ? { ...cat, data: [], totalCount: 0, error: "Failed to load countries. Please try again later." }
+                ? { ...cat, data: [], totalCount: 0, error: "Failed to load country data. Please try again later." }
                 : cat
             )
           );
@@ -154,22 +124,10 @@ export function Dashboard() {
         }
       }
 
-      async function fetchStates() {
-        setCategories(prev => prev.map(c => c.slug === 'us-states' ? {...c, error: 'State data is currently unavailable.'} : c));
-        setStatesLoading(false);
-      }
-
-      async function fetchNationalParks() {
-         setCategories(prev => prev.map(c => c.slug === 'national-parks' ? {...c, error: 'National Park data is currently unavailable.'} : c));
-        setNationalParksLoading(false);
-      }
-
       fetchCountries();
-      fetchStates();
-      fetchNationalParks();
   }, []);
 
-  const overallLoading = !travelDataLoaded || countriesLoading || statesLoading || nationalParksLoading;
+  const overallLoading = !travelDataLoaded || countriesLoading;
 
   if (overallLoading) {
     return (

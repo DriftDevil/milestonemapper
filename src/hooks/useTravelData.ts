@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect, useCallback } from 'react';
@@ -8,7 +7,7 @@ const LOCAL_STORAGE_KEY = 'milestoneMapperData';
 
 // Initialize with an empty map for countries, which will be populated from the API.
 const initialVisitedItems: VisitedItems = {
-  countries: new Map<string, string>(), // countryId (UUID) -> userCountry relationId (UUID)
+  countries: new Map<string, string>(), // countryId (cca2) -> userCountry relationId (UUID)
   'us-states': new Set<string>(),
   'national-parks': new Set<string>(),
   'national-parks-dates': new Map<string, string>(),
@@ -25,10 +24,16 @@ export function useTravelData() {
     try {
       const response = await fetch('/api/user/me/countries');
       if (!response.ok) {
+        if (response.status === 401) {
+          // Unauthorized, no need to log an error.
+          return;
+        }
         throw new Error('Failed to fetch visited countries');
       }
       const userCountries: UserCountry[] = await response.json();
-      const countriesMap = new Map(userCountries.map(uc => [uc.countryId, uc.id]));
+      
+      // The key should be the country's ID (cca2), value is the relation ID for deletion
+      const countriesMap = new Map(userCountries.map(uc => [uc.country.id, uc.id]));
       
       setVisitedItems(prev => ({
         ...prev,
@@ -104,9 +109,11 @@ export function useTravelData() {
       const isVisited = visitedItems.countries.has(itemId);
       try {
         if (isVisited) {
+          // For deletion, we need the relationId, which is the value in the map
           const relationId = visitedItems.countries.get(itemId);
           await fetch(`/api/user/me/countries/${relationId}`, { method: 'DELETE' });
         } else {
+          // For creation, we post the country's ID (the key, which is the cca2 code)
           await fetch('/api/user/me/countries', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },

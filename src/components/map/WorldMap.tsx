@@ -1,4 +1,3 @@
-
 "use client";
 
 import * as React from 'react';
@@ -33,14 +32,12 @@ export function WorldMap({ allCountries, isItemVisited, categorySlug, toggleItem
             {({ geographies }) =>
               geographies.map(geo => {
                 const mapCountryNumericId = geo.id; // This should be the ISO 3166-1 numeric code from world-atlas
-                const mapCountryName = geo.properties.name;
-
+                
                 // Find the corresponding country in our application data using the numeric code
                 const appCountry = allCountries.find(c => c.numericCode === mapCountryNumericId);
                 
                 const visited = appCountry ? isItemVisited(categorySlug, appCountry.id) : false;
-                // Use appCountry.name if available (more accurate), otherwise fallback to map's name
-                const displayName = appCountry ? appCountry.name : mapCountryName;
+                const displayName = appCountry ? appCountry.name : geo.properties.name;
 
                 return (
                   <Tooltip key={geo.rsmKey} delayDuration={100}>
@@ -52,21 +49,7 @@ export function WorldMap({ allCountries, isItemVisited, categorySlug, toggleItem
                         strokeWidth={0.5}
                         onClick={() => {
                           if (appCountry) {
-                            // console.log(
-                            //   'Clicked on appCountry:', 
-                            //   appCountry.name, 
-                            //   'App ID (cca2):', appCountry.id, 
-                            //   'Map ID (numeric):', mapCountryNumericId,
-                            //   'Current visited status:', isItemVisited(categorySlug, appCountry.id)
-                            // );
                             toggleItemVisited(categorySlug, appCountry.id); // Use the app's ID (cca2) for toggling
-                          } else {
-                            // console.log(
-                            //   'Clicked on geography with no matching appCountry. Name from map:', 
-                            //   mapCountryName,
-                            //   'Numeric ID from map:', mapCountryNumericId
-                            // );
-                            // console.log('Full geo.properties:', geo.properties);
                           }
                         }}
                         style={{
