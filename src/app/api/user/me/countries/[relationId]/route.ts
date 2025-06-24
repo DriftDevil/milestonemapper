@@ -1,4 +1,3 @@
-
 'use server';
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -30,7 +29,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { relat
         'Authorization': `Bearer ${token}`,
     };
     
-    const url = `${EXTERNAL_API_URL}/api/user/me/countries/${relationId}`;
+    const url = `${EXTERNAL_API_URL}/user/me/countries/${relationId}`;
     
     try {
         const apiResponse = await fetch(url, {

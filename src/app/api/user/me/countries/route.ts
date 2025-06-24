@@ -1,4 +1,3 @@
-
 'use server';
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -22,7 +21,7 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
     
-    const url = `${EXTERNAL_API_URL}/api/user/me/countries`;
+    const url = `${EXTERNAL_API_URL}/user/me/countries`;
     
     try {
         const apiResponse = await fetch(url, {
@@ -57,7 +56,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
     
-    const url = `${EXTERNAL_API_URL}/api/user/me/countries`;
+    const url = `${EXTERNAL_API_URL}/user/me/countries`;
     
     try {
         const body = await request.json();
