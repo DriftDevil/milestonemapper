@@ -2,12 +2,13 @@
 "use client";
 
 import { useState, useEffect, useCallback } from 'react';
-import type { CategorySlug, VisitedItems } from '@/types';
+import type { CategorySlug, VisitedItems, UserCountry } from '@/types';
 
 const LOCAL_STORAGE_KEY = 'milestoneMapperData';
 
+// Initialize with an empty map for countries, which will be populated from the API.
 const initialVisitedItems: VisitedItems = {
-  countries: new Set<string>(),
+  countries: new Map<string, string>(), // countryId (UUID) -> userCountry relationId (UUID)
   'us-states': new Set<string>(),
   'national-parks': new Set<string>(),
   'national-parks-dates': new Map<string, string>(),
@@ -19,35 +20,72 @@ export function useTravelData() {
   const [visitedItems, setVisitedItems] = useState<VisitedItems>(initialVisitedItems);
   const [isLoaded, setIsLoaded] = useState(false);
 
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const storedData = localStorage.getItem(LOCAL_STORAGE_KEY);
-        if (storedData) {
-          const parsedData = JSON.parse(storedData);
-          const loadedVisitedItems: VisitedItems = {
-            countries: new Set(parsedData.countries || []),
-            'us-states': new Set(parsedData['us-states'] || []),
-            'national-parks': new Set(parsedData['national-parks'] || []),
-            'national-parks-dates': new Map(parsedData['national-parks-dates'] || []),
-            'mlb-ballparks': new Set(parsedData['mlb-ballparks'] || []),
-            'nfl-stadiums': new Set(parsedData['nfl-stadiums'] || []),
-          };
-          setVisitedItems(loadedVisitedItems);
-        }
-      } catch (error) {
-        console.error("Failed to load travel data from local storage:", error);
-        setVisitedItems(initialVisitedItems);
+  // Function to fetch visited countries from our backend
+  const fetchVisitedCountries = useCallback(async () => {
+    try {
+      const response = await fetch('/api/user/me/countries');
+      if (!response.ok) {
+        throw new Error('Failed to fetch visited countries');
       }
-      setIsLoaded(true);
+      const userCountries: UserCountry[] = await response.json();
+      const countriesMap = new Map(userCountries.map(uc => [uc.countryId, uc.id]));
+      
+      setVisitedItems(prev => ({
+        ...prev,
+        countries: countriesMap,
+      }));
+    } catch (error) {
+      console.error("Failed to fetch visited countries:", error);
+      // Handle error appropriately, maybe set an error state
     }
   }, []);
 
+  // Effect for initial data loading
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadData() {
+      // 1. Load non-country data from local storage
+      if (typeof window !== 'undefined') {
+        try {
+          const storedData = localStorage.getItem(LOCAL_STORAGE_KEY);
+          if (storedData) {
+            const parsedData = JSON.parse(storedData);
+            if (isMounted) {
+               setVisitedItems(prev => ({
+                ...prev,
+                'us-states': new Set(parsedData['us-states'] || []),
+                'national-parks': new Set(parsedData['national-parks'] || []),
+                'national-parks-dates': new Map(parsedData['national-parks-dates'] || []),
+                'mlb-ballparks': new Set(parsedData['mlb-ballparks'] || []),
+                'nfl-stadiums': new Set(parsedData['nfl-stadiums'] || []),
+              }));
+            }
+          }
+        } catch (error) {
+          console.error("Failed to load travel data from local storage:", error);
+        }
+      }
+      
+      // 2. Fetch country data from the API
+      await fetchVisitedCountries();
+
+      if (isMounted) {
+        setIsLoaded(true);
+      }
+    }
+
+    loadData();
+
+    return () => { isMounted = false; };
+  }, [fetchVisitedCountries]);
+
+  // Effect for persisting non-country data to local storage
   useEffect(() => {
     if (isLoaded && typeof window !== 'undefined') {
       try {
         const dataToStore = {
-          countries: Array.from(visitedItems.countries),
+          // Exclude country data, as it's managed by the backend
           'us-states': Array.from(visitedItems['us-states']),
           'national-parks': Array.from(visitedItems['national-parks']),
           'national-parks-dates': Array.from(visitedItems['national-parks-dates'].entries()),
@@ -61,27 +99,47 @@ export function useTravelData() {
     }
   }, [visitedItems, isLoaded]);
 
-  const toggleItemVisited = useCallback((category: CategorySlug, itemId: string) => {
-    setVisitedItems(prev => {
-      const newCategorySet = new Set(prev[category]);
-      let newDatesMap = prev['national-parks-dates'];
-
-      if (newCategorySet.has(itemId)) {
-        newCategorySet.delete(itemId);
-        if (category === 'national-parks') {
-          newDatesMap = new Map(prev['national-parks-dates']);
-          newDatesMap.delete(itemId);
+  const toggleItemVisited = useCallback(async (category: CategorySlug, itemId: string) => {
+    if (category === 'countries') {
+      const isVisited = visitedItems.countries.has(itemId);
+      try {
+        if (isVisited) {
+          const relationId = visitedItems.countries.get(itemId);
+          await fetch(`/api/user/me/countries/${relationId}`, { method: 'DELETE' });
+        } else {
+          await fetch('/api/user/me/countries', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ countryId: itemId }),
+          });
         }
-      } else {
-        newCategorySet.add(itemId);
+        // Refresh data from server to ensure consistency
+        await fetchVisitedCountries();
+      } catch (error) {
+        console.error(`Failed to toggle visited status for country ${itemId}:`, error);
       }
-      return { ...prev, [category]: newCategorySet, 'national-parks-dates': newDatesMap };
-    });
-  }, []);
+    } else {
+       setVisitedItems(prev => {
+        const newCategorySet = new Set(prev[category]);
+        let newDatesMap = prev['national-parks-dates'];
+
+        if (newCategorySet.has(itemId)) {
+          newCategorySet.delete(itemId);
+          if (category === 'national-parks') {
+            newDatesMap = new Map(prev['national-parks-dates']);
+            newDatesMap.delete(itemId);
+          }
+        } else {
+          newCategorySet.add(itemId);
+        }
+        return { ...prev, [category]: newCategorySet, 'national-parks-dates': newDatesMap };
+      });
+    }
+  }, [visitedItems, fetchVisitedCountries]);
 
   const getVisitedCount = useCallback((category: CategorySlug) => {
     const items = visitedItems[category];
-    if (items instanceof Set) {
+    if (items instanceof Set || items instanceof Map) {
       return items.size;
     }
     return 0;
@@ -89,7 +147,7 @@ export function useTravelData() {
 
   const isItemVisited = useCallback((category: CategorySlug, itemId: string) => {
     const items = visitedItems[category];
-     if (items instanceof Set) {
+     if (items instanceof Set || items instanceof Map) {
       return items.has(itemId);
     }
     return false;
@@ -116,15 +174,27 @@ export function useTravelData() {
     return visitedItems['national-parks-dates']?.get(parkId);
   }, [visitedItems]);
 
-  const clearCategoryVisited = useCallback((category: CategorySlug) => {
-    setVisitedItems(prev => {
-      const newState = { ...prev, [category]: new Set<string>() };
-      if (category === 'national-parks') {
-        newState['national-parks-dates'] = new Map<string, string>();
-      }
-      return newState;
-    });
-  }, []);
+  const clearCategoryVisited = useCallback(async (category: CategorySlug) => {
+     if (category === 'countries') {
+        try {
+            const deletePromises = Array.from(visitedItems.countries.values()).map(relationId =>
+                fetch(`/api/user/me/countries/${relationId}`, { method: 'DELETE' })
+            );
+            await Promise.all(deletePromises);
+            await fetchVisitedCountries();
+        } catch (error) {
+            console.error('Failed to clear visited countries:', error);
+        }
+     } else {
+        setVisitedItems(prev => {
+            const newState = { ...prev, [category]: new Set<string>() };
+            if (category === 'national-parks') {
+                newState['national-parks-dates'] = new Map<string, string>();
+            }
+            return newState;
+        });
+     }
+  }, [visitedItems.countries, fetchVisitedCountries]);
 
   return {
     visitedItems,

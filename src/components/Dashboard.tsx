@@ -94,24 +94,37 @@ export function Dashboard() {
   useEffect(() => {
       async function fetchCountries() {
         try {
-          const response = await fetch('https://restcountries.com/v3.1/all?fields=name,cca2,ccn3');
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+          // Fetch countries from our backend and geo data from restcountries in parallel
+          const [backendRes, geoRes] = await Promise.all([
+            fetch('/api/countries'),
+            fetch('https://restcountries.com/v3.1/all?fields=cca2,ccn3')
+          ]);
+
+          if (!backendRes.ok) {
+            throw new Error(`Backend API error! status: ${backendRes.status}`);
           }
-          const rawCountries: Array<{ name: { common: string }, cca2: string, ccn3?: string }> = await response.json();
-          const formattedCountries: CountryType[] = rawCountries
+          if (!geoRes.ok) {
+             throw new Error(`RestCountries API error! status: ${geoRes.status}`);
+          }
+
+          const backendCountries: CountryType[] = await backendRes.json();
+          const geoCountries: Array<{ cca2: string, ccn3: string }> = await geoRes.json();
+
+          // Create a map for quick lookup of numeric codes
+          const geoMap = new Map(geoCountries.map(c => [c.cca2, c.ccn3]));
+
+          // Merge backend data with geographic data
+          const mergedCountries: CountryType[] = backendCountries
             .map(country => ({
-              id: country.cca2.toUpperCase(),
-              name: country.name.common,
-              code: country.cca2.toUpperCase(),
-              numericCode: country.ccn3,
+              ...country,
+              numericCode: geoMap.get(country.code),
             }))
             .sort((a, b) => a.name.localeCompare(b.name));
-
+            
           setCategories(prevCategories =>
             prevCategories.map(cat =>
               cat.slug === 'countries'
-                ? { ...cat, data: formattedCountries, totalCount: formattedCountries.length, error: undefined }
+                ? { ...cat, data: mergedCountries, totalCount: mergedCountries.length, error: undefined }
                 : cat
             )
           );

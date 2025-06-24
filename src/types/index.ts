@@ -1,15 +1,29 @@
 
-
 export type CategorySlug = 'countries' | 'us-states' | 'national-parks' | 'mlb-ballparks' | 'nfl-stadiums';
 
 export interface TrackableItem {
-  id: string; // For US States, this will be the FIPS code. For National Parks, parkCode.
+  id: string; // For Countries/US States/National Parks this will be a UUID or FIPS code.
   name: string;
 }
 
 export interface Country extends TrackableItem {
-  code: string; // ISO 3166-1 alpha-2 code (cca2 from API)
-  numericCode?: string; // ISO 3166-1 numeric code (ccn3 from API)
+  code: string; // ISO 3166-1 alpha-2 code
+  region?: string;
+  subregion?: string;
+  population?: number;
+  flagUrl?: string;
+  // This will be added dynamically from a separate API call
+  numericCode?: string; 
+}
+
+export interface UserCountry {
+  id: string; // This is the ID of the user-country relationship record
+  userId: string;
+  countryId: string; // This is the UUID of the country
+  visitedAt: string | null;
+  notes: string | null;
+  createdAt: string;
+  country: Country;
 }
 
 export interface USState extends TrackableItem {
@@ -43,7 +57,7 @@ export interface Category {
 }
 
 export interface VisitedItems {
-  countries: Set<string>;
+  countries: Map<string, string>; // countryId (UUID) -> userCountry relationId (UUID)
   'us-states': Set<string>;
   'national-parks': Set<string>;
   'national-parks-dates': Map<string, string>; // parkId -> date string (YYYY-MM-DD)
