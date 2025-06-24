@@ -94,20 +94,32 @@ export function Dashboard() {
   useEffect(() => {
       async function fetchCountries() {
         try {
-          // Fetch countries from our backend and geo data from restcountries in parallel
-          const [backendRes, geoRes] = await Promise.all([
-            fetch('/api/countries'),
-            fetch('https://restcountries.com/v3.1/all?fields=cca2,ccn3')
-          ]);
+          const backendRes = await fetch('/api/countries');
 
           if (!backendRes.ok) {
             throw new Error(`Backend API error! status: ${backendRes.status}`);
           }
+          
+          const backendCountries: CountryType[] = await backendRes.json();
+
+          // Handle case where backend countries table is not seeded
+          if (!backendCountries || backendCountries.length === 0) {
+            console.warn("Backend returned no countries. The 'countries' feature requires data seeding.");
+            setCategories(prevCategories =>
+              prevCategories.map(cat =>
+                cat.slug === 'countries'
+                  ? { ...cat, data: [], totalCount: 0, error: "Country data is not available from the backend. Please seed the database." }
+                  : cat
+              )
+            );
+            return;
+          }
+
+          // If we have countries, proceed to get geo data to enrich them
+          const geoRes = await fetch('https://restcountries.com/v3.1/all?fields=cca2,ccn3');
           if (!geoRes.ok) {
              throw new Error(`RestCountries API error! status: ${geoRes.status}`);
           }
-
-          const backendCountries: CountryType[] = await backendRes.json();
           const geoCountries: Array<{ cca2: string, ccn3: string }> = await geoRes.json();
 
           // Create a map for quick lookup of numeric codes
