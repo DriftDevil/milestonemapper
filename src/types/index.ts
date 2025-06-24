@@ -11,7 +11,6 @@ export interface Country extends TrackableItem {
   region?: string;
   subregion?: string;
   population?: number;
-  numericCode?: string; 
   flagUrl?: string;
 }
 

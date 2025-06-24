@@ -42,7 +42,6 @@ export async function GET() {
       id: country.id, // This is the UUID from the user's backend
       name: country.name,
       code: country.code, // This is cca2
-      numericCode: country.ccn3, // Required for the world map component
       region: country.region,
       subregion: country.subregion,
       population: country.population,

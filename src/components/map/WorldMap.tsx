@@ -32,10 +32,11 @@ export function WorldMap({ allCountries, isItemVisited, categorySlug, toggleItem
           <Geographies geography={geoUrl}>
             {({ geographies }) =>
               geographies.map(geo => {
-                const mapCountryNumericId = geo.id; // This should be the ISO 3166-1 numeric code from world-atlas
+                // The world-atlas geography object has the two-letter code in properties.iso_a2
+                const mapCountryCode = geo.properties.iso_a2;
                 
-                // Find the corresponding country in our application data using the numeric code
-                const appCountry = allCountries.find(c => c.numericCode === mapCountryNumericId);
+                // Find the corresponding country in our application data using the two-letter code
+                const appCountry = allCountries.find(c => c.code === mapCountryCode);
                 
                 const visited = appCountry ? isItemVisited(categorySlug, appCountry) : false;
                 const displayName = appCountry ? appCountry.name : geo.properties.name;
