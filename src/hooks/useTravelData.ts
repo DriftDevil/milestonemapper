@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from 'react';
-import type { CategorySlug, VisitedItems, UserCountry, TrackableItem, Country } from '@/types';
+import type { CategorySlug, VisitedItems, UserCountry, TrackableItem } from '@/types';
 
 const LOCAL_STORAGE_KEY = 'milestoneMapperData';
 
@@ -33,8 +33,8 @@ export function useTravelData() {
       }
       const userCountries: UserCountry[] = await response.json();
       
-      // The key is the country's UUID.
-      const countriesSet = new Set(userCountries.map(uc => uc.countryId));
+      // The key is the country's UUID from the nested country object.
+      const countriesSet = new Set(userCountries.map(uc => uc.country.id));
       
       setVisitedItems(prev => ({
         ...prev,
@@ -105,17 +105,27 @@ export function useTravelData() {
     }
   }, [visitedItems, isLoaded]);
 
+  const isItemVisited = useCallback((category: CategorySlug, item: TrackableItem) => {
+    const items = visitedItems[category as 'us-states' | 'national-parks' | 'mlb-ballparks' | 'nfl-stadiums' | 'countries'];
+    if (items instanceof Set) {
+      // For countries, the ID is the UUID.
+      return items.has(item.id);
+    }
+    return false;
+  }, [visitedItems]);
+
   const toggleItemVisited = useCallback(async (category: CategorySlug, item: TrackableItem) => {
     const isVisited = isItemVisited(category, item);
 
     if (category === 'countries') {
       try {
+        const countryId = item.id; // Use the country's UUID for the API call
         if (isVisited) {
           // UN-VISIT: Use the country's UUID for the DELETE request.
-          await fetch(`/api/user/me/countries/${item.id}`, { method: 'DELETE' });
+          await fetch(`/api/user/me/countries/${countryId}`, { method: 'DELETE' });
         } else {
           // VISIT: Use the country's own UUID for the POST request.
-          await fetch(`/api/user/me/countries/${item.id}`, {
+          await fetch(`/api/user/me/countries/${countryId}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({}), // Sending empty body for now.
@@ -153,15 +163,6 @@ export function useTravelData() {
       return items.size;
     }
     return 0;
-  }, [visitedItems]);
-
-  const isItemVisited = useCallback((category: CategorySlug, item: TrackableItem) => {
-    const items = visitedItems[category as 'us-states' | 'national-parks' | 'mlb-ballparks' | 'nfl-stadiums' | 'countries'];
-    if (items instanceof Set) {
-      // For countries, the ID is the UUID.
-      return items.has(item.id);
-    }
-    return false;
   }, [visitedItems]);
 
   const setNationalParkVisitDate = useCallback((parkId: string, date: string | null) => {
