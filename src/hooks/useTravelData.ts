@@ -8,7 +8,7 @@ const LOCAL_STORAGE_KEY = 'milestoneMapperData';
 
 // Initialize with an empty map for countries, which will be populated from the API.
 const initialVisitedItems: VisitedItems = {
-  countries: new Map<string, string>(), // country code (cca2) -> userCountry relationId (UUID for deletion)
+  countries: new Map<string, string>(), // countryId (UUID) -> userCountry relationId (UUID for deletion)
   'us-states': new Set<string>(),
   'national-parks': new Set<string>(),
   'national-parks-dates': new Map<string, string>(),
@@ -33,8 +33,8 @@ export function useTravelData() {
       }
       const userCountries: UserCountry[] = await response.json();
       
-      // The key is the country's unique cca2 'code', value is the relation ID for deletion.
-      const countriesMap = new Map(userCountries.map(uc => [uc.country.code, uc.id]));
+      // The key is the country's UUID ('countryId'), value is the relation ID for deletion.
+      const countriesMap = new Map(userCountries.map(uc => [uc.countryId, uc.id]));
       
       setVisitedItems(prev => ({
         ...prev,
@@ -107,27 +107,29 @@ export function useTravelData() {
 
   const toggleItemVisited = useCallback(async (category: CategorySlug, item: TrackableItem) => {
     if (category === 'countries') {
-      const country = item as Country;
-      const isVisited = visitedItems.countries.has(country.code);
+      const isVisited = visitedItems.countries.has(item.id);
       try {
         if (isVisited) {
-          const relationId = visitedItems.countries.get(country.code);
+          // UN-VISIT: Use the relationId for the DELETE request.
+          const relationId = visitedItems.countries.get(item.id);
           if (relationId) {
             await fetch(`/api/user/me/countries/${relationId}`, { method: 'DELETE' });
           }
         } else {
-          // The backend expects the country's UUID, which is item.id
+          // VISIT: Use the country's own UUID for the POST request.
           await fetch(`/api/user/me/countries/${item.id}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({}), // Sending empty body for now.
           });
         }
+        // Refresh state from the backend after any change.
         await fetchVisitedCountries();
       } catch (error) {
         console.error(`Failed to toggle visited status for country ${item.name}:`, error);
       }
     } else {
+        // This is the existing, synchronous logic for non-country categories.
         const itemId = item.id;
         setVisitedItems(prev => {
         const newCategorySet = new Set(prev[category as 'us-states' | 'national-parks' | 'mlb-ballparks' | 'nfl-stadiums']);
@@ -156,12 +158,8 @@ export function useTravelData() {
   }, [visitedItems]);
 
   const isItemVisited = useCallback((category: CategorySlug, item: TrackableItem) => {
-    if (category === 'countries') {
-        const country = item as Country;
-        return visitedItems.countries.has(country.code);
-    }
-    const items = visitedItems[category as 'us-states' | 'national-parks' | 'mlb-ballparks' | 'nfl-stadiums'];
-    if (items instanceof Set) {
+    const items = visitedItems[category as 'us-states' | 'national-parks' | 'mlb-ballparks' | 'nfl-stadiums' | 'countries'];
+    if (items instanceof Set || items instanceof Map) {
       return items.has(item.id);
     }
     return false;
