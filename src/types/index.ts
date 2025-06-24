@@ -1,3 +1,4 @@
+
 export type CategorySlug = 'countries' | 'us-states' | 'national-parks' | 'mlb-ballparks' | 'nfl-stadiums';
 
 export interface TrackableItem {
@@ -10,8 +11,8 @@ export interface Country extends TrackableItem {
   region?: string;
   subregion?: string;
   population?: number;
-  // This will be added dynamically from a separate API call
   numericCode?: string; 
+  flagUrl?: string;
 }
 
 export interface UserCountry {

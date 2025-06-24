@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useCallback } from 'react';
@@ -32,8 +33,9 @@ export function useTravelData() {
       }
       const userCountries: UserCountry[] = await response.json();
       
-      // The key should be the country's ID (cca2), value is the relation ID for deletion
-      const countriesMap = new Map(userCountries.map(uc => [uc.country.id, uc.id]));
+      // The key should be the country's unique cca2 'code', value is the relation ID for deletion.
+      // Using .code is more robust than .id if the backend's nested country object has a UUID for its id.
+      const countriesMap = new Map(userCountries.map(uc => [uc.country.code, uc.id]));
       
       setVisitedItems(prev => ({
         ...prev,
