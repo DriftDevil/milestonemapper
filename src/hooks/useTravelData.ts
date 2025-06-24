@@ -106,8 +106,9 @@ export function useTravelData() {
   }, [visitedItems, isLoaded]);
 
   const toggleItemVisited = useCallback(async (category: CategorySlug, item: TrackableItem) => {
+    const isVisited = isItemVisited(category, item);
+
     if (category === 'countries') {
-      const isVisited = visitedItems.countries.has(item.id);
       try {
         if (isVisited) {
           // UN-VISIT: Use the country's UUID for the DELETE request.
@@ -144,7 +145,7 @@ export function useTravelData() {
         return { ...prev, [category]: newCategorySet, 'national-parks-dates': newDatesMap };
       });
     }
-  }, [visitedItems, fetchVisitedCountries]);
+  }, [fetchVisitedCountries, isItemVisited]);
 
   const getVisitedCount = useCallback((category: CategorySlug) => {
     const items = visitedItems[category];
@@ -156,7 +157,8 @@ export function useTravelData() {
 
   const isItemVisited = useCallback((category: CategorySlug, item: TrackableItem) => {
     const items = visitedItems[category as 'us-states' | 'national-parks' | 'mlb-ballparks' | 'nfl-stadiums' | 'countries'];
-    if (items instanceof Set || items instanceof Map) {
+    if (items instanceof Set) {
+      // For countries, the ID is the UUID.
       return items.has(item.id);
     }
     return false;
@@ -186,10 +188,7 @@ export function useTravelData() {
   const clearCategoryVisited = useCallback(async (category: CategorySlug) => {
      if (category === 'countries') {
         try {
-            const deletePromises = Array.from(visitedItems.countries).map(countryId =>
-                fetch(`/api/user/me/countries/${countryId}`, { method: 'DELETE' })
-            );
-            await Promise.all(deletePromises);
+            await fetch(`/api/user/me/countries/remove/all`, { method: 'DELETE' });
             await fetchVisitedCountries();
         } catch (error) {
             console.error('Failed to clear visited countries:', error);
@@ -203,7 +202,7 @@ export function useTravelData() {
             return newState;
         });
      }
-  }, [visitedItems.countries, fetchVisitedCountries]);
+  }, [fetchVisitedCountries]);
 
   return {
     visitedItems,
