@@ -192,7 +192,7 @@ export function useTravelData() {
   const clearCategoryVisited = useCallback(async (category: CategorySlug) => {
      if (category === 'countries') {
         try {
-            await fetch(`/api/user/me/countries/remove/all`, { method: 'DELETE' });
+            await fetch(`/api/user/me/countries`, { method: 'DELETE' });
             await fetchVisitedCountries();
         } catch (error) {
             console.error('Failed to clear visited countries:', error);
