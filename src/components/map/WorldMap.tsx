@@ -31,7 +31,7 @@ export function WorldMap({ allCountries, isItemVisited, categorySlug, toggleItem
   return (
     <ComposableMap
       projection="geoMercator"
-      className="w-full h-full"
+      className="w-full h-full rsm-svg"
       projectionConfig={{
         rotate: [-10, 0, 0],
         scale: 120
@@ -75,7 +75,7 @@ export function WorldMap({ allCountries, isItemVisited, categorySlug, toggleItem
                   strokeWidth={0.5}
                   style={{
                     default: { outline: "none" },
-                    hover: { outline: "none" },
+                    hover: { outline: "none", cursor: "default" },
                     pressed: { outline: "none" },
                   }}
                 />

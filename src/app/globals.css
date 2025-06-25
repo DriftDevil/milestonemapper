@@ -111,3 +111,13 @@
     @apply font-headline;
   }
 }
+
+@layer components {
+  /* Fix for react-simple-maps pointer events issue */
+  .rsm-svg {
+    pointer-events: none;
+  }
+  .rsm-geographies, .rsm-geography {
+    pointer-events: all;
+  }
+}
