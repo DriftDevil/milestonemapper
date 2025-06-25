@@ -61,7 +61,7 @@ export function NationalParkTracker({
         <div className="flex flex-col sm:flex-row sm:items-center gap-4">
             <Input
               type="text"
-              placeholder="Search by park name or state(s)..."
+              placeholder="Search by park name or state..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="flex-grow"
