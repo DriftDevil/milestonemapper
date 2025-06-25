@@ -17,7 +17,7 @@ interface ItemToggleProps {
   details?: React.ReactNode;
   categorySlug?: CategorySlug;
   visitDate?: string;
-  onVisitDateChange?: (itemId: string, date: string) => void;
+  onVisitDateChange?: (item: TrackableItem, date: string) => void;
   notes?: string;
   onNotesChange?: (itemId: string, notes: string) => void;
 }
@@ -42,7 +42,7 @@ export function ItemToggle({
 
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (onVisitDateChange) {
-      onVisitDateChange(item.id, e.target.value);
+      onVisitDateChange(item, e.target.value);
     }
   };
 

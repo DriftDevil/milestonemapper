@@ -145,7 +145,7 @@ export function CountryTracker({
                       onToggle={() => handleToggle(country)}
                       details={<span className="font-mono text-xs">{country.code}</span>}
                       visitDate={getCountryVisitDate(country.id)}
-                      onVisitDateChange={(itemId, date) => handleDateChange(country, date)}
+                      onVisitDateChange={(item, date) => handleDateChange(item as Country, date)}
                       notes={getCountryNotes(country.id)}
                       onNotesChange={(itemId, notes) => handleNotesChange(country, notes)}
                     />
@@ -171,7 +171,6 @@ export function CountryTracker({
           {countries.length > 0 ? (
             <div className="w-full h-[500px] bg-muted/20 rounded-md overflow-hidden border">
               <WorldMap
-                key={visitedCount}
                 allCountries={countries}
                 isItemVisited={isItemVisited}
                 categorySlug={categorySlug}

@@ -25,7 +25,7 @@ interface NationalParkTrackerProps {
   parks: NationalPark[];
   categorySlug: CategorySlug;
   isItemVisited: (category: CategorySlug, item: TrackableItem) => boolean;
-  toggleItemVisited: (category: CategorySlug, item: TrackableItem) => void;
+  toggleItemVisited: (category: CategorySlug, item: TrackableItem, initialData?: any) => void;
   setNationalParkVisitDate: (parkId: string, date: string | null) => void;
   getNationalParkVisitDate: (parkId: string) => string | undefined;
   clearCategoryVisited: (category: CategorySlug) => void;
@@ -59,8 +59,15 @@ export function NationalParkTracker({
     toggleItemVisited(categorySlug, park);
   };
 
-  const handleDateChange = (parkId: string, date: string) => {
-    setNationalParkVisitDate(parkId, date || null);
+  const handleDateChange = (park: NationalPark, date: string) => {
+    // If setting a date and the park isn't visited yet,
+    // call toggleItemVisited to add it with the date.
+    if (date && !isItemVisited(categorySlug, park)) {
+      toggleItemVisited(categorySlug, park, { visitedAt: date });
+    } else {
+      // Otherwise, just update the date for an already visited park.
+      setNationalParkVisitDate(park.id, date || null);
+    }
   };
 
   return (
@@ -120,7 +127,7 @@ export function NationalParkTracker({
                   onToggle={() => handleToggle(park)}
                   details={<span className="text-xs">{park.state}</span>}
                   visitDate={getNationalParkVisitDate(park.id)}
-                  onVisitDateChange={(itemId, date) => handleDateChange(itemId, date)}
+                  onVisitDateChange={(item, date) => handleDateChange(item as NationalPark, date)}
                 />
               ))}
             </div>
