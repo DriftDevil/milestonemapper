@@ -162,7 +162,7 @@ export function useTravelData() {
     return false;
   }, [visitedItems]);
 
-  const toggleItemVisited = useCallback(async (category: CategorySlug, item: TrackableItem, initialData?: { visitedAt?: string | null; notes?: string | null }) => {
+  const toggleItemVisited = useCallback(async (category: CategorySlug, item: TrackableItem) => {
     const isVisited = isItemVisited(category, item);
 
     if (category === 'countries') {
@@ -175,7 +175,7 @@ export function useTravelData() {
           response = await fetch(`/api/user/me/countries/${countryId}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(initialData || {}),
+            body: JSON.stringify({}),
           });
         }
         if (response.status === 401) {
@@ -193,14 +193,17 @@ export function useTravelData() {
             if (isVisited) {
                 response = await fetch(`/api/user/me/parks/${parkCode}`, { method: 'DELETE' });
             } else {
+                // This is the corrected fetch call. No body or content-type header.
                 response = await fetch(`/api/user/me/parks/${parkCode}`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({}), // No body needed for parks
                 });
             }
-            if (response.status === 401) {
-                await handleUnauthorized();
+            if (!response.ok) {
+                 if (response.status === 401) {
+                    await handleUnauthorized();
+                } else {
+                    console.error(`Failed to toggle park status for ${parkCode}. Status: ${response.status}`);
+                }
                 return;
             }
             await fetchVisitedParks();
@@ -286,6 +289,17 @@ export function useTravelData() {
      }
   }, [fetchVisitedCountries, fetchVisitedParks]);
 
+  const setNationalParkVisitDate = (parkCode: string, date: string) => {
+    // This function is deprecated as visit dates for parks are not supported.
+    // It remains here to prevent breaking changes if other components still reference it,
+    // but it no longer performs any action.
+  };
+
+  const getNationalParkVisitDate = (parkCode: string): string | undefined => {
+    // This function is deprecated and will always return undefined.
+    return undefined;
+  };
+
   return {
     visitedItems,
     isLoaded,
@@ -296,5 +310,7 @@ export function useTravelData() {
     getCountryVisitDate,
     getCountryNotes,
     clearCategoryVisited,
+    setNationalParkVisitDate,
+    getNationalParkVisitDate,
   };
 }
