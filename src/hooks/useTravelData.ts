@@ -10,6 +10,7 @@ const LOCAL_STORAGE_KEY = 'milestoneMapperData';
 const initialVisitedItems: VisitedItems = {
   countries: new Set<string>(),
   'countries-dates': new Map<string, string>(),
+  'countries-notes': new Map<string, string>(),
   'us-states': new Set<string>(),
   'national-parks': new Set<string>(),
   'national-parks-dates': new Map<string, string>(),
@@ -35,10 +36,15 @@ export function useTravelData() {
       
       const countriesSet = new Set(userCountries.map(uc => uc.country.code));
       const countryDatesMap = new Map<string, string>();
+      const countryNotesMap = new Map<string, string>();
+
       userCountries.forEach(uc => {
         if (uc.visitedAt) {
           // The API returns a full ISO string, we just want the date part for the input
           countryDatesMap.set(uc.country.id, uc.visitedAt.split('T')[0]);
+        }
+        if (uc.notes) {
+          countryNotesMap.set(uc.country.id, uc.notes);
         }
       });
       
@@ -46,6 +52,7 @@ export function useTravelData() {
         ...prev,
         countries: countriesSet,
         'countries-dates': countryDatesMap,
+        'countries-notes': countryNotesMap,
       }));
     } catch (error) {
       console.error("Network error fetching visited countries:", error);
@@ -120,7 +127,7 @@ export function useTravelData() {
     return false;
   }, [visitedItems]);
 
-  const toggleItemVisited = useCallback(async (category: CategorySlug, item: TrackableItem) => {
+  const toggleItemVisited = useCallback(async (category: CategorySlug, item: TrackableItem, initialData?: { visitedAt?: string | null; notes?: string | null }) => {
     const isVisited = isItemVisited(category, item);
 
     if (category === 'countries') {
@@ -132,7 +139,7 @@ export function useTravelData() {
           await fetch(`/api/user/me/countries/${countryId}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({}),
+            body: JSON.stringify(initialData || {}),
           });
         }
         await fetchVisitedCountries();
@@ -167,22 +174,26 @@ export function useTravelData() {
     return 0;
   }, [visitedItems]);
 
-  const setCountryVisitDate = useCallback(async (countryId: string, date: string | null) => {
+  const updateCountryVisit = useCallback(async (countryId: string, data: { visitedAt?: string | null, notes?: string | null }) => {
     try {
       await fetch(`/api/user/me/countries/${countryId}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ visitedAt: date || null }),
+          body: JSON.stringify(data),
       });
       // Refetch all country data to ensure UI is consistent with the backend state
       await fetchVisitedCountries();
     } catch (error) {
-      console.error("Failed to set country visit date:", error);
+      console.error("Failed to update country visit data:", error);
     }
   }, [fetchVisitedCountries]);
 
   const getCountryVisitDate = useCallback((countryId: string): string | undefined => {
     return visitedItems['countries-dates']?.get(countryId);
+  }, [visitedItems]);
+  
+  const getCountryNotes = useCallback((countryId: string): string | undefined => {
+    return visitedItems['countries-notes']?.get(countryId);
   }, [visitedItems]);
 
   const setNationalParkVisitDate = useCallback((parkId: string, date: string | null) => {
@@ -231,8 +242,9 @@ export function useTravelData() {
     toggleItemVisited,
     getVisitedCount,
     isItemVisited,
-    setCountryVisitDate,
+    updateCountryVisit,
     getCountryVisitDate,
+    getCountryNotes,
     setNationalParkVisitDate,
     getNationalParkVisitDate,
     clearCategoryVisited,

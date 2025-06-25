@@ -22,16 +22,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { WorldMap } from '@/components/map/WorldMap';
 import { useState } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { useTravelData } from '@/hooks/useTravelData';
 
 interface CountryTrackerProps {
   countries: Country[];
   categorySlug: CategorySlug;
   isItemVisited: (category: CategorySlug, item: TrackableItem) => boolean;
-  toggleItemVisited: (category: CategorySlug, item: TrackableItem) => void;
+  toggleItemVisited: (category: CategorySlug, item: TrackableItem, initialData?: any) => void;
   clearCategoryVisited: (category: CategorySlug) => void;
   visitedCount: number;
-  setCountryVisitDate: (countryId: string, date: string | null) => void;
-  getCountryVisitDate: (countryId: string) => string | undefined;
 }
 
 export function CountryTracker({
@@ -41,11 +40,11 @@ export function CountryTracker({
   toggleItemVisited,
   clearCategoryVisited,
   visitedCount,
-  setCountryVisitDate,
-  getCountryVisitDate
 }: CountryTrackerProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [showVisited, setShowVisited] = useState(false);
+  
+  const { updateCountryVisit, getCountryVisitDate, getCountryNotes } = useTravelData();
 
   const filteredCountries = countries
     .filter(country =>
@@ -59,21 +58,27 @@ export function CountryTracker({
     });
 
   const handleDateChange = (country: Country, date: string) => {
-    // Setting a date should mark the country as visited if it isn't already.
-    // The backend PATCH might handle this, but we can also be explicit.
     if (date && !isItemVisited(categorySlug, country)) {
-      toggleItemVisited(categorySlug, country);
+      // This will create the relationship and set the date in one go
+      toggleItemVisited(categorySlug, country, { visitedAt: date });
+    } else {
+      // This will update the existing relationship
+      updateCountryVisit(country.id, { visitedAt: date || null });
     }
-    setCountryVisitDate(country.id, date || null);
+  };
+
+  const handleNotesChange = (country: Country, notes: string) => {
+    if (notes && !isItemVisited(categorySlug, country)) {
+      // This will create the relationship and set the notes in one go
+      toggleItemVisited(categorySlug, country, { notes: notes });
+    } else {
+      // This will update the existing relationship
+      updateCountryVisit(country.id, { notes: notes || null });
+    }
   };
 
   const handleToggle = (country: Country) => {
-    const isCurrentlyVisited = isItemVisited(categorySlug, country);
     toggleItemVisited(categorySlug, country);
-    // If un-checking a country, clear its visit date
-    if (isCurrentlyVisited) {
-      setCountryVisitDate(country.id, null);
-    }
   };
 
   return (
@@ -140,7 +145,9 @@ export function CountryTracker({
                       onToggle={() => handleToggle(country)}
                       details={<span className="font-mono text-xs">{country.code}</span>}
                       visitDate={getCountryVisitDate(country.id)}
-                      onDateChange={(itemId, date) => handleDateChange(country, date)}
+                      onVisitDateChange={(itemId, date) => handleDateChange(country, date)}
+                      notes={getCountryNotes(country.id)}
+                      onNotesChange={(itemId, notes) => handleNotesChange(country, notes)}
                     />
                   ))}
                 </div>

@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/input";
 import type { TrackableItem, CategorySlug } from "@/types";
 import { cn } from "@/lib/utils";
 import { CalendarDaysIcon } from "@/components/icons";
+import { Textarea } from "@/components/ui/textarea";
+import { useState, useEffect } from "react";
 
 interface ItemToggleProps {
   item: TrackableItem;
@@ -15,7 +17,9 @@ interface ItemToggleProps {
   details?: React.ReactNode;
   categorySlug?: CategorySlug;
   visitDate?: string;
-  onDateChange?: (itemId: string, date: string) => void;
+  onVisitDateChange?: (itemId: string, date: string) => void;
+  notes?: string;
+  onNotesChange?: (itemId: string, notes: string) => void;
 }
 
 export function ItemToggle({
@@ -25,17 +29,35 @@ export function ItemToggle({
   details,
   categorySlug,
   visitDate,
-  onDateChange,
+  onVisitDateChange,
+  notes,
+  onNotesChange,
 }: ItemToggleProps) {
   const uniqueId = `item-${item.id}`;
+  const [currentNotes, setCurrentNotes] = useState(notes || "");
+
+  useEffect(() => {
+    setCurrentNotes(notes || "");
+  }, [notes]);
 
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (onDateChange) {
-      onDateChange(item.id, e.target.value);
+    if (onVisitDateChange) {
+      onVisitDateChange(item.id, e.target.value);
     }
   };
 
-  const showDateInput = (categorySlug === 'national-parks' || categorySlug === 'countries') && isChecked && onDateChange;
+  const handleNotesAreaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setCurrentNotes(e.target.value);
+  };
+
+  const handleNotesAreaBlur = () => {
+    if (onNotesChange && currentNotes !== (notes || "")) {
+      onNotesChange(item.id, currentNotes);
+    }
+  };
+
+  const showDateInput = (categorySlug === 'national-parks' || categorySlug === 'countries') && isChecked && onVisitDateChange;
+  const showNotesInput = categorySlug === 'countries' && isChecked && onNotesChange;
   const showCalendarIcon = (categorySlug === 'national-parks' || categorySlug === 'countries') && visitDate;
 
   return (
@@ -68,6 +90,18 @@ export function ItemToggle({
             onChange={handleDateChange}
             className="h-8 text-sm"
             aria-label={`Visit date for ${item.name}`}
+          />
+        </div>
+      )}
+      {showNotesInput && (
+        <div className="pl-8 pt-2">
+          <Textarea
+            placeholder="Add notes..."
+            value={currentNotes}
+            onChange={handleNotesAreaChange}
+            onBlur={handleNotesAreaBlur}
+            className="h-24 text-sm resize-none"
+            aria-label={`Notes for ${item.name}`}
           />
         </div>
       )}
