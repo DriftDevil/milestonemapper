@@ -34,6 +34,15 @@ export interface NationalPark extends TrackableItem {
   region?: string; // Optional region - not currently used from API
 }
 
+export interface UserNationalPark {
+  id: string; // This is the ID of the user-park relationship record
+  userId: string;
+  parkCode: string; // This matches the NationalPark 'id'
+  visitedAt: string | null;
+  createdAt: string;
+  park: NationalPark; // The nested park object
+}
+
 export interface MLBStadium extends TrackableItem {
   team: string;
   city: string;
