@@ -25,11 +25,12 @@ export function useTravelData() {
     try {
       const response = await fetch('/api/user/me/countries', { cache: 'no-store' });
       if (!response.ok) {
-        if (response.status === 401) {
-          // Unauthorized, no need to log an error.
-          return;
+        if (response.status !== 401) {
+          // Log errors other than 401, which is expected for logged-out users.
+          // This makes the app more resilient to backend failures.
+          console.error(`Failed to fetch visited countries. Status: ${response.status}`);
         }
-        throw new Error('Failed to fetch visited countries');
+        return; // Gracefully exit instead of throwing
       }
       const userCountries: UserCountry[] = await response.json();
       
@@ -41,7 +42,7 @@ export function useTravelData() {
         countries: countriesSet,
       }));
     } catch (error) {
-      console.error("Failed to fetch visited countries:", error);
+      console.error("Network error fetching visited countries:", error);
       // Handle error appropriately, maybe set an error state
     }
   }, []);
