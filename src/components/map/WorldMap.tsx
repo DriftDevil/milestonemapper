@@ -7,9 +7,10 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 
 const geoUrl = "https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson";
 
-// A sub-component for each country is created to correctly use React.useMemo.
-// Hooks cannot be called inside a loop, so this refactor is necessary to implement the fix.
-const CountryGeography = ({
+// --------------------------
+// Memoized CountryGeography
+// --------------------------
+const CountryGeography = React.memo(({
   geo,
   appCountry,
   isItemVisited,
@@ -22,7 +23,6 @@ const CountryGeography = ({
   toggleItemVisited: (category: CategorySlug, item: TrackableItem) => void;
   categorySlug: CategorySlug;
 }) => {
-  // Memoizing `visited` ensures it's only re-calculated when its dependencies change.
   const visited = React.useMemo(
     () => (appCountry ? isItemVisited(categorySlug, appCountry) : false),
     [appCountry, isItemVisited, categorySlug]
@@ -43,15 +43,15 @@ const CountryGeography = ({
               stroke: "hsl(var(--background))",
               strokeWidth: 0.5,
               outline: "none",
-              transition: "fill 0.2s ease-in-out",
+              transition: "fill 0.3s ease-out, stroke 0.3s ease-out",
             },
             hover: {
-              fill: "#FFD700", // Gold for hover
+              fill: "#FFD700",
               outline: "none",
               cursor: appCountry ? "pointer" : "default",
             },
             pressed: {
-              fill: "#DAA520", // Darker gold for pressed
+              fill: "#DAA520",
               outline: "none",
             },
           }}
@@ -67,9 +67,11 @@ const CountryGeography = ({
       )}
     </Tooltip>
   );
-};
+});
 
-
+// -------------------
+// WorldMap Component
+// -------------------
 interface WorldMapProps {
   allCountries: Country[];
   isItemVisited: (category: CategorySlug, item: TrackableItem) => boolean;
@@ -78,10 +80,8 @@ interface WorldMapProps {
 }
 
 export function WorldMap({ allCountries, isItemVisited, categorySlug, toggleItemVisited }: WorldMapProps) {
-
   const countryCodeToObjectMap = React.useMemo(() => {
     const map = new Map<string, Country>();
-    if (!allCountries) return map;
     for (const country of allCountries) {
       if (country.code && typeof country.code === 'string') {
         map.set(country.code.trim().toUpperCase(), country);
@@ -105,9 +105,9 @@ export function WorldMap({ allCountries, isItemVisited, categorySlug, toggleItem
         <Geographies geography={geoUrl} className="rsm-geographies">
           {({ geographies }) =>
             geographies.map(geo => {
-              const mapCountryCode = geo.properties.ISO_A2;
+              const mapCountryCode = geo.properties["ISO3166-1-Alpha-2"];
               const appCountry = mapCountryCode ? countryCodeToObjectMap.get(mapCountryCode.trim().toUpperCase()) : undefined;
-              
+
               return (
                 <CountryGeography
                   key={geo.rsmKey}
