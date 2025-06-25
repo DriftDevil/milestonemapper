@@ -1,4 +1,3 @@
-
 "use client";
 
 import * as React from 'react';
@@ -6,8 +5,8 @@ import { ComposableMap, Geographies, Geography, Sphere, Graticule } from "react-
 import type { Country, CategorySlug, TrackableItem } from '@/types';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
-
-const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
+// Use the new, more reliable GeoJSON file provided by the user
+const geoUrl = "https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson";
 
 interface WorldMapProps {
   allCountries: Country[];
@@ -45,11 +44,12 @@ export function WorldMap({ allCountries, isItemVisited, categorySlug, toggleItem
         <Geographies geography={geoUrl}>
           {({ geographies }) =>
             geographies.map(geo => {
-              const mapCountryCode = geo.properties.iso_a2;
+              // Match using the ISO_A2 property from the new GeoJSON file, as requested
+              const mapCountryCode = geo.properties.ISO_A2;
               const appCountry = mapCountryCode ? countryCodeToObjectMap.get(mapCountryCode.trim().toUpperCase()) : undefined;
 
               if (!appCountry) {
-                // Render non-interactive landmasses
+                // Render non-interactive landmasses for shapes without a matching code
                 return (
                   <Geography
                     key={geo.rsmKey}
