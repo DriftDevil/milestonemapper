@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import type { TrackableItem, CategorySlug } from "@/types";
 import { cn } from "@/lib/utils";
-import { CalendarDaysIcon } from "@/components/icons"; // Import CalendarDaysIcon
+import { CalendarDaysIcon } from "@/components/icons";
 
 interface ItemToggleProps {
   item: TrackableItem;
@@ -35,6 +35,9 @@ export function ItemToggle({
     }
   };
 
+  const showDateInput = (categorySlug === 'national-parks' || categorySlug === 'countries') && isChecked && onDateChange;
+  const showCalendarIcon = (categorySlug === 'national-parks' || categorySlug === 'countries') && visitDate;
+
   return (
     <div
       className={cn(
@@ -51,13 +54,13 @@ export function ItemToggle({
             aria-label={`Mark ${item.name} as visited`}
           />
           <Label htmlFor={uniqueId} className="text-sm font-medium cursor-pointer flex items-center">
-            {categorySlug === 'national-parks' && visitDate && <CalendarDaysIcon className="w-4 h-4 mr-2 text-primary" />}
+            {showCalendarIcon && <CalendarDaysIcon className="w-4 h-4 mr-2 text-primary" />}
             {item.name}
           </Label>
         </div>
         {details && <div className="text-xs text-muted-foreground text-right flex-shrink-0 ml-2">{details}</div>}
       </div>
-      {categorySlug === 'national-parks' && isChecked && onDateChange && (
+      {showDateInput && (
         <div className="pl-8"> 
           <Input
             type="date"

@@ -30,9 +30,20 @@ interface CountryTrackerProps {
   toggleItemVisited: (category: CategorySlug, item: TrackableItem) => void;
   clearCategoryVisited: (category: CategorySlug) => void;
   visitedCount: number;
+  setCountryVisitDate: (countryId: string, date: string | null) => void;
+  getCountryVisitDate: (countryId: string) => string | undefined;
 }
 
-export function CountryTracker({ countries, categorySlug, isItemVisited, toggleItemVisited, clearCategoryVisited, visitedCount }: CountryTrackerProps) {
+export function CountryTracker({
+  countries,
+  categorySlug,
+  isItemVisited,
+  toggleItemVisited,
+  clearCategoryVisited,
+  visitedCount,
+  setCountryVisitDate,
+  getCountryVisitDate
+}: CountryTrackerProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [showVisited, setShowVisited] = useState(false);
 
@@ -46,6 +57,24 @@ export function CountryTracker({ countries, categorySlug, isItemVisited, toggleI
       }
       return !isItemVisited(categorySlug, country);
     });
+
+  const handleDateChange = (country: Country, date: string) => {
+    // Setting a date should mark the country as visited if it isn't already.
+    // The backend PATCH might handle this, but we can also be explicit.
+    if (date && !isItemVisited(categorySlug, country)) {
+      toggleItemVisited(categorySlug, country);
+    }
+    setCountryVisitDate(country.id, date || null);
+  };
+
+  const handleToggle = (country: Country) => {
+    const isCurrentlyVisited = isItemVisited(categorySlug, country);
+    toggleItemVisited(categorySlug, country);
+    // If un-checking a country, clear its visit date
+    if (isCurrentlyVisited) {
+      setCountryVisitDate(country.id, null);
+    }
+  };
 
   return (
     <div className="space-y-4">
@@ -64,7 +93,7 @@ export function CountryTracker({ countries, categorySlug, isItemVisited, toggleI
                 <AlertDialogHeader>
                   <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    This action will clear all your visited countries. This cannot be undone.
+                    This action will clear all your visited countries and their visit dates. This cannot be undone.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
@@ -106,9 +135,12 @@ export function CountryTracker({ countries, categorySlug, isItemVisited, toggleI
                     <ItemToggle
                       key={country.id}
                       item={country}
+                      categorySlug={categorySlug}
                       isChecked={isItemVisited(categorySlug, country)}
-                      onToggle={() => toggleItemVisited(categorySlug, country)}
+                      onToggle={() => handleToggle(country)}
                       details={<span className="font-mono text-xs">{country.code}</span>}
+                      visitDate={getCountryVisitDate(country.id)}
+                      onDateChange={(itemId, date) => handleDateChange(country, date)}
                     />
                   ))}
                 </div>
@@ -130,7 +162,7 @@ export function CountryTracker({ countries, categorySlug, isItemVisited, toggleI
         </TabsContent>
         <TabsContent value="map">
           {countries.length > 0 ? (
-            <div className="aspect-[16/9] w-full bg-muted/20 rounded-md overflow-hidden border">
+            <div className="w-full h-[500px] bg-muted/20 rounded-md overflow-hidden border">
               <WorldMap
                 key={visitedCount}
                 allCountries={countries}

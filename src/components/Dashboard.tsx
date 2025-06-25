@@ -83,6 +83,8 @@ export function Dashboard() {
     isLoaded: travelDataLoaded,
     toggleItemVisited,
     isItemVisited,
+    setCountryVisitDate,
+    getCountryVisitDate,
     setNationalParkVisitDate,
     getNationalParkVisitDate,
     clearCategoryVisited,
@@ -245,6 +247,8 @@ export function Dashboard() {
             if (category.slug === 'countries') {
               trackerSpecificProps.countries = category.data;
               trackerSpecificProps.visitedCount = visitedCount;
+              trackerSpecificProps.setCountryVisitDate = setCountryVisitDate;
+              trackerSpecificProps.getCountryVisitDate = getCountryVisitDate;
             }
             else if (category.slug === 'us-states') trackerSpecificProps.states = category.data;
             else if (category.slug === 'national-parks') {

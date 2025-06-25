@@ -65,6 +65,62 @@ export async function POST(request: NextRequest, { params }: { params: { country
     }
 }
 
+// PATCH handler to update a visited country entry
+export async function PATCH(request: NextRequest, { params }: { params: { countryId: string } }) {
+    if (!EXTERNAL_API_URL) {
+        logger.error(CONTEXT, 'EXTERNAL_API_BASE_URL is not set.');
+        return NextResponse.json({ message: 'API endpoint not configured.' }, { status: 500 });
+    }
+
+    const { countryId } = params;
+    if (!countryId) {
+        return NextResponse.json({ message: 'Country ID is required.' }, { status: 400 });
+    }
+
+    const cookieStore = await cookies();
+    const token = cookieStore.get('session_token')?.value;
+
+    if (!token) {
+        return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    }
+
+    const headers = {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+    };
+
+    const url = new URL(`/user/me/countries/${countryId}`, EXTERNAL_API_URL).toString();
+
+    try {
+        const body = await request.json();
+        
+        const apiResponse = await fetch(url, {
+            method: 'PATCH',
+            headers,
+            body: JSON.stringify(body),
+            cache: 'no-store',
+        });
+        
+        const responseText = await apiResponse.text();
+
+        if (!responseText) {
+            return new NextResponse(null, { status: apiResponse.status });
+        }
+
+        try {
+            const data = JSON.parse(responseText);
+            return NextResponse.json(data, { status: apiResponse.status });
+        } catch (e) {
+            logger.error(CONTEXT, 'Failed to parse JSON from backend on PATCH, returning as text.', { status: apiResponse.status, body: responseText });
+            return new Response(responseText, { status: apiResponse.status });
+        }
+
+    } catch (error: any) {
+        logger.error(CONTEXT, `Error forwarding PATCH request to ${url}:`, error.message);
+        return NextResponse.json({ message: 'An unexpected error occurred.' }, { status: 500 });
+    }
+}
 
 // DELETE handler to remove a visited country
 export async function DELETE(request: NextRequest, { params }: { params: { countryId: string } }) {

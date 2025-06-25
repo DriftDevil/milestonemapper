@@ -9,6 +9,7 @@ const LOCAL_STORAGE_KEY = 'milestoneMapperData';
 // Initialize with an empty set for countries, which will be populated from the API.
 const initialVisitedItems: VisitedItems = {
   countries: new Set<string>(),
+  'countries-dates': new Map<string, string>(),
   'us-states': new Set<string>(),
   'national-parks': new Set<string>(),
   'national-parks-dates': new Map<string, string>(),
@@ -26,24 +27,28 @@ export function useTravelData() {
       const response = await fetch('/api/user/me/countries', { cache: 'no-store' });
       if (!response.ok) {
         if (response.status !== 401) {
-          // Log errors other than 401, which is expected for logged-out users.
-          // This makes the app more resilient to backend failures.
           console.error(`Failed to fetch visited countries. Status: ${response.status}`);
         }
-        return; // Gracefully exit instead of throwing
+        return;
       }
       const userCountries: UserCountry[] = await response.json();
       
-      // Use the country's two-letter code for tracking in the Set.
       const countriesSet = new Set(userCountries.map(uc => uc.country.code));
+      const countryDatesMap = new Map<string, string>();
+      userCountries.forEach(uc => {
+        if (uc.visitedAt) {
+          // The API returns a full ISO string, we just want the date part for the input
+          countryDatesMap.set(uc.country.id, uc.visitedAt.split('T')[0]);
+        }
+      });
       
       setVisitedItems(prev => ({
         ...prev,
         countries: countriesSet,
+        'countries-dates': countryDatesMap,
       }));
     } catch (error) {
       console.error("Network error fetching visited countries:", error);
-      // Handle error appropriately, maybe set an error state
     }
   }, []);
 
@@ -52,7 +57,6 @@ export function useTravelData() {
     let isMounted = true;
 
     async function loadData() {
-      // 1. Load non-country data from local storage
       if (typeof window !== 'undefined') {
         try {
           const storedData = localStorage.getItem(LOCAL_STORAGE_KEY);
@@ -74,7 +78,6 @@ export function useTravelData() {
         }
       }
       
-      // 2. Fetch country data from the API
       await fetchVisitedCountries();
 
       if (isMounted) {
@@ -92,7 +95,6 @@ export function useTravelData() {
     if (isLoaded && typeof window !== 'undefined') {
       try {
         const dataToStore = {
-          // Exclude country data, as it's managed by the backend
           'us-states': Array.from(visitedItems['us-states']),
           'national-parks': Array.from(visitedItems['national-parks']),
           'national-parks-dates': Array.from(visitedItems['national-parks-dates'].entries()),
@@ -111,7 +113,7 @@ export function useTravelData() {
     if (items instanceof Set) {
       if (category === 'countries') {
         const country = item as Country;
-        return items.has(country.code); // Check by country code
+        return items.has(country.code);
       }
       return items.has(item.id);
     }
@@ -123,25 +125,21 @@ export function useTravelData() {
 
     if (category === 'countries') {
       try {
-        const countryId = item.id; // Use the country's UUID for the API call
+        const countryId = item.id;
         if (isVisited) {
-          // UN-VISIT: Use the country's UUID for the DELETE request.
           await fetch(`/api/user/me/countries/${countryId}`, { method: 'DELETE' });
         } else {
-          // VISIT: Use the country's own UUID for the POST request.
           await fetch(`/api/user/me/countries/${countryId}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({}), // Sending empty body for now.
+            body: JSON.stringify({}),
           });
         }
-        // Refresh state from the backend after any change.
         await fetchVisitedCountries();
       } catch (error) {
         console.error(`Failed to toggle visited status for country ${item.name}:`, error);
       }
     } else {
-        // This is the existing, synchronous logic for non-country categories.
         const itemId = item.id;
         setVisitedItems(prev => {
         const newCategorySet = new Set(prev[category as 'us-states' | 'national-parks' | 'mlb-ballparks' | 'nfl-stadiums']);
@@ -167,6 +165,24 @@ export function useTravelData() {
       return items.size;
     }
     return 0;
+  }, [visitedItems]);
+
+  const setCountryVisitDate = useCallback(async (countryId: string, date: string | null) => {
+    try {
+      await fetch(`/api/user/me/countries/${countryId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ visitedAt: date || null }),
+      });
+      // Refetch all country data to ensure UI is consistent with the backend state
+      await fetchVisitedCountries();
+    } catch (error) {
+      console.error("Failed to set country visit date:", error);
+    }
+  }, [fetchVisitedCountries]);
+
+  const getCountryVisitDate = useCallback((countryId: string): string | undefined => {
+    return visitedItems['countries-dates']?.get(countryId);
   }, [visitedItems]);
 
   const setNationalParkVisitDate = useCallback((parkId: string, date: string | null) => {
@@ -215,6 +231,8 @@ export function useTravelData() {
     toggleItemVisited,
     getVisitedCount,
     isItemVisited,
+    setCountryVisitDate,
+    getCountryVisitDate,
     setNationalParkVisitDate,
     getNationalParkVisitDate,
     clearCategoryVisited,
