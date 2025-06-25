@@ -56,17 +56,11 @@ export function NationalParkTracker({
     });
 
   const handleToggle = (park: NationalPark) => {
-    const currentlyVisited = isItemVisited(categorySlug, park);
     toggleItemVisited(categorySlug, park);
-    // If we are un-checking the park, also clear the date via an API call.
-    if (currentlyVisited) { 
-      setNationalParkVisitDate(park.id, null); 
-    }
   };
 
-  const handleDateChange = (park: NationalPark, date: string) => {
-    // The hook now handles both setting the date and marking the park as visited if needed.
-    setNationalParkVisitDate(park.id, date);
+  const handleDateChange = (parkId: string, date: string) => {
+    setNationalParkVisitDate(parkId, date || null);
   };
 
   return (
@@ -126,7 +120,7 @@ export function NationalParkTracker({
                   onToggle={() => handleToggle(park)}
                   details={<span className="text-xs">{park.state}</span>}
                   visitDate={getNationalParkVisitDate(park.id)}
-                  onVisitDateChange={(itemId, date) => handleDateChange(park, date)}
+                  onVisitDateChange={(itemId, date) => handleDateChange(itemId, date)}
                 />
               ))}
             </div>

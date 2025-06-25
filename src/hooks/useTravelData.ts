@@ -264,30 +264,30 @@ export function useTravelData() {
   }, [visitedItems]);
 
   const setNationalParkVisitDate = useCallback(async (parkId: string, date: string | null) => {
-    const isVisited = isItemVisited('national-parks', { id: parkId, name: '', state: ''});
     try {
-      if (!isVisited && date) {
-        // If the park isn't visited, POST to create it with the new date.
-        const response = await fetch(`/api/user/me/parks/${parkId}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ visitedAt: date }),
-        });
-        if (response.status === 401) { await handleUnauthorized(); return; }
-      } else if (isVisited) {
-        // If the park is already visited, PATCH to update the date.
-        const response = await fetch(`/api/user/me/parks/${parkId}`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ visitedAt: date }),
-        });
-        if (response.status === 401) { await handleUnauthorized(); return; }
+      // This function only PATCHes the date for an existing visited park.
+      // Adding a new park is handled by toggleItemVisited.
+      const response = await fetch(`/api/user/me/parks/${parkId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ visitedAt: date }),
+      });
+      
+      if (response.status === 401) { 
+        await handleUnauthorized(); 
+        return; 
       }
+
+      if (!response.ok) {
+        console.error(`Failed to update visit date for park ${parkId}. Status: ${response.status}`);
+      }
+
+      // After a successful PATCH, refetch the park data to ensure UI consistency.
       await fetchVisitedParks();
     } catch (error) {
       console.error(`Failed to set visit date for park ${parkId}:`, error);
     }
-  }, [isItemVisited, fetchVisitedParks]);
+  }, [fetchVisitedParks]);
 
   const getNationalParkVisitDate = useCallback((parkId: string): string | undefined => {
     return visitedItems['national-parks-dates']?.get(parkId);
