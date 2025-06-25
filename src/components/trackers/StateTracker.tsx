@@ -21,6 +21,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { USStatesMap } from '@/components/map/USStatesMap';
 import { useState } from 'react';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface StateTrackerProps {
   states: USState[];
@@ -96,25 +97,34 @@ export function StateTracker({ states, categorySlug, isItemVisited, toggleItemVi
                 </Label>
               </div>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {filteredStates.map((state) => (
-              <ItemToggle
-                key={state.id}
-                item={state}
-                isChecked={isItemVisited(categorySlug, state)}
-                onToggle={() => toggleItemVisited(categorySlug, state)}
-              />
-            ))}
-          </div>
-          {states.length > 0 && filteredStates.length === 0 && !showVisited && searchTerm === '' && (
-             <p className="text-muted-foreground text-center">All states visited! Check "Show Visited" to see them.</p>
-          )}
-          {states.length > 0 && filteredStates.length === 0 && (searchTerm !== '' || showVisited) && (
-             <p className="text-muted-foreground text-center">No states found matching your criteria.</p>
-          )}
-          {states.length === 0 && (
-             <p className="text-muted-foreground text-center">No states to display.</p>
-          )}
+          <ScrollArea className="h-[450px] w-full rounded-md border">
+            <div className="p-4">
+              {filteredStates.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {filteredStates.map((state) => (
+                    <ItemToggle
+                      key={state.id}
+                      item={state}
+                      isChecked={isItemVisited(categorySlug, state)}
+                      onToggle={() => toggleItemVisited(categorySlug, state)}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="flex items-center justify-center text-center text-muted-foreground h-full min-h-[200px]">
+                  {states.length > 0 ? (
+                    <p>
+                      {!showVisited && searchTerm === ''
+                        ? 'All states visited! Check "Show Visited" to see them.'
+                        : 'No states found matching your criteria.'}
+                    </p>
+                  ) : (
+                    <p>No states to display.</p>
+                  )}
+                </div>
+              )}
+            </div>
+          </ScrollArea>
         </TabsContent>
         <TabsContent value="map">
           {states.length > 0 ? (

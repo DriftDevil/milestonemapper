@@ -21,6 +21,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { WorldMap } from '@/components/map/WorldMap';
 import { useState } from 'react';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface CountryTrackerProps {
   countries: Country[];
@@ -97,26 +98,35 @@ export function CountryTracker({ countries, categorySlug, isItemVisited, toggleI
                 </Label>
               </div>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {filteredCountries.map((country) => (
-              <ItemToggle
-                key={country.id}
-                item={country}
-                isChecked={isItemVisited(categorySlug, country)}
-                onToggle={() => toggleItemVisited(categorySlug, country)}
-                details={<span className="font-mono text-xs">{country.code}</span>}
-              />
-            ))}
-          </div>
-          {countries.length > 0 && filteredCountries.length === 0 && !showVisited && searchTerm === '' && (
-            <p className="text-muted-foreground text-center">All countries visited! Check "Show Visited" to see them.</p>
-          )}
-          {countries.length > 0 && filteredCountries.length === 0 && (searchTerm !== '' || showVisited) && (
-            <p className="text-muted-foreground text-center">No countries found matching your criteria.</p>
-          )}
-          {countries.length === 0 && (
-            <p className="text-muted-foreground text-center">No countries to display.</p>
-          )}
+          <ScrollArea className="h-[450px] w-full rounded-md border">
+            <div className="p-4">
+              {filteredCountries.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {filteredCountries.map((country) => (
+                    <ItemToggle
+                      key={country.id}
+                      item={country}
+                      isChecked={isItemVisited(categorySlug, country)}
+                      onToggle={() => toggleItemVisited(categorySlug, country)}
+                      details={<span className="font-mono text-xs">{country.code}</span>}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="flex items-center justify-center text-center text-muted-foreground h-full min-h-[200px]">
+                  {countries.length > 0 ? (
+                    <p>
+                      {!showVisited && searchTerm === ''
+                        ? 'All countries visited! Check "Show Visited" to see them.'
+                        : 'No countries found matching your criteria.'}
+                    </p>
+                  ) : (
+                    <p>No countries to display.</p>
+                  )}
+                </div>
+              )}
+            </div>
+          </ScrollArea>
         </TabsContent>
         <TabsContent value="map">
           {countries.length > 0 ? (

@@ -19,6 +19,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useState } from 'react';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface MlbStadiumTrackerProps {
   stadiums: MLBStadium[];
@@ -89,31 +90,40 @@ export function MlbStadiumTracker({ stadiums, categorySlug, isItemVisited, toggl
           </AlertDialog>
         )}
       </div>
-      <div className="space-y-2">
-        {filteredStadiums.map((stadium) => (
-          <ItemToggle
-            key={stadium.id}
-            item={stadium}
-            isChecked={isItemVisited(categorySlug, stadium)}
-            onToggle={() => toggleItemVisited(categorySlug, stadium)}
-            details={
-              <div className="text-right">
-                <p>{stadium.team}</p>
-                <p>{stadium.city}, {stadium.state}</p>
-              </div>
-            }
-          />
-        ))}
-      </div>
-      {stadiums.length > 0 && filteredStadiums.length === 0 && !showVisited && searchTerm === '' && (
-         <p className="text-muted-foreground text-center">All MLB ballparks visited! Check "Show Visited" to see them.</p>
-      )}
-      {stadiums.length > 0 && filteredStadiums.length === 0 && (searchTerm !== '' || showVisited) && (
-         <p className="text-muted-foreground text-center">No MLB ballparks found matching your criteria.</p>
-      )}
-      {stadiums.length === 0 && (
-         <p className="text-muted-foreground text-center">No MLB ballparks to display.</p>
-      )}
+      <ScrollArea className="h-[450px] w-full rounded-md border">
+        <div className="p-4">
+          {filteredStadiums.length > 0 ? (
+            <div className="space-y-2">
+              {filteredStadiums.map((stadium) => (
+                <ItemToggle
+                  key={stadium.id}
+                  item={stadium}
+                  isChecked={isItemVisited(categorySlug, stadium)}
+                  onToggle={() => toggleItemVisited(categorySlug, stadium)}
+                  details={
+                    <div className="text-right">
+                      <p>{stadium.team}</p>
+                      <p>{stadium.city}, {stadium.state}</p>
+                    </div>
+                  }
+                />
+              ))}
+            </div>
+          ) : (
+             <div className="flex items-center justify-center text-center text-muted-foreground h-full min-h-[200px]">
+              {stadiums.length > 0 ? (
+                <p>
+                  {!showVisited && searchTerm === ''
+                    ? 'All MLB ballparks visited! Check "Show Visited" to see them.'
+                    : 'No MLB ballparks found matching your criteria.'}
+                </p>
+              ) : (
+                <p>No MLB ballparks to display.</p>
+              )}
+            </div>
+          )}
+        </div>
+      </ScrollArea>
     </div>
   );
 }

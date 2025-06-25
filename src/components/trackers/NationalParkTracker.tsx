@@ -19,6 +19,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useState } from 'react';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface NationalParkTrackerProps {
   parks: NationalPark[];
@@ -113,29 +114,38 @@ export function NationalParkTracker({
           </AlertDialog>
         )}
       </div>
-      <div className="space-y-2">
-        {filteredParks.map((park) => (
-          <ItemToggle
-            key={park.id}
-            item={park}
-            categorySlug={categorySlug}
-            isChecked={isItemVisited(categorySlug, park)}
-            onToggle={() => handleToggle(park)}
-            details={<span className="text-xs">{park.state}</span>}
-            visitDate={getNationalParkVisitDate(park.id)}
-            onDateChange={(itemId, date) => handleDateChange(park, date)}
-          />
-        ))}
-      </div>
-      {parks.length > 0 && filteredParks.length === 0 && !showVisited && searchTerm === '' && (
-         <p className="text-muted-foreground text-center">All national parks visited! Check "Show Visited" to see them.</p>
-      )}
-      {parks.length > 0 && filteredParks.length === 0 && (searchTerm !== '' || showVisited) && (
-         <p className="text-muted-foreground text-center">No national parks found matching your criteria.</p>
-      )}
-       {parks.length === 0 && (
-         <p className="text-muted-foreground text-center">No national parks to display.</p>
-      )}
+      <ScrollArea className="h-[450px] w-full rounded-md border">
+        <div className="p-4">
+          {filteredParks.length > 0 ? (
+            <div className="space-y-2">
+              {filteredParks.map((park) => (
+                <ItemToggle
+                  key={park.id}
+                  item={park}
+                  categorySlug={categorySlug}
+                  isChecked={isItemVisited(categorySlug, park)}
+                  onToggle={() => handleToggle(park)}
+                  details={<span className="text-xs">{park.state}</span>}
+                  visitDate={getNationalParkVisitDate(park.id)}
+                  onDateChange={(itemId, date) => handleDateChange(park, date)}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="flex items-center justify-center text-center text-muted-foreground h-full min-h-[200px]">
+              {parks.length > 0 ? (
+                <p>
+                  {!showVisited && searchTerm === ''
+                    ? 'All national parks visited! Check "Show Visited" to see them.'
+                    : 'No national parks found matching your criteria.'}
+                </p>
+              ) : (
+                <p>No national parks to display.</p>
+              )}
+            </div>
+          )}
+        </div>
+      </ScrollArea>
     </div>
   );
 }
