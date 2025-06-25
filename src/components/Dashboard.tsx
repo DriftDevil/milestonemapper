@@ -97,7 +97,8 @@ export function Dashboard() {
           const allCountriesRes = await fetch('/api/countries');
 
           if (!allCountriesRes.ok) {
-            throw new Error(`API error! status: ${allCountriesRes.status}`);
+            const errorBody = await allCountriesRes.text();
+            throw new Error(`API error! status: ${allCountriesRes.status}, body: ${errorBody}`);
           }
           
           const allCountriesData: CountryType[] = await allCountriesRes.json();
@@ -111,8 +112,8 @@ export function Dashboard() {
                 : cat
             )
           );
-        } catch (error) {
-          console.error("Failed to fetch countries:", error);
+        } catch (error: any) {
+          console.error("Failed to fetch countries:", error.message);
           setCategories(prevCategories =>
             prevCategories.map(cat =>
               cat.slug === 'countries'
@@ -130,8 +131,8 @@ export function Dashboard() {
           const allStatesRes = await fetch('/api/us-states');
 
           if (!allStatesRes.ok) {
-            const errorBody = await allStatesRes.json();
-            throw new Error(errorBody.message || `API error! status: ${allStatesRes.status}`);
+            const errorBody = await allStatesRes.text();
+            throw new Error(errorBody || `API error! status: ${allStatesRes.status}`);
           }
           
           const allStatesData: USStateType[] = await allStatesRes.json();
@@ -233,13 +234,18 @@ export function Dashboard() {
         <h2 className="text-3xl font-headline text-center mb-10">Your Progress Trackers</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {categories.map(category => {
+            const visitedCount = getVisitedCount(category.slug);
             const trackerSpecificProps: any = {
               isItemVisited: isItemVisited,
               toggleItemVisited: toggleItemVisited,
               categorySlug: category.slug,
               clearCategoryVisited: clearCategoryVisited,
             };
-            if (category.slug === 'countries') trackerSpecificProps.countries = category.data;
+
+            if (category.slug === 'countries') {
+              trackerSpecificProps.countries = category.data;
+              trackerSpecificProps.visitedCount = visitedCount;
+            }
             else if (category.slug === 'us-states') trackerSpecificProps.states = category.data;
             else if (category.slug === 'national-parks') {
               trackerSpecificProps.parks = category.data;
@@ -254,7 +260,7 @@ export function Dashboard() {
                 key={category.slug}
                 title={category.title}
                 icon={category.icon}
-                visitedCount={getVisitedCount(category.slug)}
+                visitedCount={visitedCount}
                 totalCount={category.totalCount}
                 cardColor={category.cardColor}
               >

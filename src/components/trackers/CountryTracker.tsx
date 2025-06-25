@@ -28,9 +28,10 @@ interface CountryTrackerProps {
   isItemVisited: (category: CategorySlug, item: TrackableItem) => boolean;
   toggleItemVisited: (category: CategorySlug, item: TrackableItem) => void;
   clearCategoryVisited: (category: CategorySlug) => void;
+  visitedCount: number;
 }
 
-export function CountryTracker({ countries, categorySlug, isItemVisited, toggleItemVisited, clearCategoryVisited }: CountryTrackerProps) {
+export function CountryTracker({ countries, categorySlug, isItemVisited, toggleItemVisited, clearCategoryVisited, visitedCount }: CountryTrackerProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [showVisited, setShowVisited] = useState(false);
 
@@ -121,6 +122,7 @@ export function CountryTracker({ countries, categorySlug, isItemVisited, toggleI
           {countries.length > 0 ? (
             <div className="aspect-[16/9] w-full bg-muted/20 rounded-md overflow-hidden border">
               <WorldMap
+                key={visitedCount}
                 allCountries={countries}
                 isItemVisited={isItemVisited}
                 categorySlug={categorySlug}
