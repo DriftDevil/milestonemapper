@@ -43,6 +43,7 @@ export async function POST(request: NextRequest, { params }: { params: { parkCod
     const url = new URL(`/user/me/parks/${parkCode}`, EXTERNAL_API_URL).toString();
     
     try {
+        // Body is not expected for adding a park, but we handle it gracefully.
         const body = await request.json().catch(() => ({}));
         
         const apiResponse = await fetch(url, {
@@ -62,47 +63,6 @@ export async function POST(request: NextRequest, { params }: { params: { parkCod
         }
     } catch (error: any) {
         logger.error(CONTEXT, `Error forwarding POST request to ${url}:`, error.message);
-        return NextResponse.json({ message: 'An unexpected error occurred.' }, { status: 500 });
-    }
-}
-
-// PATCH handler to update a visited park entry (e.g., visit date)
-export async function PATCH(request: NextRequest, { params }: { params: { parkCode: string } }) {
-    if (!EXTERNAL_API_URL) {
-        logger.error(CONTEXT, 'EXTERNAL_API_BASE_URL is not set.');
-        return NextResponse.json({ message: 'API endpoint not configured.' }, { status: 500 });
-    }
-
-    const { parkCode } = params;
-    if (!parkCode) {
-        return NextResponse.json({ message: 'Park code is required.' }, { status: 400 });
-    }
-
-    const { error, headers } = getAuthHeaders();
-    if (error) return error;
-
-    const url = new URL(`/user/me/parks/${parkCode}`, EXTERNAL_API_URL).toString();
-
-    try {
-        const body = await request.json();
-        
-        const apiResponse = await fetch(url, {
-            method: 'PATCH',
-            headers: headers!,
-            body: JSON.stringify(body),
-            cache: 'no-store',
-        });
-        
-        const responseText = await apiResponse.text();
-        if (!responseText) return new NextResponse(null, { status: apiResponse.status });
-
-        try {
-            return NextResponse.json(JSON.parse(responseText), { status: apiResponse.status });
-        } catch (e) {
-            return new Response(responseText, { status: apiResponse.status });
-        }
-    } catch (error: any) {
-        logger.error(CONTEXT, `Error forwarding PATCH request to ${url}:`, error.message);
         return NextResponse.json({ message: 'An unexpected error occurred.' }, { status: 500 });
     }
 }

@@ -38,7 +38,6 @@ export interface UserNationalPark {
   id: string; // This is the ID of the user-park relationship record
   userId: string;
   parkCode: string; // This matches the NationalPark 'id'
-  visitedAt: string | null;
   createdAt: string;
   park: NationalPark; // The nested park object
 }
@@ -69,7 +68,6 @@ export interface VisitedItems {
   'countries-notes': Map<string, string>; // Stores notes by country UUID
   'us-states': Set<string>;
   'national-parks': Set<string>;
-  'national-parks-dates': Map<string, string>; // parkId -> date string (YYYY-MM-DD)
   'mlb-ballparks': Set<string>;
   'nfl-stadiums': Set<string>;
 }

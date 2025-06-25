@@ -56,9 +56,9 @@ export function ItemToggle({
     }
   };
 
-  const showDateInput = (categorySlug === 'national-parks' || categorySlug === 'countries') && isChecked && onVisitDateChange;
+  const showDateInput = categorySlug === 'countries' && isChecked && onVisitDateChange;
   const showNotesInput = categorySlug === 'countries' && isChecked && onNotesChange;
-  const showCalendarIcon = (categorySlug === 'national-parks' || categorySlug === 'countries') && visitDate;
+  const showCalendarIcon = categorySlug === 'countries' && visitDate;
 
   return (
     <div

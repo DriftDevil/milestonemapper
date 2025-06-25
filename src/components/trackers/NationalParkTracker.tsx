@@ -25,9 +25,7 @@ interface NationalParkTrackerProps {
   parks: NationalPark[];
   categorySlug: CategorySlug;
   isItemVisited: (category: CategorySlug, item: TrackableItem) => boolean;
-  toggleItemVisited: (category: CategorySlug, item: TrackableItem, initialData?: any) => void;
-  setNationalParkVisitDate: (parkId: string, date: string | null) => void;
-  getNationalParkVisitDate: (parkId: string) => string | undefined;
+  toggleItemVisited: (category: CategorySlug, item: TrackableItem) => void;
   clearCategoryVisited: (category: CategorySlug) => void;
 }
 
@@ -36,8 +34,6 @@ export function NationalParkTracker({
   categorySlug,
   isItemVisited,
   toggleItemVisited,
-  setNationalParkVisitDate,
-  getNationalParkVisitDate,
   clearCategoryVisited,
 }: NationalParkTrackerProps) {
   const [searchTerm, setSearchTerm] = useState('');
@@ -57,17 +53,6 @@ export function NationalParkTracker({
 
   const handleToggle = (park: NationalPark) => {
     toggleItemVisited(categorySlug, park);
-  };
-
-  const handleDateChange = (park: NationalPark, date: string) => {
-    // If setting a date and the park isn't visited yet,
-    // call toggleItemVisited to add it with the date.
-    if (date && !isItemVisited(categorySlug, park)) {
-      toggleItemVisited(categorySlug, park, { visitedAt: date });
-    } else {
-      // Otherwise, just update the date for an already visited park.
-      setNationalParkVisitDate(park.id, date || null);
-    }
   };
 
   return (
@@ -101,7 +86,7 @@ export function NationalParkTracker({
               <AlertDialogHeader>
                 <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                 <AlertDialogDescription>
-                  This action will clear all your visited National Parks and their visit dates. This cannot be undone.
+                  This action will clear all your visited National Parks. This cannot be undone.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
@@ -126,8 +111,6 @@ export function NationalParkTracker({
                   isChecked={isItemVisited(categorySlug, park)}
                   onToggle={() => handleToggle(park)}
                   details={<span className="text-xs">{park.state}</span>}
-                  visitDate={getNationalParkVisitDate(park.id)}
-                  onVisitDateChange={(item, date) => handleDateChange(item as NationalPark, date)}
                 />
               ))}
             </div>

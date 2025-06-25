@@ -30,7 +30,6 @@ const initialVisitedItems: VisitedItems = {
   'countries-notes': new Map<string, string>(),
   'us-states': new Set<string>(),
   'national-parks': new Set<string>(),
-  'national-parks-dates': new Map<string, string>(),
   'mlb-ballparks': new Set<string>(),
   'nfl-stadiums': new Set<string>(),
 };
@@ -90,17 +89,10 @@ export function useTravelData() {
       const userParks: UserNationalPark[] = await response.json();
 
       const parksSet = new Set(userParks.map(up => up.parkCode));
-      const parkDatesMap = new Map<string, string>();
-      userParks.forEach(up => {
-        if (up.visitedAt) {
-          parkDatesMap.set(up.parkCode, up.visitedAt.split('T')[0]);
-        }
-      });
       
       setVisitedItems(prev => ({
         ...prev,
         'national-parks': parksSet,
-        'national-parks-dates': parkDatesMap,
       }));
     } catch (error) {
       console.error("Network error fetching visited parks:", error);
@@ -204,7 +196,7 @@ export function useTravelData() {
                 response = await fetch(`/api/user/me/parks/${parkCode}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(initialData || {}),
+                    body: JSON.stringify({}), // No body needed for parks
                 });
             }
             if (response.status === 401) {
@@ -232,7 +224,7 @@ export function useTravelData() {
 
   const getVisitedCount = useCallback((category: CategorySlug) => {
     const items = visitedItems[category];
-    if (items instanceof Set || items instanceof Map) {
+    if (items instanceof Set) {
       return items.size;
     }
     return 0;
@@ -261,36 +253,6 @@ export function useTravelData() {
   
   const getCountryNotes = useCallback((countryId: string): string | undefined => {
     return visitedItems['countries-notes']?.get(countryId);
-  }, [visitedItems]);
-
-  const setNationalParkVisitDate = useCallback(async (parkId: string, date: string | null) => {
-    try {
-      // This function only PATCHes the date for an existing visited park.
-      // Adding a new park is handled by toggleItemVisited.
-      const response = await fetch(`/api/user/me/parks/${parkId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ visitedAt: date }),
-      });
-      
-      if (response.status === 401) { 
-        await handleUnauthorized(); 
-        return; 
-      }
-
-      if (!response.ok) {
-        console.error(`Failed to update visit date for park ${parkId}. Status: ${response.status}`);
-      }
-
-      // After a successful PATCH, refetch the park data to ensure UI consistency.
-      await fetchVisitedParks();
-    } catch (error) {
-      console.error(`Failed to set visit date for park ${parkId}:`, error);
-    }
-  }, [fetchVisitedParks]);
-
-  const getNationalParkVisitDate = useCallback((parkId: string): string | undefined => {
-    return visitedItems['national-parks-dates']?.get(parkId);
   }, [visitedItems]);
 
   const clearCategoryVisited = useCallback(async (category: CategorySlug) => {
@@ -333,8 +295,6 @@ export function useTravelData() {
     updateCountryVisit,
     getCountryVisitDate,
     getCountryNotes,
-    setNationalParkVisitDate,
-    getNationalParkVisitDate,
     clearCategoryVisited,
   };
 }
