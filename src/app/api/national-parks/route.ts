@@ -42,9 +42,9 @@ export async function GET() {
 
     // Map the response from the backend to our application's frontend NationalPark type.
     const mappedParks: NationalPark[] = nationalParksData.map((park: any) => ({
-      id: park.code, // Use 'code' for consistency, this is the parkCode
-      name: park.name,
-      state: park.state,
+      id: park.park_code,
+      name: park.full_name,
+      state: park.states,
     }));
 
     // Sort alphabetically by name
