@@ -43,13 +43,12 @@ export async function POST(request: NextRequest, { params }: { params: { parkCod
     const url = new URL(`/user/me/parks/${parkCode}`, EXTERNAL_API_URL).toString();
     
     try {
-        // Body is not expected for adding a park, but we handle it gracefully.
-        const body = await request.json().catch(() => ({}));
-        
+        // Body is not expected for adding a park. Setting body: null ensures
+        // that fetch will not send a Content-Type header, which some backends require.
         const apiResponse = await fetch(url, {
             method: 'POST',
             headers: headers!,
-            body: JSON.stringify(body),
+            body: null,
             cache: 'no-store',
         });
         
