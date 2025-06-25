@@ -7,68 +7,6 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 
 const geoUrl = "https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson";
 
-// --------------------------
-// Memoized CountryGeography
-// --------------------------
-const CountryGeography = React.memo(({
-  geo,
-  appCountry,
-  isItemVisited,
-  toggleItemVisited,
-  categorySlug,
-}: {
-  geo: any;
-  appCountry: Country | undefined;
-  isItemVisited: (category: CategorySlug, item: TrackableItem) => boolean;
-  toggleItemVisited: (category: CategorySlug, item: TrackableItem) => void;
-  categorySlug: CategorySlug;
-}) => {
-  const visited = React.useMemo(
-    () => (appCountry ? isItemVisited(categorySlug, appCountry) : false),
-    [appCountry, isItemVisited, categorySlug]
-  );
-
-  const countryName = appCountry ? appCountry.name : geo.properties.NAME_EN || "Unknown";
-
-  return (
-    <Tooltip delayDuration={100}>
-      <TooltipTrigger asChild>
-        <Geography
-          geography={geo}
-          onClick={() => appCountry && toggleItemVisited(categorySlug, appCountry)}
-          className="rsm-geography"
-          style={{
-            default: {
-              fill: visited ? "hsl(var(--primary))" : "hsl(var(--muted))",
-              stroke: "hsl(var(--background))",
-              strokeWidth: 0.5,
-              outline: "none",
-              transition: "fill 0.3s ease-out, stroke 0.3s ease-out",
-            },
-            hover: {
-              fill: "#FFD700",
-              outline: "none",
-              cursor: appCountry ? "pointer" : "default",
-            },
-            pressed: {
-              fill: "#DAA520",
-              outline: "none",
-            },
-          }}
-          aria-label={countryName}
-        />
-      </TooltipTrigger>
-      {appCountry && (
-        <TooltipContent>
-          <p>
-            {countryName} - {visited ? "Visited" : "Not Visited"}
-          </p>
-        </TooltipContent>
-      )}
-    </Tooltip>
-  );
-});
-
 // -------------------
 // WorldMap Component
 // -------------------
@@ -108,15 +46,44 @@ export function WorldMap({ allCountries, isItemVisited, categorySlug, toggleItem
               const mapCountryCode = geo.properties["ISO3166-1-Alpha-2"];
               const appCountry = mapCountryCode ? countryCodeToObjectMap.get(mapCountryCode.trim().toUpperCase()) : undefined;
 
+              if (!appCountry) {
+                // Render non-interactive geography for parts of the map we don't track (e.g., Antarctica)
+                return (
+                  <Geography
+                    key={geo.rsmKey}
+                    geography={geo}
+                    fill="hsl(var(--muted))"
+                    stroke="hsl(var(--background))"
+                    strokeWidth={0.5}
+                    style={{ default: { outline: 'none' }, hover: { outline: 'none' }, pressed: { outline: 'none' } }}
+                  />
+                );
+              }
+
+              const visited = isItemVisited(categorySlug, appCountry);
+              const countryName = appCountry.name;
+
               return (
-                <CountryGeography
-                  key={geo.rsmKey}
-                  geo={geo}
-                  appCountry={appCountry}
-                  isItemVisited={isItemVisited}
-                  toggleItemVisited={toggleItemVisited}
-                  categorySlug={categorySlug}
-                />
+                <Tooltip key={geo.rsmKey} delayDuration={100}>
+                  <TooltipTrigger asChild>
+                    <Geography
+                      geography={geo}
+                      onClick={() => toggleItemVisited(categorySlug, appCountry)}
+                      fill={visited ? "hsl(var(--primary))" : "hsl(var(--muted))"}
+                      stroke="hsl(var(--background))"
+                      strokeWidth={0.5}
+                      style={{
+                        default: { outline: "none", transition: "fill 0.2s ease-in-out" },
+                        hover: { outline: "none", fill: "#FFD700", cursor: "pointer"},
+                        pressed: { outline: "none", fill: "#DAA520" },
+                      }}
+                      aria-label={countryName}
+                    />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{countryName} - {visited ? "Visited" : "Not Visited"}</p>
+                  </TooltipContent>
+                </Tooltip>
               );
             })
           }
