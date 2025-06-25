@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from 'react';
-import type { CategorySlug, VisitedItems, UserCountry, TrackableItem } from '@/types';
+import type { CategorySlug, VisitedItems, UserCountry, TrackableItem, Country } from '@/types';
 
 const LOCAL_STORAGE_KEY = 'milestoneMapperData';
 
@@ -33,8 +33,8 @@ export function useTravelData() {
       }
       const userCountries: UserCountry[] = await response.json();
       
-      // The key is the country's UUID from the nested country object.
-      const countriesSet = new Set(userCountries.map(uc => uc.country.id));
+      // Use the country's two-letter code for tracking in the Set.
+      const countriesSet = new Set(userCountries.map(uc => uc.country.code));
       
       setVisitedItems(prev => ({
         ...prev,
@@ -108,7 +108,10 @@ export function useTravelData() {
   const isItemVisited = useCallback((category: CategorySlug, item: TrackableItem) => {
     const items = visitedItems[category as 'us-states' | 'national-parks' | 'mlb-ballparks' | 'nfl-stadiums' | 'countries'];
     if (items instanceof Set) {
-      // For countries, the ID is the UUID.
+      if (category === 'countries') {
+        const country = item as Country;
+        return items.has(country.code); // Check by country code
+      }
       return items.has(item.id);
     }
     return false;

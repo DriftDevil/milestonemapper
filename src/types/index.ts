@@ -55,7 +55,7 @@ export interface Category {
 }
 
 export interface VisitedItems {
-  countries: Set<string>; // countryId (UUID)
+  countries: Set<string>; // country code (e.g., 'US')
   'us-states': Set<string>;
   'national-parks': Set<string>;
   'national-parks-dates': Map<string, string>; // parkId -> date string (YYYY-MM-DD)
