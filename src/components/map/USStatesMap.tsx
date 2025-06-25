@@ -45,7 +45,7 @@ export function USStatesMap({ allStates, isItemVisited, categorySlug, toggleItem
                     <Geography
                       geography={geo}
                       fill={visited ? "hsl(var(--primary))" : "hsl(var(--muted))"}
-                      stroke="hsl(var(--card-background))" // Use a contrasting stroke for better definition
+                      stroke="hsl(var(--background))" // Use a contrasting stroke for better definition
                       strokeWidth={0.5}
                       onClick={() => toggleItemVisited(categorySlug, stateObject)}
                       style={{
