@@ -52,8 +52,8 @@ const initialCategories: CategoryConfig[] = [
     slug: 'national-parks',
     title: "National Parks",
     icon: MountainIcon,
-    totalCount: localData.nationalParks.length,
-    data: localData.nationalParks,
+    totalCount: 0, // Will be fetched
+    data: [] as NationalParkType[], // Will be fetched
     TrackerComponent: NationalParkTracker,
     cardColor: "text-green-600",
   },
@@ -90,6 +90,7 @@ export function Dashboard() {
   const [categories, setCategories] = useState<CategoryConfig[]>(initialCategories);
   const [countriesLoading, setCountriesLoading] = useState(true);
   const [statesLoading, setStatesLoading] = useState(true);
+  const [parksLoading, setParksLoading] = useState(true);
 
   useEffect(() => {
       async function fetchCountries() {
@@ -158,11 +159,44 @@ export function Dashboard() {
         }
       }
 
+      async function fetchNationalParks() {
+        try {
+          const allParksRes = await fetch('/api/national-parks');
+
+          if (!allParksRes.ok) {
+            const errorBody = await allParksRes.text();
+            throw new Error(`API error! status: ${allParksRes.status}, body: ${errorBody}`);
+          }
+          
+          const allParksData: NationalParkType[] = await allParksRes.json();
+
+          setCategories(prevCategories =>
+            prevCategories.map(cat =>
+              cat.slug === 'national-parks'
+                ? { ...cat, data: allParksData, totalCount: allParksData.length, error: undefined }
+                : cat
+            )
+          );
+        } catch (error: any) {
+          console.error("Failed to fetch national parks:", error.message);
+          setCategories(prevCategories =>
+            prevCategories.map(cat =>
+              cat.slug === 'national-parks'
+                ? { ...cat, data: [], totalCount: 0, error: "Failed to load National Park data. Please try again later." }
+                : cat
+            )
+          );
+        } finally {
+          setParksLoading(false);
+        }
+      }
+
       fetchCountries();
       fetchStates();
+      fetchNationalParks();
   }, []);
 
-  const overallLoading = !travelDataLoaded || countriesLoading || statesLoading;
+  const overallLoading = !travelDataLoaded || countriesLoading || statesLoading || parksLoading;
 
   if (overallLoading) {
     return (

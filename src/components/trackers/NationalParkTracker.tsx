@@ -127,7 +127,7 @@ export function NationalParkTracker({
                   onToggle={() => handleToggle(park)}
                   details={<span className="text-xs">{park.state}</span>}
                   visitDate={getNationalParkVisitDate(park.id)}
-                  onDateChange={(itemId, date) => handleDateChange(park, date)}
+                  onVisitDateChange={(itemId, date) => handleDateChange(park, date)}
                 />
               ))}
             </div>
