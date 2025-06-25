@@ -16,6 +16,8 @@ interface WorldMapProps {
 }
 
 export function WorldMap({ allCountries, isItemVisited, categorySlug, toggleItemVisited }: WorldMapProps) {
+  const [hoveredCountryCode, setHoveredCountryCode] = React.useState<string | null>(null);
+
   const countryCodeToObjectMap = React.useMemo(() => {
     const map = new Map<string, Country>();
     if (!allCountries) return map;
@@ -26,6 +28,14 @@ export function WorldMap({ allCountries, isItemVisited, categorySlug, toggleItem
     }
     return map;
   }, [allCountries]);
+
+  const getFillColor = (countryCode: string, isVisited: boolean): string => {
+    const isHovered = hoveredCountryCode === countryCode;
+    if (isHovered) {
+      return isVisited ? "hsl(var(--primary) / 0.8)" : "#FFD700";
+    }
+    return isVisited ? "hsl(var(--primary))" : "hsl(var(--muted))";
+  };
 
   return (
     <TooltipProvider>
@@ -46,7 +56,6 @@ export function WorldMap({ allCountries, isItemVisited, categorySlug, toggleItem
               const appCountry = mapCountryCode && mapCountryCode !== '-99' ? countryCodeToObjectMap.get(mapCountryCode.trim().toUpperCase()) : undefined;
 
               if (!appCountry) {
-                // Render non-country shapes (like disputed territories or Antarctica if not in our DB) as non-interactive
                 return (
                    <Geography
                     key={geo.rsmKey}
@@ -54,11 +63,7 @@ export function WorldMap({ allCountries, isItemVisited, categorySlug, toggleItem
                     fill="hsl(var(--muted))"
                     stroke="hsl(var(--background))"
                     strokeWidth={0.5}
-                    style={{
-                      default: { outline: "none" },
-                      hover: { outline: "none" },
-                      pressed: { outline: "none" },
-                    }}
+                    style={{ default: { outline: "none" } }}
                   />
                 );
               }
@@ -71,13 +76,14 @@ export function WorldMap({ allCountries, isItemVisited, categorySlug, toggleItem
                   <TooltipTrigger asChild>
                     <Geography
                       geography={geo}
-                      fill={visited ? "hsl(var(--primary))" : "hsl(var(--muted))"}
+                      fill={getFillColor(appCountry.code, visited)}
                       stroke="hsl(var(--background))"
                       strokeWidth={0.5}
                       onClick={() => toggleItemVisited(categorySlug, appCountry)}
+                      onMouseEnter={() => setHoveredCountryCode(appCountry.code)}
+                      onMouseLeave={() => setHoveredCountryCode(null)}
                       style={{
-                        default: { outline: "none", transition: "fill 0.2s ease-in-out" },
-                        hover: { outline: "none", fill: visited ? "hsl(var(--primary) / 0.8)" : "#FFD700", cursor: "pointer" },
+                        default: { outline: "none", transition: "fill 0.2s ease-in-out", cursor: "pointer" },
                         pressed: { outline: "none", fill: visited ? "hsl(var(--primary) / 0.7)" : "#DAA520" },
                       }}
                       aria-label={countryName}
