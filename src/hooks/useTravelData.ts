@@ -6,6 +6,26 @@ import type { CategorySlug, VisitedItems, UserCountry, TrackableItem, Country } 
 
 const LOCAL_STORAGE_KEY = 'milestoneMapperData';
 
+// Helper function to handle automatic sign-out
+const handleUnauthorized = async () => {
+  // Prevent multiple redirects if we're already on the login page
+  if (typeof window !== 'undefined' && window.location.pathname.startsWith('/login')) {
+    return;
+  }
+  
+  console.log('Session expired or unauthorized. Signing out.');
+  try {
+    await fetch('/api/auth/logout', { method: 'POST' });
+  } catch (error) {
+    console.error("Automatic logout call failed:", error);
+  } finally {
+    if (typeof window !== 'undefined') {
+      window.location.href = '/login';
+    }
+  }
+};
+
+
 // Initialize with an empty set for countries, which will be populated from the API.
 const initialVisitedItems: VisitedItems = {
   countries: new Set<string>(),
@@ -27,9 +47,11 @@ export function useTravelData() {
     try {
       const response = await fetch('/api/user/me/countries', { cache: 'no-store' });
       if (!response.ok) {
-        if (response.status !== 401) {
-          console.error(`Failed to fetch visited countries. Status: ${response.status}`);
+        if (response.status === 401) {
+          await handleUnauthorized();
+          return;
         }
+        console.error(`Failed to fetch visited countries. Status: ${response.status}`);
         return;
       }
       const userCountries: UserCountry[] = await response.json();
@@ -133,14 +155,19 @@ export function useTravelData() {
     if (category === 'countries') {
       try {
         const countryId = item.id;
+        let response;
         if (isVisited) {
-          await fetch(`/api/user/me/countries/${countryId}`, { method: 'DELETE' });
+          response = await fetch(`/api/user/me/countries/${countryId}`, { method: 'DELETE' });
         } else {
-          await fetch(`/api/user/me/countries/${countryId}`, {
+          response = await fetch(`/api/user/me/countries/${countryId}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(initialData || {}),
           });
+        }
+        if (response.status === 401) {
+          await handleUnauthorized();
+          return;
         }
         await fetchVisitedCountries();
       } catch (error) {
@@ -176,11 +203,15 @@ export function useTravelData() {
 
   const updateCountryVisit = useCallback(async (countryId: string, data: { visitedAt?: string | null, notes?: string | null }) => {
     try {
-      await fetch(`/api/user/me/countries/${countryId}`, {
+      const response = await fetch(`/api/user/me/countries/${countryId}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(data),
       });
+      if (response.status === 401) {
+        await handleUnauthorized();
+        return;
+      }
       // Refetch all country data to ensure UI is consistent with the backend state
       await fetchVisitedCountries();
     } catch (error) {
@@ -220,7 +251,11 @@ export function useTravelData() {
   const clearCategoryVisited = useCallback(async (category: CategorySlug) => {
      if (category === 'countries') {
         try {
-            await fetch(`/api/user/me/countries`, { method: 'DELETE' });
+            const response = await fetch(`/api/user/me/countries`, { method: 'DELETE' });
+            if (response.status === 401) {
+              await handleUnauthorized();
+              return;
+            }
             await fetchVisitedCountries();
         } catch (error) {
             console.error('Failed to clear visited countries:', error);
