@@ -1,3 +1,4 @@
+
 "use client";
 
 import * as React from 'react';
@@ -35,7 +36,7 @@ export function WorldMap({ allCountries, isItemVisited, categorySlug, toggleItem
         className="w-full h-full rsm-svg"
         projectionConfig={{
           rotate: [-10, 0, 0],
-          scale: 120
+          scale: 140
         }}
       >
         <Sphere stroke="hsl(var(--border))" strokeWidth={0.5} fill="transparent" id={''} />
@@ -72,9 +73,10 @@ export function WorldMap({ allCountries, isItemVisited, categorySlug, toggleItem
                       fill={visited ? "hsl(var(--primary))" : "hsl(var(--muted))"}
                       stroke="hsl(var(--background))"
                       strokeWidth={0.5}
+                      className="rsm-geography"
                       style={{
                         default: { outline: "none", transition: "fill 0.2s ease-in-out" },
-                        hover: { outline: "none", fill: visited ? "hsl(var(--accent))" : "#FFD700", cursor: "pointer" },
+                        hover: { outline: "none", fill: visited ? "hsl(var(--accent))" : "#FFD700" , cursor: "pointer"},
                         pressed: { outline: "none", fill: visited ? "hsl(var(--accent))" : "#DAA520" },
                       }}
                       aria-label={countryName}

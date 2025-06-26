@@ -1,3 +1,4 @@
+
 "use client";
 
 import type { Country, CategorySlug, TrackableItem } from '@/types';
@@ -169,7 +170,7 @@ export function CountryTracker({
         </TabsContent>
         <TabsContent value="map">
           {countries.length > 0 ? (
-            <div className="w-full h-[500px] bg-muted/20 rounded-md overflow-hidden border">
+            <div className="w-full aspect-[16/10] bg-muted/20 rounded-md overflow-hidden border">
               <WorldMap
                 allCountries={countries}
                 isItemVisited={isItemVisited}
