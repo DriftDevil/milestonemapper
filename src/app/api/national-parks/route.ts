@@ -55,7 +55,7 @@ export async function GET() {
         };
       })
       // Filter out any parks that don't have a valid name to prevent crashes.
-      .filter(park => typeof park.name === 'string' && park.name.length > 0);
+      .filter((park: { name: string | any[]; }) => typeof park.name === 'string' && park.name.length > 0);
 
     // Sort alphabetically by name
     const sortedParks = mappedParks.sort((a, b) => a.name.localeCompare(b.name));

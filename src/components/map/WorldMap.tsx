@@ -74,8 +74,8 @@ export function WorldMap({ allCountries, isItemVisited, categorySlug, toggleItem
                       strokeWidth={0.5}
                       style={{
                         default: { outline: "none", transition: "fill 0.2s ease-in-out" },
-                        hover: { outline: "none", fill: "#FFD700", cursor: "pointer"},
-                        pressed: { outline: "none", fill: "#DAA520" },
+                        hover: { outline: "none", fill: visited ? "hsl(var(--primary) / 0.8)" : "#FFD700", cursor: "pointer" },
+                        pressed: { outline: "none", fill: visited ? "hsl(var(--primary) / 0.7)" : "#DAA520" },
                       }}
                       aria-label={countryName}
                     />
