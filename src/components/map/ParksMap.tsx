@@ -14,10 +14,24 @@ interface ParksMapProps {
   toggleItemVisited: (category: CategorySlug, item: TrackableItem) => void;
 }
 
+// These territories are not visible on the geoAlbersUsa projection.
+const EXCLUDED_TERRITORIES = ["AS", "GU", "VI", "MP", "PR"];
+
 export function ParksMap({ parks, isItemVisited, categorySlug, toggleItemVisited }: ParksMapProps) {
-  const parksWithCoords = parks.filter(p => 
-    p.latitude !== undefined && p.longitude !== undefined
-  );
+  const parksWithCoords = parks.filter(p => {
+    // Ensure coordinates are valid numbers
+    if (typeof p.latitude !== 'number' || typeof p.longitude !== 'number' || isNaN(p.latitude) || isNaN(p.longitude)) {
+      return false;
+    }
+    
+    // Exclude parks located in territories not on the map projection to prevent crash
+    const parkStates = p.state.split(',').map(s => s.trim());
+    if (parkStates.some(s => EXCLUDED_TERRITORIES.includes(s))) {
+      return false;
+    }
+    
+    return true;
+  });
 
   return (
     <TooltipProvider>
