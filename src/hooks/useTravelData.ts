@@ -88,7 +88,7 @@ export function useTravelData() {
       }
       const userParks: UserNationalPark[] = await response.json();
 
-      const parksSet = new Set(userParks.map(up => up.parkCode));
+      const parksSet = new Set(userParks.map(up => up.park_code));
       
       setVisitedItems(prev => ({
         ...prev,

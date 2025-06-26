@@ -37,7 +37,7 @@ export interface NationalPark extends TrackableItem {
 export interface UserNationalPark {
   id: string; // This is the ID of the user-park relationship record
   userId: string;
-  parkCode: string; // This matches the NationalPark 'id'
+  park_code: string; // This matches the NationalPark 'id'
   createdAt: string;
   park: NationalPark; // The nested park object
 }
