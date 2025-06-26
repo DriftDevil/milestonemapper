@@ -131,7 +131,7 @@ export function StateTracker({ states, categorySlug, isItemVisited, toggleItemVi
           {states.length > 0 ? (
             <div className="space-y-4">
                 <p className="text-sm text-muted-foreground text-center px-4">
-                    Map view includes the 50 states and D.C. For territories, including Puerto Rico, please use the List View.
+                    Map view includes the 50 states. Due to its small size, Washington D.C. is not interactable on the map. For D.C. and all U.S. territories, please use the List View.
                 </p>
                 <div className="aspect-[16/10] w-full border rounded-md overflow-hidden">
                     <USStatesMap 
