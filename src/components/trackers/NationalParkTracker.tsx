@@ -1,3 +1,4 @@
+
 "use client";
 
 import type { NationalPark, CategorySlug, TrackableItem } from '@/types';
