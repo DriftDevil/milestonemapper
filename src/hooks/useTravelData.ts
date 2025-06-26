@@ -163,13 +163,13 @@ export function useTravelData() {
   }, [visitedItems]);
 
   const toggleItemVisited = useCallback(async (category: CategorySlug, item: TrackableItem) => {
-    const isVisited = isItemVisited(category, item);
+    const isCurrentlyVisited = isItemVisited(category, item);
 
     if (category === 'countries') {
       try {
         const countryId = item.id;
         let response;
-        if (isVisited) {
+        if (isCurrentlyVisited) {
           response = await fetch(`/api/user/me/countries/${countryId}`, { method: 'DELETE' });
         } else {
           response = await fetch(`/api/user/me/countries/${countryId}`, {
@@ -187,28 +187,58 @@ export function useTravelData() {
         console.error(`Failed to toggle visited status for country ${item.name}:`, error);
       }
     } else if (category === 'national-parks') {
-        try {
-            const parkCode = item.id;
-            let response;
-            if (isVisited) {
-                response = await fetch(`/api/user/me/parks/${parkCode}`, { method: 'DELETE' });
+        const parkCode = item.id;
+
+        // Optimistic UI update
+        setVisitedItems(prev => {
+            const newParksSet = new Set(prev['national-parks']);
+            if (isCurrentlyVisited) {
+                newParksSet.delete(parkCode);
             } else {
-                // This is the corrected fetch call. No body or content-type header.
-                response = await fetch(`/api/user/me/parks/${parkCode}`, {
-                    method: 'POST',
-                });
+                newParksSet.add(parkCode);
             }
+            return { ...prev, 'national-parks': newParksSet };
+        });
+
+        // API call
+        try {
+            const response = await fetch(`/api/user/me/parks/${parkCode}`, {
+                method: isCurrentlyVisited ? 'DELETE' : 'POST'
+            });
+
             if (!response.ok) {
-                 if (response.status === 401) {
+                console.error(`API call failed for ${parkCode}. Reverting UI.`);
+                // Revert state on failure
+                setVisitedItems(prev => {
+                    const revertedParksSet = new Set(prev['national-parks']);
+                    if (isCurrentlyVisited) {
+                        revertedParksSet.add(parkCode);
+                    } else {
+                        revertedParksSet.delete(parkCode);
+                    }
+                    return { ...prev, 'national-parks': revertedParksSet };
+                });
+
+                if (response.status === 401) {
                     await handleUnauthorized();
-                } else {
-                    console.error(`Failed to toggle park status for ${parkCode}. Status: ${response.status}`);
                 }
-                return;
             }
+            // On success, the optimistic update was correct.
+            // We can optionally re-fetch from the server to ensure consistency.
             await fetchVisitedParks();
+
         } catch (error) {
-            console.error(`Failed to toggle visited status for park ${item.name}:`, error);
+            console.error(`Network error for ${parkCode}. Reverting UI.`, error);
+            // Revert state on network error
+            setVisitedItems(prev => {
+                const revertedParksSet = new Set(prev['national-parks']);
+                if (isCurrentlyVisited) {
+                    revertedParksSet.add(parkCode);
+                } else {
+                    revertedParksSet.delete(parkCode);
+                }
+                return { ...prev, 'national-parks': revertedParksSet };
+            });
         }
     } else {
         const itemId = item.id;
