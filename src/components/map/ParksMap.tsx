@@ -94,7 +94,7 @@ export function ParksMap({ parks, isItemVisited, categorySlug, toggleItemVisited
           })}
         </ComposableMap>
       </TooltipProvider>
-      <div className="absolute bottom-2 left-2 bg-card/80 backdrop-blur-sm p-2 rounded-md border text-xs text-card-foreground shadow-lg">
+      <div className="absolute bottom-2 right-2 bg-card/80 backdrop-blur-sm p-2 rounded-md border text-xs text-card-foreground shadow-lg">
         <div className="font-bold mb-1">Legend</div>
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-2">
