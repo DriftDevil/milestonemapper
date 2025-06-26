@@ -1,4 +1,3 @@
-
 "use client";
 
 import * as React from 'react';
@@ -16,7 +15,10 @@ interface ParksMapProps {
 }
 
 export function ParksMap({ parks, isItemVisited, categorySlug, toggleItemVisited }: ParksMapProps) {
-  const parksWithCoords = parks.filter(p => p.latitude != null && p.longitude != null);
+  const parksWithCoords = parks.filter(p => 
+    p.latitude != null && !isNaN(p.latitude) && 
+    p.longitude != null && !isNaN(p.longitude)
+  );
 
   return (
     <TooltipProvider>
