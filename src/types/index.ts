@@ -27,11 +27,13 @@ export interface UserCountry {
 export interface USState extends TrackableItem {
   // 'id' will be the FIPS code (e.g., "01")
   // 'name' will be the state name (e.g., "Alabama")
+  flagUrl?: string;
 }
 
 export interface NationalPark extends TrackableItem {
+  id: string; // This is the park_code from the NPS API
+  name: string;
   state: string; // State(s) where the park is located (e.g. "CA,NV" or "WY")
-  region?: string; // Optional region - not currently used from API
 }
 
 export interface UserNationalPark {

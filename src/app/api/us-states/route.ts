@@ -16,6 +16,24 @@ const CENSUS_API_URLS = [
 ];
 const API_KEY = process.env.CENSUS_API_KEY;
 
+const fipsToCode: { [key: string]: string } = {
+  '01': 'AL', '02': 'AK', '04': 'AZ', '05': 'AR', '06': 'CA', '08': 'CO', '09': 'CT', '10': 'DE',
+  '11': 'DC', '12': 'FL', '13': 'GA', '15': 'HI', '16': 'ID', '17': 'IL', '18': 'IN', '19': 'IA',
+  '20': 'KS', '21': 'KY', '22': 'LA', '23': 'ME', '24': 'MD', '25': 'MA', '26': 'MI', '27': 'MN',
+  '28': 'MS', '29': 'MO', '30': 'MT', '31': 'NE', '32': 'NV', '33': 'NH', '34': 'NJ', '35': 'NM',
+  '36': 'NY', '37': 'NC', '38': 'ND', '39': 'OH', '40': 'OK', '41': 'OR', '42': 'PA', '44': 'RI',
+  '45': 'SC', '46': 'SD', '47': 'TN', '48': 'TX', '49': 'UT', '50': 'VT', '51': 'VA', '53': 'WA',
+  '54': 'WV', '55': 'WI', '56': 'WY',
+  // Territories
+  '60': 'AS', // American Samoa
+  '66': 'GU', // Guam
+  '69': 'MP', // Northern Mariana Islands
+  '72': 'PR', // Puerto Rico
+  '78': 'VI', // U.S. Virgin Islands
+};
+
+const FLAG_BASE_URL = 'https://cdn.jsdelivr.net/gh/SnpM/us-state-flags-svg@master/flags';
+
 export async function GET() {
   if (!API_KEY) {
     logger.error(CONTEXT, 'CENSUS_API_KEY is not set. US States data cannot be fetched.');
@@ -52,10 +70,15 @@ export async function GET() {
       // The first row is the header, e.g., ["NAME", "state"]. We skip it.
       const mappedData: USState[] = data
         .slice(1)
-        .map((row: string[]) => ({
-          name: row[0],
-          id: row[1], // This is the FIPS code
-        }));
+        .map((row: string[]) => {
+          const fipsCode = row[1];
+          const postalCode = fipsToCode[fipsCode];
+          return {
+              name: row[0],
+              id: fipsCode, // This is the FIPS code
+              flagUrl: postalCode ? `${FLAG_BASE_URL}/${postalCode}.svg` : undefined,
+          };
+        });
       
       allStatesAndTerritories = [...allStatesAndTerritories, ...mappedData];
     }

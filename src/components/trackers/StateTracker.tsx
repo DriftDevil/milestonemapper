@@ -105,6 +105,7 @@ export function StateTracker({ states, categorySlug, isItemVisited, toggleItemVi
                     <ItemToggle
                       key={state.id}
                       item={state}
+                      imageUrl={state.flagUrl}
                       isChecked={isItemVisited(categorySlug, state)}
                       onToggle={() => toggleItemVisited(categorySlug, state)}
                     />
