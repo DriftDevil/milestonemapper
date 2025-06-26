@@ -1,4 +1,3 @@
-
 "use client";
 
 import type { NationalPark, CategorySlug, TrackableItem } from '@/types';
@@ -140,29 +139,13 @@ export function NationalParkTracker({
         </TabsContent>
         <TabsContent value="map">
           {parks.length > 0 ? (
-            <div>
-              <div className="aspect-[16/10] w-full border rounded-md overflow-hidden bg-muted/20">
-                <ParksMap
-                  parks={parks}
-                  isItemVisited={isItemVisited}
-                  categorySlug={categorySlug}
-                  toggleItemVisited={toggleItemVisited}
-                />
-              </div>
-              <div className="flex justify-center items-center gap-6 mt-4 text-sm text-muted-foreground">
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full bg-primary" />
-                  <span>Visited</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full bg-muted border" />
-                  <span>Not Visited</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#FFD700' }} />
-                  <span>Hover</span>
-                </div>
-              </div>
+            <div className="aspect-[16/10] w-full border rounded-md overflow-hidden bg-muted/20">
+              <ParksMap
+                parks={parks}
+                isItemVisited={isItemVisited}
+                categorySlug={categorySlug}
+                toggleItemVisited={toggleItemVisited}
+              />
             </div>
           ) : (
             <p className="text-muted-foreground text-center">No parks data to display on map.</p>
