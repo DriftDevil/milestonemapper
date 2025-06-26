@@ -117,7 +117,7 @@
   .rsm-svg {
     pointer-events: none;
   }
-  .rsm-geographies, .rsm-geography {
+  .rsm-geographies, .rsm-geography, .rsm-marker {
     pointer-events: all;
   }
 }

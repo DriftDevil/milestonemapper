@@ -35,8 +35,8 @@ export function ParksMap({ parks, isItemVisited, categorySlug, toggleItemVisited
 
   return (
     <TooltipProvider>
-      <ComposableMap projection="geoAlbersUsa" className="w-full h-full">
-        <Geographies geography={geoUrl}>
+      <ComposableMap projection="geoAlbersUsa" className="w-full h-full rsm-svg">
+        <Geographies geography={geoUrl} className="rsm-geographies">
           {({ geographies }) =>
             geographies.map(geo => (
               <Geography

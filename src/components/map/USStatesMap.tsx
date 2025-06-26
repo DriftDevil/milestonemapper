@@ -23,10 +23,10 @@ export function USStatesMap({ allStates, isItemVisited, categorySlug, toggleItem
 
   return (
     <TooltipProvider>
-      <ComposableMap projection="geoAlbersUsa" className="w-full h-full">
+      <ComposableMap projection="geoAlbersUsa" className="w-full h-full rsm-svg">
         <Sphere stroke="hsl(var(--border))" strokeWidth={0.5} fill="transparent" />
         <Graticule stroke="hsl(var(--border))" strokeWidth={0.5} strokeOpacity={0.5} />
-        <Geographies geography={geoUrl}>
+        <Geographies geography={geoUrl} className="rsm-geographies">
           {({ geographies }) =>
             geographies.map(geo => {
               const stateFipsId = geo.id; // This ID from us-atlas is the FIPS code
