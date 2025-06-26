@@ -18,6 +18,8 @@ interface ParksMapProps {
 const EXCLUDED_TERRITORIES = ["AS", "GU", "VI", "MP", "PR"];
 
 export function ParksMap({ parks, isItemVisited, categorySlug, toggleItemVisited }: ParksMapProps) {
+  const [hoveredParkId, setHoveredParkId] = React.useState<string | null>(null);
+
   const parksWithCoords = parks.filter(p => {
     // Ensure coordinates are valid numbers
     if (typeof p.latitude !== 'number' || typeof p.longitude !== 'number' || isNaN(p.latitude) || isNaN(p.longitude)) {
@@ -55,17 +57,28 @@ export function ParksMap({ parks, isItemVisited, categorySlug, toggleItemVisited
         </Geographies>
         {parksWithCoords.map(park => {
           const visited = isItemVisited(categorySlug, park);
+          const isHovered = hoveredParkId === park.id;
+
+          const getFillColor = () => {
+            if (isHovered) {
+              return visited ? 'hsl(var(--accent))' : '#FFD700'; // Hover: accent if visited, yellow if not
+            }
+            return visited ? 'hsl(var(--primary))' : 'hsl(var(--muted))'; // Default: primary if visited, muted if not
+          };
+          
           return (
             <Marker key={park.id} coordinates={[park.longitude!, park.latitude!]}>
               <Tooltip delayDuration={100}>
                 <TooltipTrigger asChild>
                   <circle
                     r={5}
-                    fill={visited ? "hsl(var(--primary))" : "hsl(var(--accent))"}
+                    fill={getFillColor()}
                     stroke={"hsl(var(--background))"}
                     strokeWidth={1}
                     onClick={() => toggleItemVisited(categorySlug, park)}
-                    style={{ cursor: 'pointer' }}
+                    onMouseEnter={() => setHoveredParkId(park.id)}
+                    onMouseLeave={() => setHoveredParkId(null)}
+                    style={{ cursor: 'pointer', transition: 'fill 0.2s ease-in-out' }}
                   />
                 </TooltipTrigger>
                 <TooltipContent>

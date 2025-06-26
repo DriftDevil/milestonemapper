@@ -50,8 +50,8 @@ export function USStatesMap({ allStates, isItemVisited, categorySlug, toggleItem
                       onClick={() => toggleItemVisited(categorySlug, stateObject)}
                       style={{
                         default: { outline: "none", transition: "fill 0.2s ease-in-out" },
-                        hover: { outline: "none", fill: visited ? "hsl(var(--primary) / 0.8)" : "#FFD700" , cursor: "pointer"},
-                        pressed: { outline: "none", fill: visited ? "hsl(var(--primary) / 0.7)" : "#DAA520" },
+                        hover: { outline: "none", fill: visited ? "hsl(var(--accent))" : "#FFD700" , cursor: "pointer"},
+                        pressed: { outline: "none", fill: visited ? "hsl(var(--accent))" : "#DAA520" },
                       }}
                       aria-label={stateName}
                     />
