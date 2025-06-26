@@ -65,27 +65,32 @@ export function ParksMap({ parks, isItemVisited, categorySlug, toggleItemVisited
 
             const getFillColor = () => {
               if (isHovered) {
-                return visited ? 'hsl(var(--accent))' : '#FFD700'; // Hover: accent if visited, yellow if not
+                return visited ? 'hsl(var(--accent))' : '#FFD700';
               }
-              return visited ? 'hsl(var(--primary))' : 'hsl(var(--muted))'; // Default: primary if visited, muted if not
+              return visited ? 'hsl(var(--primary))' : 'hsl(var(--muted))';
             };
             
             return (
-              // The Tooltip and TooltipTrigger now wrap the Marker component.
-              // This resolves the conflict between the tooltip's hover events and our custom hover logic.
               <Marker key={park.id} coordinates={[park.longitude!, park.latitude!]} className="rsm-marker">
-                <circle
-                  r={5}
-                  fill={getFillColor()}
-                  stroke={"hsl(var(--background))"}
-                  strokeWidth={1}
-                  onClick={() => toggleItemVisited(categorySlug, park)}
-                  onMouseEnter={() => setHoveredParkId(park.id)}
-                  onMouseLeave={() => setHoveredParkId(null)}
-                  style={{ cursor: 'pointer', transition: 'fill 0.2s ease-in-out' }}
-                >
-                  <title>{park.name} ({park.state})</title>
-                </circle>
+                <Tooltip>
+                  <TooltipTrigger
+                    asChild
+                    onMouseEnter={() => setHoveredParkId(park.id)}
+                    onMouseLeave={() => setHoveredParkId(null)}
+                  >
+                    <circle
+                      r={5}
+                      fill={getFillColor()}
+                      stroke={"hsl(var(--background))"}
+                      strokeWidth={1}
+                      onClick={() => toggleItemVisited(categorySlug, park)}
+                      style={{ cursor: 'pointer', transition: 'fill 0.2s ease-in-out' }}
+                    />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{park.name} ({park.state})</p>
+                  </TooltipContent>
+                </Tooltip>
               </Marker>
             );
           })}
