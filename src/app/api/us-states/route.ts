@@ -32,7 +32,7 @@ const fipsToCode: { [key: string]: string } = {
   '78': 'VI', // U.S. Virgin Islands
 };
 
-const FLAG_BASE_URL = 'https://cdn.jsdelivr.net/gh/SnpM/us-state-flags-svg@master/flags';
+const FLAG_BASE_URL = 'https://raw.githubusercontent.com/SnpM/us-state-flags-svg/master/flags';
 
 export async function GET() {
   if (!API_KEY) {
