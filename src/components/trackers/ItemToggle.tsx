@@ -1,4 +1,3 @@
-
 "use client";
 
 import { Checkbox } from "@/components/ui/checkbox";
@@ -20,6 +19,7 @@ interface ItemToggleProps {
   onVisitDateChange?: (item: TrackableItem, date: string) => void;
   notes?: string;
   onNotesChange?: (itemId: string, notes: string) => void;
+  imageUrl?: string;
 }
 
 export function ItemToggle({
@@ -32,6 +32,7 @@ export function ItemToggle({
   onVisitDateChange,
   notes,
   onNotesChange,
+  imageUrl,
 }: ItemToggleProps) {
   const uniqueId = `item-${item.id}`;
   const [currentNotes, setCurrentNotes] = useState(notes || "");
@@ -67,17 +68,24 @@ export function ItemToggle({
         isChecked ? "bg-accent/20 border-accent" : "hover:bg-muted/50"
       )}
     >
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-3">
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center space-x-3 flex-1 min-w-0">
           <Checkbox
             id={uniqueId}
             checked={isChecked}
             onCheckedChange={() => onToggle(item)}
             aria-label={`Mark ${item.name} as visited`}
           />
-          <Label htmlFor={uniqueId} className="text-sm font-medium cursor-pointer flex items-center">
-            {showCalendarIcon && <CalendarDaysIcon className="w-4 h-4 mr-2 text-primary" />}
-            {item.name}
+          <Label htmlFor={uniqueId} className="text-sm font-medium cursor-pointer flex items-center flex-1 min-w-0">
+            {imageUrl && (
+              <img
+                src={imageUrl}
+                alt={`${item.name} flag`}
+                className="w-6 h-4 mr-2 rounded-sm object-cover shrink-0"
+              />
+            )}
+            {showCalendarIcon && <CalendarDaysIcon className="w-4 h-4 mr-2 text-primary shrink-0" />}
+            <span className="truncate">{item.name}</span>
           </Label>
         </div>
         {details && <div className="text-xs text-muted-foreground text-right flex-shrink-0 ml-2">{details}</div>}

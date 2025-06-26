@@ -1,4 +1,3 @@
-
 "use client";
 
 import type { Country, CategorySlug, TrackableItem } from '@/types';
@@ -140,6 +139,7 @@ export function CountryTracker({
                     <ItemToggle
                       key={country.id}
                       item={country}
+                      imageUrl={country.flagUrl}
                       categorySlug={categorySlug}
                       isChecked={isItemVisited(categorySlug, country)}
                       onToggle={() => handleToggle(country)}
