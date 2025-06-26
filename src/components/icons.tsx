@@ -82,55 +82,53 @@ export const MilestoneMapperIcon: React.FC<React.SVGProps<SVGSVGElement>> = (pro
   </svg>
 );
 
-// Custom USA Flag Icon - Updated to use static colors to prevent SSR errors
+// Custom USA Flag Icon - Updated to be more visually accurate
 export const UsaFlagIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 24 24"
-    width="24"
-    height="24"
-    fill="none"
-    strokeWidth="1.5"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    {...props}
-  >
-    {/* Canton (Blue Box for Stars) */}
-    <path fill="#002868" stroke="#002868" strokeWidth="0.5" d="M2 3h10v7H2z" />
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      {...props}
+    >
+      {/* Background/White Stripes */}
+      <rect x="2" y="5.5" width="20" height="13" fill="#FFFFFF" />
+  
+      {/* Red Stripes */}
+      <rect x="2" y="5.5" width="20" height="1" fill="#BF0A30" />
+      <rect x="2" y="7.5" width="20" height="1" fill="#BF0A30" />
+      <rect x="2" y="9.5" width="20" height="1" fill="#BF0A30" />
+      <rect x="2" y="11.5" width="20" height="1" fill="#BF0A30" />
+      <rect x="2" y="13.5" width="20" height="1" fill="#BF0A30" />
+      <rect x="2" y="15.5" width="20" height="1" fill="#BF0A30" />
+      <rect x="2" y="17.5" width="20" height="1" fill="#BF0A30" />
+  
+      {/* Canton */}
+      <rect x="2" y="5.5" width="10" height="7" fill="#002868" />
+      
+      {/* Stars (15 simplified stars) */}
+      <g fill="#FFFFFF">
+        {/* Row 1 */}
+        <circle cx="3.25" cy="6.5" r="0.35" />
+        <circle cx="5.25" cy="6.5" r="0.35" />
+        <circle cx="7.25" cy="6.5" r="0.35" />
+        <circle cx="9.25" cy="6.5" r="0.35" />
+        {/* Row 2 */}
+        <circle cx="4.25" cy="8" r="0.35" />
+        <circle cx="6.25" cy="8" r="0.35" />
+        <circle cx="8.25" cy="8" r="0.35" />
+        {/* Row 3 */}
+        <circle cx="3.25" cy="9.5" r="0.35" />
+        <circle cx="5.25" cy="9.5" r="0.35" />
+        <circle cx="7.25" cy="9.5" r="0.35" />
+        <circle cx="9.25" cy="9.5" r="0.35" />
+        {/* Row 4 */}
+        <circle cx="4.25" cy="11" r="0.35" />
+        <circle cx="6.25" cy="11" r="0.35" />
+        <circle cx="8.25" cy="11" r="0.35" />
+      </g>
+  
+      {/* Outline */}
+      <rect x="2" y="5.5" width="20" height="13" fill="none" stroke="hsl(var(--border))" strokeWidth="0.5"/>
+    </svg>
+  );
 
-    {/* Red Stripes */}
-    <path d="M2 4.5h20" stroke="#BF0A30" />
-    <path d="M2 7.5h20" stroke="#BF0A30" />
-    <path d="M2 10.5h20" stroke="#BF0A30" />
-    <path d="M2 13.5h20" stroke="#BF0A30" />
-    <path d="M2 16.5h20" stroke="#BF0A30" />
-    <path d="M2 19.5h20" stroke="#BF0A30" />
-
-    {/* White Stripes */}
-    <path d="M2 6h20" stroke="#FFFFFF" />
-    <path d="M12 9h10" stroke="#FFFFFF" />
-    <path d="M2 9h10" stroke="#FFFFFF" />
-    <path d="M2 12h20" stroke="#FFFFFF" />
-    <path d="M2 15h20" stroke="#FFFFFF" />
-    <path d="M2 18h20" stroke="#FFFFFF" />
     
-    {/* Outline of the flag */}
-    <rect x="2" y="3" width="20" height="18" fill="none" stroke="#666666" strokeWidth="1" />
-
-    {/* Stars (White) - simplified */}
-    <circle cx="4" cy="4.5" r="0.5" fill="white" stroke="none" />
-    <circle cx="6" cy="4.5" r="0.5" fill="white" stroke="none" />
-    <circle cx="8" cy="4.5" r="0.5" fill="white" stroke="none" />
-    <circle cx="10" cy="4.5" r="0.5" fill="white" stroke="none" />
-
-    <circle cx="3" cy="6.5" r="0.5" fill="white" stroke="none" />
-    <circle cx="5" cy="6.5" r="0.5" fill="white" stroke="none" />
-    <circle cx="7" cy="6.5" r="0.5" fill="white" stroke="none" />
-    <circle cx="9" cy="6.5" r="0.5" fill="white" stroke="none" />
-
-    <circle cx="4" cy="8.5" r="0.5" fill="white" stroke="none" />
-    <circle cx="6" cy="8.5" r="0.5" fill="white" stroke="none" />
-    <circle cx="8" cy="8.5" r="0.5" fill="white" stroke="none" />
-    <circle cx="10" cy="8.5" r="0.5" fill="white" stroke="none" />
-  </svg>
-);
