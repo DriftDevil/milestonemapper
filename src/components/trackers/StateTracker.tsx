@@ -129,13 +129,18 @@ export function StateTracker({ states, categorySlug, isItemVisited, toggleItemVi
         </TabsContent>
         <TabsContent value="map">
           {states.length > 0 ? (
-            <div className="aspect-[16/10] w-full">
-              <USStatesMap 
-                allStates={states} 
-                isItemVisited={isItemVisited} 
-                categorySlug={categorySlug} 
-                toggleItemVisited={toggleItemVisited}
-              />
+            <div className="space-y-4">
+                <p className="text-sm text-muted-foreground text-center px-4">
+                    Map view includes the 50 states, D.C., and Puerto Rico. For other territories, please use the List View.
+                </p>
+                <div className="aspect-[16/10] w-full border rounded-md overflow-hidden">
+                    <USStatesMap 
+                        allStates={states} 
+                        isItemVisited={isItemVisited} 
+                        categorySlug={categorySlug} 
+                        toggleItemVisited={toggleItemVisited}
+                    />
+                </div>
             </div>
           ) : (
             <p className="text-muted-foreground text-center">No states data to display on map.</p>
