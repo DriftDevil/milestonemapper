@@ -73,26 +73,20 @@ export function ParksMap({ parks, isItemVisited, categorySlug, toggleItemVisited
             return (
               // The Tooltip and TooltipTrigger now wrap the Marker component.
               // This resolves the conflict between the tooltip's hover events and our custom hover logic.
-              <Tooltip key={park.id} delayDuration={100}>
-                <TooltipTrigger asChild>
-                  <Marker coordinates={[park.longitude!, park.latitude!]} className="rsm-marker">
-                    <circle
-                      r={5}
-                      fill={getFillColor()}
-                      stroke={"hsl(var(--background))"}
-                      strokeWidth={1}
-                      onClick={() => toggleItemVisited(categorySlug, park)}
-                      onMouseEnter={() => setHoveredParkId(park.id)}
-                      onMouseLeave={() => setHoveredParkId(null)}
-                      style={{ cursor: 'pointer', transition: 'fill 0.2s ease-in-out' }}
-                    />
-                  </Marker>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>{park.name} ({park.state})</p>
-                  <p className="text-xs text-muted-foreground">{visited ? "Visited" : "Click to mark as visited"}</p>
-                </TooltipContent>
-              </Tooltip>
+              <Marker key={park.id} coordinates={[park.longitude!, park.latitude!]} className="rsm-marker">
+                <circle
+                  r={5}
+                  fill={getFillColor()}
+                  stroke={"hsl(var(--background))"}
+                  strokeWidth={1}
+                  onClick={() => toggleItemVisited(categorySlug, park)}
+                  onMouseEnter={() => setHoveredParkId(park.id)}
+                  onMouseLeave={() => setHoveredParkId(null)}
+                  style={{ cursor: 'pointer', transition: 'fill 0.2s ease-in-out' }}
+                >
+                  <title>{park.name} ({park.state})</title>
+                </circle>
+              </Marker>
             );
           })}
         </ComposableMap>
