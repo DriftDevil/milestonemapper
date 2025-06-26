@@ -16,21 +16,31 @@ const CENSUS_API_URLS = [
 ];
 const API_KEY = process.env.CENSUS_API_KEY;
 
-const fipsToCode: { [key: string]: string } = {
-  '01': 'AL', '02': 'AK', '04': 'AZ', '05': 'AR', '06': 'CA', '08': 'CO', '09': 'CT', '10': 'DE',
-  '11': 'DC', '12': 'FL', '13': 'GA', '15': 'HI', '16': 'ID', '17': 'IL', '18': 'IN', '19': 'IA',
-  '20': 'KS', '21': 'KY', '22': 'LA', '23': 'ME', '24': 'MD', '25': 'MA', '26': 'MI', '27': 'MN',
-  '28': 'MS', '29': 'MO', '30': 'MT', '31': 'NE', '32': 'NV', '33': 'NH', '34': 'NJ', '35': 'NM',
-  '36': 'NY', '37': 'NC', '38': 'ND', '39': 'OH', '40': 'OK', '41': 'OR', '42': 'PA', '44': 'RI',
-  '45': 'SC', '46': 'SD', '47': 'TN', '48': 'TX', '49': 'UT', '50': 'VT', '51': 'VA', '53': 'WA',
-  '54': 'WV', '55': 'WI', '56': 'WY',
-  // Territories
-  '60': 'AS', // American Samoa
-  '66': 'GU', // Guam
-  '69': 'MP', // Northern Mariana Islands
-  '72': 'PR', // Puerto Rico
-  '78': 'VI', // U.S. Virgin Islands
-};
+const fipsToFileName: { [key: string]: string } = {
+    '01': 'Flag_of_Alabama.svg', '02': 'Flag_of_Alaska.svg', '04': 'Flag_of_Arizona.svg',
+    '05': 'Flag_of_Arkansas.svg', '06': 'Flag_of_California.svg', '08': 'Flag_of_Colorado.svg',
+    '09': 'Flag_of_Connecticut.svg', '10': 'Flag_of_Delaware.svg', '11': 'Flag_of_the_District_of_Columbia.svg',
+    '12': 'Flag_of_Florida.svg', '13': 'Flag_of_Georgia_(U.S._state).svg', '15': 'Flag_of_Hawaii.svg',
+    '16': 'Flag_of_Idaho.svg', '17': 'Flag_of_Illinois.svg', '18': 'Flag_of_Indiana.svg',
+    '19': 'Flag_of_Iowa.svg', '20': 'Flag_of_Kansas.svg', '21': 'Flag_of_Kentucky.svg',
+    '22': 'Flag_of_Louisiana.svg', '23': 'Flag_of_Maine.svg', '24': 'Flag_of_Maryland.svg',
+    '25': 'Flag_of_Massachusetts.svg', '26': 'Flag_of_Michigan.svg', '27': 'Flag_of_Minnesota.svg',
+    '28': 'Flag_of_Mississippi.svg', '29': 'Flag_of_Missouri.svg', '30': 'Flag_of_Montana.svg',
+    '31': 'Flag_of_Nebraska.svg', '32': 'Flag_of_Nevada.svg', '33': 'Flag_of_New_Hampshire.svg',
+    '34': 'Flag_of_New_Jersey.svg', '35': 'Flag_of_New_Mexico.svg', '36': 'Flag_of_New_York.svg',
+    '37': 'Flag_of_North_Carolina.svg', '38': 'Flag_of_North_Dakota.svg', '39': 'Flag_of_Ohio.svg',
+    '40': 'Flag_of_Oklahoma.svg', '41': 'Flag_of_Oregon.svg', '42': 'Flag_of_Pennsylvania.svg',
+    '44': 'Flag_of_Rhode_Island.svg', '45': 'Flag_of_South_Carolina.svg', '46': 'Flag_of_South_Dakota.svg',
+    '47': 'Flag_of_Tennessee.svg', '48': 'Flag_of_Texas.svg', '49': 'Flag_of_Utah.svg',
+    '50': 'Flag_of_Vermont.svg', '51': 'Flag_of_Virginia.svg', '53': 'Flag_of_Washington.svg',
+    '54': 'Flag_of_West_Virginia.svg', '55': 'Flag_of_Wisconsin.svg', '56': 'Flag_of_Wyoming.svg',
+    // Territories
+    '60': 'Flag_of_American_Samoa.svg',
+    '66': 'Flag_of_Guam.svg',
+    '69': 'Flag_of_the_Northern_Mariana_Islands.svg',
+    '72': 'Flag_of_Puerto_Rico.svg',
+    '78': 'Flag_of_the_U.S._Virgin_Islands.svg',
+  };
 
 const FLAG_BASE_URL = 'https://raw.githubusercontent.com/SnpM/us-state-flags-svg/master/flags';
 
@@ -72,11 +82,11 @@ export async function GET() {
         .slice(1)
         .map((row: string[]) => {
           const fipsCode = row[1];
-          const postalCode = fipsToCode[fipsCode];
+          const fileName = fipsToFileName[fipsCode];
           return {
               name: row[0],
               id: fipsCode, // This is the FIPS code
-              flagUrl: postalCode ? `${FLAG_BASE_URL}/${postalCode}.svg` : undefined,
+              flagUrl: fileName ? `${FLAG_BASE_URL}/${fileName}` : undefined,
           };
         });
       
