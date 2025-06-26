@@ -1,3 +1,4 @@
+
 "use client";
 
 import * as React from 'react';
@@ -70,9 +71,11 @@ export function ParksMap({ parks, isItemVisited, categorySlug, toggleItemVisited
             };
             
             return (
-              <Marker key={park.id} coordinates={[park.longitude!, park.latitude!]} className="rsm-marker">
-                <Tooltip delayDuration={100}>
-                  <TooltipTrigger asChild>
+              // The Tooltip and TooltipTrigger now wrap the Marker component.
+              // This resolves the conflict between the tooltip's hover events and our custom hover logic.
+              <Tooltip key={park.id} delayDuration={100}>
+                <TooltipTrigger asChild>
+                  <Marker coordinates={[park.longitude!, park.latitude!]} className="rsm-marker">
                     <circle
                       r={5}
                       fill={getFillColor()}
@@ -83,13 +86,13 @@ export function ParksMap({ parks, isItemVisited, categorySlug, toggleItemVisited
                       onMouseLeave={() => setHoveredParkId(null)}
                       style={{ cursor: 'pointer', transition: 'fill 0.2s ease-in-out' }}
                     />
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>{park.name} ({park.state})</p>
-                    <p className="text-xs text-muted-foreground">{visited ? "Visited" : "Click to mark as visited"}</p>
-                  </TooltipContent>
-                </Tooltip>
-              </Marker>
+                  </Marker>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{park.name} ({park.state})</p>
+                  <p className="text-xs text-muted-foreground">{visited ? "Visited" : "Click to mark as visited"}</p>
+                </TooltipContent>
+              </Tooltip>
             );
           })}
         </ComposableMap>
