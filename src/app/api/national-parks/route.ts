@@ -41,18 +41,21 @@ export async function GET() {
     const nationalParksData = data.filter((park: any) => park.designation === "National Park");
 
     // Map the response from the backend to our application's frontend NationalPark type.
-    const mappedParks: NationalPark[] = nationalParksData.map((park: any) => {
-      const lat = parseFloat(park.latitude);
-      const lon = parseFloat(park.longitude);
+    const mappedParks: NationalPark[] = nationalParksData
+      .map((park: any) => {
+        const lat = parseFloat(park.latitude);
+        const lon = parseFloat(park.longitude);
 
-      return {
-        id: park.park_code,
-        name: park.full_name,
-        state: park.states,
-        latitude: isNaN(lat) ? undefined : lat,
-        longitude: isNaN(lon) ? undefined : lon,
-      };
-    });
+        return {
+          id: park.park_code,
+          name: park.full_name,
+          state: park.states,
+          latitude: isNaN(lat) ? undefined : lat,
+          longitude: isNaN(lon) ? undefined : lon,
+        };
+      })
+      // Filter out any parks that don't have a valid name to prevent crashes.
+      .filter(park => typeof park.name === 'string' && park.name.length > 0);
 
     // Sort alphabetically by name
     const sortedParks = mappedParks.sort((a, b) => a.name.localeCompare(b.name));
