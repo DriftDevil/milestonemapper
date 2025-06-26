@@ -34,6 +34,8 @@ export interface NationalPark extends TrackableItem {
   id: string; // This is the park_code from the NPS API
   name: string;
   state: string; // State(s) where the park is located (e.g. "CA,NV" or "WY")
+  latitude?: number;
+  longitude?: number;
 }
 
 export interface UserNationalPark {

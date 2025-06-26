@@ -45,6 +45,8 @@ export async function GET() {
       id: park.park_code,
       name: park.full_name,
       state: park.states,
+      latitude: park.latitude ? parseFloat(park.latitude) : undefined,
+      longitude: park.longitude ? parseFloat(park.longitude) : undefined,
     }));
 
     // Sort alphabetically by name
