@@ -39,13 +39,19 @@ export async function POST(request: NextRequest, { params }: { params: { stateId
     const { error, headers } = getAuthHeaders();
     if (error) return error;
 
+    // Add Content-Type header for the POST request
+    const postHeaders = {
+        ...headers,
+        'Content-Type': 'application/json',
+    };
+
     const url = new URL(`/user/me/states/${stateId}`, EXTERNAL_API_URL).toString();
     
     try {
         const apiResponse = await fetch(url, {
             method: 'POST',
-            headers: headers!,
-            body: null,
+            headers: postHeaders,
+            body: JSON.stringify({}), // Send an empty JSON object
             cache: 'no-store',
         });
         

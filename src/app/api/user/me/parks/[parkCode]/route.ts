@@ -39,15 +39,19 @@ export async function POST(request: NextRequest, { params }: { params: { parkCod
     const { error, headers } = getAuthHeaders();
     if (error) return error;
 
+    // Add Content-Type header for the POST request
+    const postHeaders = {
+        ...headers,
+        'Content-Type': 'application/json',
+    };
+
     const url = new URL(`/user/me/parks/${parkCode}`, EXTERNAL_API_URL).toString();
     
     try {
-        // Body is not expected for adding a park. Setting body: null ensures
-        // that fetch will not send a Content-Type header, which some backends require.
         const apiResponse = await fetch(url, {
             method: 'POST',
-            headers: headers!,
-            body: null,
+            headers: postHeaders,
+            body: JSON.stringify({}), // Send an empty JSON object
             cache: 'no-store',
         });
         
