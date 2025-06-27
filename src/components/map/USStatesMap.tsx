@@ -42,20 +42,22 @@ export function USStatesMap({ allStates, isItemVisited, categorySlug, toggleItem
               return (
                 <Tooltip key={geo.rsmKey}>
                   <TooltipTrigger asChild>
-                    <Geography
-                      geography={geo}
-                      fill={visited ? "hsl(var(--primary))" : "hsl(var(--muted))"}
-                      stroke="hsl(var(--background))" // Use a contrasting stroke for better definition
-                      strokeWidth={0.5}
-                      onClick={() => toggleItemVisited(categorySlug, stateObject)}
-                      className="rsm-geography"
-                      style={{
-                        default: { outline: "none", transition: "fill 0.2s ease-in-out" },
-                        hover: { outline: "none", fill: "hsl(var(--accent))" , cursor: "pointer"},
-                        pressed: { outline: "none", fill: "hsl(var(--accent))" },
-                      }}
-                      aria-label={stateName}
-                    />
+                    <g>
+                      <Geography
+                        geography={geo}
+                        fill={visited ? "hsl(var(--primary))" : "hsl(var(--muted))"}
+                        stroke="hsl(var(--background))" // Use a contrasting stroke for better definition
+                        strokeWidth={0.5}
+                        onClick={() => toggleItemVisited(categorySlug, stateObject)}
+                        className="rsm-geography"
+                        style={{
+                          default: { outline: "none", transition: "fill 0.2s ease-in-out" },
+                          hover: { outline: "none", fill: "hsl(var(--accent))" , cursor: "pointer"},
+                          pressed: { outline: "none", fill: "hsl(var(--accent))" },
+                        }}
+                        aria-label={stateName}
+                      />
+                    </g>
                   </TooltipTrigger>
                   <TooltipContent>
                     <p>{stateName} - {visited ? "Visited" : "Not Visited"}</p>

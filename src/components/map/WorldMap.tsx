@@ -67,20 +67,22 @@ export function WorldMap({ allCountries, isItemVisited, categorySlug, toggleItem
               return (
                 <Tooltip key={geo.rsmKey}>
                   <TooltipTrigger asChild>
-                    <Geography
-                      geography={geo}
-                      onClick={() => toggleItemVisited(categorySlug, appCountry)}
-                      fill={visited ? "hsl(var(--primary))" : "hsl(var(--muted))"}
-                      stroke="hsl(var(--background))"
-                      strokeWidth={0.5}
-                      className="rsm-geography"
-                      style={{
-                        default: { outline: "none", transition: "fill 0.2s ease-in-out" },
-                        hover: { outline: "none", fill: "hsl(var(--accent))" , cursor: "pointer"},
-                        pressed: { outline: "none", fill: "hsl(var(--accent))" },
-                      }}
-                      aria-label={countryName}
-                    />
+                    <g>
+                      <Geography
+                        geography={geo}
+                        onClick={() => toggleItemVisited(categorySlug, appCountry)}
+                        fill={visited ? "hsl(var(--primary))" : "hsl(var(--muted))"}
+                        stroke="hsl(var(--background))"
+                        strokeWidth={0.5}
+                        className="rsm-geography"
+                        style={{
+                          default: { outline: "none", transition: "fill 0.2s ease-in-out" },
+                          hover: { outline: "none", fill: "hsl(var(--accent))" , cursor: "pointer"},
+                          pressed: { outline: "none", fill: "hsl(var(--accent))" },
+                        }}
+                        aria-label={countryName}
+                      />
+                    </g>
                   </TooltipTrigger>
                   <TooltipContent>
                     <p>{countryName} - {visited ? "Visited" : "Not Visited"}</p>

@@ -64,17 +64,15 @@ export function ParksMap({ parks, isItemVisited, categorySlug, toggleItemVisited
               <Marker key={park.id} coordinates={[park.longitude!, park.latitude!]} className="rsm-marker">
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <g>
-                      <circle
-                        r={5}
-                        fill={visited ? 'hsl(var(--primary))' : 'hsl(var(--muted))'}
-                        stroke={"hsl(var(--background))"}
-                        strokeWidth={1}
-                        onClick={() => toggleItemVisited(categorySlug, park)}
-                        style={{ cursor: 'pointer', transition: 'fill 0.2s ease-in-out' }}
-                        className="hover:fill-accent"
-                      />
-                    </g>
+                    <circle
+                      r={5}
+                      fill={visited ? 'hsl(var(--primary))' : 'hsl(var(--muted))'}
+                      stroke={"hsl(var(--background))"}
+                      strokeWidth={1}
+                      onClick={() => toggleItemVisited(categorySlug, park)}
+                      style={{ cursor: 'pointer', transition: 'fill 0.2s ease-in-out' }}
+                      className="hover:fill-accent"
+                    />
                   </TooltipTrigger>
                   <TooltipContent>
                     <p>{park.name} ({park.state})</p>
