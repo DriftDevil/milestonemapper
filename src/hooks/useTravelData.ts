@@ -230,8 +230,8 @@ export function useTravelData() {
         }
     } else if (category === 'us-states') {
         const state = item as USState;
-        const stateId = state.dbId;
-        const fipsCode = state.id;
+        const stateId = state.dbId; // Correctly use the database ID for the API call
+        const fipsCode = state.id; // Use the FIPS code for the local Set
 
         setVisitedItems(prev => {
           const newStatesSet = new Set(prev['us-states']);
