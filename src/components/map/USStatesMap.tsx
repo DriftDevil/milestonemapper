@@ -48,6 +48,7 @@ export function USStatesMap({ allStates, isItemVisited, categorySlug, toggleItem
                         stroke="hsl(var(--background))" // Use a contrasting stroke for better definition
                         strokeWidth={0.5}
                         onClick={() => toggleItemVisited(categorySlug, stateObject)}
+                        className="rsm-geography"
                         style={{
                           default: { outline: "none", transition: "fill 0.2s ease-in-out" },
                           hover: { outline: "none", fill: visited ? "hsl(var(--accent))" : "#FFD700" , cursor: "pointer"},
