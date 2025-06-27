@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from 'react';
-import type { CategorySlug, VisitedItems, UserCountry, TrackableItem, Country, UserNationalPark, NationalPark } from '@/types';
+import type { CategorySlug, VisitedItems, UserCountry, TrackableItem, Country, UserNationalPark, NationalPark, USState, UserUSState } from '@/types';
 
 const LOCAL_STORAGE_KEY = 'milestoneMapperData';
 
@@ -99,6 +99,30 @@ export function useTravelData() {
     }
   }, []);
 
+  const fetchVisitedStates = useCallback(async () => {
+    try {
+      const response = await fetch('/api/user/me/states', { cache: 'no-store' });
+      if (!response.ok) {
+        if (response.status === 401) {
+          await handleUnauthorized();
+        } else {
+          console.error(`Failed to fetch visited states. Status: ${response.status}`);
+        }
+        return;
+      }
+      const userStates: UserUSState[] = await response.json();
+      
+      const statesSet = new Set(userStates.map(us => us.state.fips_code));
+      
+      setVisitedItems(prev => ({
+        ...prev,
+        'us-states': statesSet,
+      }));
+    } catch (error) {
+      console.error("Network error fetching visited states:", error);
+    }
+  }, []);
+
   useEffect(() => {
     let isMounted = true;
 
@@ -111,7 +135,6 @@ export function useTravelData() {
             if (isMounted) {
                setVisitedItems(prev => ({
                 ...prev,
-                'us-states': new Set(parsedData['us-states'] || []),
                 'mlb-ballparks': new Set(parsedData['mlb-ballparks'] || []),
                 'nfl-stadiums': new Set(parsedData['nfl-stadiums'] || []),
               }));
@@ -124,6 +147,7 @@ export function useTravelData() {
       
       await fetchVisitedCountries();
       await fetchVisitedParks();
+      await fetchVisitedStates();
 
       if (isMounted) {
         setIsLoaded(true);
@@ -133,13 +157,12 @@ export function useTravelData() {
     loadData();
 
     return () => { isMounted = false; };
-  }, [fetchVisitedCountries, fetchVisitedParks]);
+  }, [fetchVisitedCountries, fetchVisitedParks, fetchVisitedStates]);
 
   useEffect(() => {
     if (isLoaded && typeof window !== 'undefined') {
       try {
         const dataToStore = {
-          'us-states': Array.from(visitedItems['us-states']),
           'mlb-ballparks': Array.from(visitedItems['mlb-ballparks']),
           'nfl-stadiums': Array.from(visitedItems['nfl-stadiums']),
         };
@@ -188,63 +211,50 @@ export function useTravelData() {
       }
     } else if (category === 'national-parks') {
         const parkCode = item.id;
-
-        // Optimistic UI update
         setVisitedItems(prev => {
             const newParksSet = new Set(prev['national-parks']);
-            if (isCurrentlyVisited) {
-                newParksSet.delete(parkCode);
-            } else {
-                newParksSet.add(parkCode);
-            }
+            isCurrentlyVisited ? newParksSet.delete(parkCode) : newParksSet.add(parkCode);
             return { ...prev, 'national-parks': newParksSet };
         });
-
-        // API call
         try {
             const response = await fetch(`/api/user/me/parks/${parkCode}`, {
                 method: isCurrentlyVisited ? 'DELETE' : 'POST'
             });
-
             if (!response.ok) {
-                console.error(`API call failed for ${parkCode}. Reverting UI.`);
-                // Revert state on failure
-                setVisitedItems(prev => {
-                    const revertedParksSet = new Set(prev['national-parks']);
-                    if (isCurrentlyVisited) {
-                        revertedParksSet.add(parkCode);
-                    } else {
-                        revertedParksSet.delete(parkCode);
-                    }
-                    return { ...prev, 'national-parks': revertedParksSet };
-                });
-
-                if (response.status === 401) {
-                    await handleUnauthorized();
-                }
+                await fetchVisitedParks(); // Revert on failure
+                if (response.status === 401) await handleUnauthorized();
             }
-            // On success, the optimistic update was correct.
-            // We can optionally re-fetch from the server to ensure consistency.
-            await fetchVisitedParks();
-
         } catch (error) {
             console.error(`Network error for ${parkCode}. Reverting UI.`, error);
-            // Revert state on network error
-            setVisitedItems(prev => {
-                const revertedParksSet = new Set(prev['national-parks']);
-                if (isCurrentlyVisited) {
-                    revertedParksSet.add(parkCode);
-                } else {
-                    revertedParksSet.delete(parkCode);
-                }
-                return { ...prev, 'national-parks': revertedParksSet };
+            await fetchVisitedParks(); // Revert on error
+        }
+    } else if (category === 'us-states') {
+        const state = item as USState;
+        const stateId = state.dbId;
+        const fipsCode = state.id;
+
+        setVisitedItems(prev => {
+          const newStatesSet = new Set(prev['us-states']);
+          isCurrentlyVisited ? newStatesSet.delete(fipsCode) : newStatesSet.add(fipsCode);
+          return { ...prev, 'us-states': newStatesSet };
+        });
+
+        try {
+            const response = await fetch(`/api/user/me/states/${stateId}`, {
+                method: isCurrentlyVisited ? 'DELETE' : 'POST'
             });
+            if (!response.ok) {
+                await fetchVisitedStates(); // Revert on failure
+                if (response.status === 401) await handleUnauthorized();
+            }
+        } catch (error) {
+            console.error(`Network error for state ${state.name}. Reverting.`, error);
+            await fetchVisitedStates(); // Revert on error
         }
     } else {
         const itemId = item.id;
         setVisitedItems(prev => {
-          const newCategorySet = new Set(prev[category as 'us-states' | 'mlb-ballparks' | 'nfl-stadiums']);
-
+          const newCategorySet = new Set(prev[category as 'mlb-ballparks' | 'nfl-stadiums']);
           if (newCategorySet.has(itemId)) {
             newCategorySet.delete(itemId);
           } else {
@@ -253,7 +263,7 @@ export function useTravelData() {
           return { ...prev, [category]: newCategorySet };
         });
     }
-  }, [isItemVisited, fetchVisitedCountries, fetchVisitedParks]);
+  }, [isItemVisited, fetchVisitedCountries, fetchVisitedParks, fetchVisitedStates]);
 
   const getVisitedCount = useCallback((category: CategorySlug) => {
     const items = visitedItems[category];
@@ -311,13 +321,24 @@ export function useTravelData() {
         } catch (error) {
             console.error('Failed to clear visited parks:', error);
         }
+     } else if (category === 'us-states') {
+        try {
+            const response = await fetch(`/api/user/me/states`, { method: 'DELETE' });
+            if (response.status === 401) {
+              await handleUnauthorized();
+              return;
+            }
+            await fetchVisitedStates();
+        } catch (error) {
+            console.error('Failed to clear visited states:', error);
+        }
      } else {
         setVisitedItems(prev => {
             const newState = { ...prev, [category]: new Set<string>() };
             return newState;
         });
      }
-  }, [fetchVisitedCountries, fetchVisitedParks]);
+  }, [fetchVisitedCountries, fetchVisitedParks, fetchVisitedStates]);
 
   const setNationalParkVisitDate = (parkCode: string, date: string) => {
     // This function is deprecated as visit dates for parks are not supported.

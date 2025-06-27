@@ -26,8 +26,24 @@ export interface UserCountry {
 
 export interface USState extends TrackableItem {
   // 'id' will be the FIPS code (e.g., "01")
-  // 'name' will be the state name (e.g., "Alabama")
+  dbId: number; // The backend database primary key
+  abbreviation: string;
+  is_territory: boolean;
   flagUrl?: string;
+}
+
+export interface UserUSState {
+  id: string; // This is the ID of the user-state relationship record
+  userId: string;
+  state_id: number; // This is the foreign key to the states table
+  createdAt: string;
+  state: {
+    id: number;
+    fips_code: string;
+    name: string;
+    abbreviation: string;
+    is_territory: boolean;
+  };
 }
 
 export interface NationalPark extends TrackableItem {
@@ -70,7 +86,7 @@ export interface VisitedItems {
   countries: Set<string>; // Stores country codes ('US', 'CA')
   'countries-dates': Map<string, string>; // Stores visit dates by country UUID
   'countries-notes': Map<string, string>; // Stores notes by country UUID
-  'us-states': Set<string>;
+  'us-states': Set<string>; // Stores FIPS codes
   'national-parks': Set<string>;
   'mlb-ballparks': Set<string>;
   'nfl-stadiums': Set<string>;
