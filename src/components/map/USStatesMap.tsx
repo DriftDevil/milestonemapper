@@ -24,7 +24,7 @@ export function USStatesMap({ allStates, isItemVisited, categorySlug, toggleItem
   return (
     <TooltipProvider>
       <ComposableMap projection="geoAlbersUsa" className="w-full h-full rsm-svg">
-        <Sphere stroke="hsl(var(--border))" strokeWidth={0.5} fill="transparent" />
+        <Sphere stroke="hsl(var(--border))" strokeWidth={0.5} fill="transparent" id={''} />
         <Graticule stroke="hsl(var(--border))" strokeWidth={0.5} strokeOpacity={0.5} />
         <Geographies geography={geoUrl} className="rsm-geographies">
           {({ geographies }) =>
