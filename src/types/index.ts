@@ -1,4 +1,5 @@
 
+
 export type CategorySlug = 'countries' | 'us-states' | 'national-parks' | 'mlb-ballparks' | 'nfl-stadiums';
 
 export interface TrackableItem {
@@ -66,6 +67,20 @@ export interface MLBStadium extends TrackableItem {
   team: string;
   city: string;
   state: string;
+}
+
+export interface UserMLBStadium {
+  id: string; // This is the ID of the user-ballpark relationship record
+  userId: string;
+  ballpark_id: number; // This is the foreign key to the ballparks table
+  createdAt: string;
+  ballpark: {
+    id: number;
+    name: string;
+    team: string;
+    city: string;
+    state: string;
+  };
 }
 
 export interface NFLStadium extends TrackableItem {

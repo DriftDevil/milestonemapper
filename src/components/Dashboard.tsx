@@ -1,8 +1,9 @@
 
+
 "use client";
 
 import { useState, useEffect } from 'react';
-import type { CategorySlug, Country as CountryType, USState as USStateType, NationalPark as NationalParkType, TrackableItem } from '@/types';
+import type { CategorySlug, Country as CountryType, USState as USStateType, NationalPark as NationalParkType, TrackableItem, MLBStadium } from '@/types';
 import { CategoryCard } from "@/components/CategoryCard";
 import { GlobeIcon, UsaFlagIcon, MountainIcon, BaseballIcon, FootballIcon, MilestoneMapperIcon } from "@/components/icons";
 import { CountryTracker } from "@/components/trackers/CountryTracker";
@@ -61,8 +62,8 @@ const initialCategories: CategoryConfig[] = [
     slug: 'mlb-ballparks',
     title: "MLB Ballparks",
     icon: BaseballIcon,
-    totalCount: localData.mlbBallparks.length,
-    data: localData.mlbBallparks,
+    totalCount: 0, // Will be fetched
+    data: [] as MLBStadium[], // Will be fetched
     TrackerComponent: MlbStadiumTracker,
     cardColor: "text-orange-500",
   },
@@ -91,6 +92,7 @@ export function Dashboard() {
   const [countriesLoading, setCountriesLoading] = useState(true);
   const [statesLoading, setStatesLoading] = useState(true);
   const [parksLoading, setParksLoading] = useState(true);
+  const [ballparksLoading, setBallparksLoading] = useState(true);
 
   useEffect(() => {
       async function fetchCountries() {
@@ -191,12 +193,34 @@ export function Dashboard() {
         }
       }
 
+      async function fetchBallparks() {
+        try {
+          const res = await fetch('/api/ballparks');
+          if (!res.ok) {
+            const errorBody = await res.text();
+            throw new Error(`API error! status: ${res.status}, body: ${errorBody}`);
+          }
+          const data: MLBStadium[] = await res.json();
+          setCategories(prev => 
+            prev.map(cat => cat.slug === 'mlb-ballparks' ? { ...cat, data, totalCount: data.length, error: undefined } : cat)
+          );
+        } catch (error: any) {
+           console.error("Failed to fetch MLB ballparks:", error.message);
+           setCategories(prev => 
+            prev.map(cat => cat.slug === 'mlb-ballparks' ? { ...cat, data: [], totalCount: 0, error: "Failed to load ballpark data. Please try again later." } : cat)
+          );
+        } finally {
+          setBallparksLoading(false);
+        }
+      }
+
       fetchCountries();
       fetchStates();
       fetchNationalParks();
+      fetchBallparks();
   }, []);
 
-  const overallLoading = !travelDataLoaded || countriesLoading || statesLoading || parksLoading;
+  const overallLoading = !travelDataLoaded || countriesLoading || statesLoading || parksLoading || ballparksLoading;
 
   if (overallLoading) {
     return (

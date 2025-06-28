@@ -1,8 +1,9 @@
 
+
 "use client";
 
 import { useState, useEffect, useCallback } from 'react';
-import type { CategorySlug, VisitedItems, UserCountry, TrackableItem, Country, UserNationalPark, NationalPark, USState, UserUSState } from '@/types';
+import type { CategorySlug, VisitedItems, UserCountry, TrackableItem, Country, UserNationalPark, NationalPark, USState, UserUSState, MLBStadium, UserMLBStadium } from '@/types';
 
 const LOCAL_STORAGE_KEY = 'milestoneMapperData';
 
@@ -123,6 +124,30 @@ export function useTravelData() {
     }
   }, []);
 
+  const fetchVisitedBallparks = useCallback(async () => {
+    try {
+      const response = await fetch('/api/user/me/ballparks', { cache: 'no-store' });
+      if (!response.ok) {
+        if (response.status === 401) {
+          await handleUnauthorized();
+        } else {
+          console.error(`Failed to fetch visited ballparks. Status: ${response.status}`);
+        }
+        return;
+      }
+      const userBallparks: UserMLBStadium[] = await response.json();
+
+      const ballparkSet = new Set(userBallparks.map(ub => String(ub.ballpark.id)));
+      
+      setVisitedItems(prev => ({
+        ...prev,
+        'mlb-ballparks': ballparkSet,
+      }));
+    } catch (error) {
+      console.error("Network error fetching visited ballparks:", error);
+    }
+  }, []);
+
   useEffect(() => {
     let isMounted = true;
 
@@ -135,7 +160,6 @@ export function useTravelData() {
             if (isMounted) {
                setVisitedItems(prev => ({
                 ...prev,
-                'mlb-ballparks': new Set(parsedData['mlb-ballparks'] || []),
                 'nfl-stadiums': new Set(parsedData['nfl-stadiums'] || []),
               }));
             }
@@ -145,9 +169,12 @@ export function useTravelData() {
         }
       }
       
-      await fetchVisitedCountries();
-      await fetchVisitedParks();
-      await fetchVisitedStates();
+      await Promise.all([
+        fetchVisitedCountries(),
+        fetchVisitedParks(),
+        fetchVisitedStates(),
+        fetchVisitedBallparks()
+      ]);
 
       if (isMounted) {
         setIsLoaded(true);
@@ -157,13 +184,12 @@ export function useTravelData() {
     loadData();
 
     return () => { isMounted = false; };
-  }, [fetchVisitedCountries, fetchVisitedParks, fetchVisitedStates]);
+  }, [fetchVisitedCountries, fetchVisitedParks, fetchVisitedStates, fetchVisitedBallparks]);
 
   useEffect(() => {
     if (isLoaded && typeof window !== 'undefined') {
       try {
         const dataToStore = {
-          'mlb-ballparks': Array.from(visitedItems['mlb-ballparks']),
           'nfl-stadiums': Array.from(visitedItems['nfl-stadiums']),
         };
         localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dataToStore));
@@ -251,10 +277,29 @@ export function useTravelData() {
             console.error(`Network error for state ${state.name}. Reverting.`, error);
             await fetchVisitedStates(); // Revert on error
         }
+    } else if (category === 'mlb-ballparks') {
+      const ballparkId = item.id;
+      setVisitedItems(prev => {
+        const newSet = new Set(prev['mlb-ballparks']);
+        isCurrentlyVisited ? newSet.delete(ballparkId) : newSet.add(ballparkId);
+        return {...prev, 'mlb-ballparks': newSet };
+      });
+      try {
+        const response = await fetch(`/api/user/me/ballparks/${ballparkId}`, {
+          method: isCurrentlyVisited ? 'DELETE' : 'POST'
+        });
+        if (!response.ok) {
+          await fetchVisitedBallparks();
+          if (response.status === 401) await handleUnauthorized();
+        }
+      } catch (error) {
+        console.error(`Network error for ballpark ${item.name}. Reverting.`, error);
+        await fetchVisitedBallparks();
+      }
     } else {
         const itemId = item.id;
         setVisitedItems(prev => {
-          const newCategorySet = new Set(prev[category as 'mlb-ballparks' | 'nfl-stadiums']);
+          const newCategorySet = new Set(prev[category as 'nfl-stadiums']);
           if (newCategorySet.has(itemId)) {
             newCategorySet.delete(itemId);
           } else {
@@ -263,7 +308,7 @@ export function useTravelData() {
           return { ...prev, [category]: newCategorySet };
         });
     }
-  }, [isItemVisited, fetchVisitedCountries, fetchVisitedParks, fetchVisitedStates]);
+  }, [isItemVisited, fetchVisitedCountries, fetchVisitedParks, fetchVisitedStates, fetchVisitedBallparks]);
 
   const getVisitedCount = useCallback((category: CategorySlug) => {
     const items = visitedItems[category];
@@ -332,13 +377,24 @@ export function useTravelData() {
         } catch (error) {
             console.error('Failed to clear visited states:', error);
         }
+     } else if (category === 'mlb-ballparks') {
+        try {
+            const response = await fetch(`/api/user/me/ballparks`, { method: 'DELETE' });
+            if (response.status === 401) {
+              await handleUnauthorized();
+              return;
+            }
+            await fetchVisitedBallparks();
+        } catch (error) {
+            console.error('Failed to clear visited ballparks:', error);
+        }
      } else {
         setVisitedItems(prev => {
             const newState = { ...prev, [category]: new Set<string>() };
             return newState;
         });
      }
-  }, [fetchVisitedCountries, fetchVisitedParks, fetchVisitedStates]);
+  }, [fetchVisitedCountries, fetchVisitedParks, fetchVisitedStates, fetchVisitedBallparks]);
 
   const setNationalParkVisitDate = (parkCode: string, date: string) => {
     // This function is deprecated as visit dates for parks are not supported.
