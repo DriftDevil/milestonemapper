@@ -40,6 +40,9 @@ export async function GET() {
       team: ballpark.team,
       city: ballpark.city,
       state: ballpark.state,
+      country: ballpark.country,
+      latitude: ballpark.latitude ? parseFloat(ballpark.latitude) : undefined,
+      longitude: ballpark.longitude ? parseFloat(ballpark.longitude) : undefined,
     }));
 
     // Sort alphabetically by stadium name
