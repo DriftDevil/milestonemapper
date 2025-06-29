@@ -57,17 +57,15 @@ export function MlbBallparksMap({ ballparks, isItemVisited, categorySlug, toggle
               <Marker key={ballpark.id} coordinates={[ballpark.longitude!, ballpark.latitude!]} className="rsm-marker">
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <g>
-                      <circle
-                        r={5}
-                        fill={visited ? 'hsl(var(--primary))' : 'hsl(var(--muted))'}
-                        stroke={"hsl(var(--background))"}
-                        strokeWidth={1}
-                        onClick={() => toggleItemVisited(categorySlug, ballpark)}
-                        style={{ cursor: 'pointer', transition: 'fill 0.2s ease-in-out' }}
-                        className="hover:fill-accent"
-                      />
-                    </g>
+                    <circle
+                      r={5}
+                      fill={visited ? 'hsl(var(--primary))' : 'hsl(var(--muted))'}
+                      stroke={"hsl(var(--background))"}
+                      strokeWidth={1}
+                      onClick={() => toggleItemVisited(categorySlug, ballpark)}
+                      style={{ cursor: 'pointer', transition: 'fill 0.2s ease-in-out' }}
+                      className="hover:fill-accent"
+                    />
                   </TooltipTrigger>
                   <TooltipContent>
                     <p>{ballpark.name} ({ballpark.city}, {ballpark.state})</p>
