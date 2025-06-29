@@ -21,9 +21,7 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const body = await request.json();
-
-    // The validation was moved to rely solely on the backend's response for better error reporting.
+    const { currentPassword, newPassword } = await request.json();
     
     const changePasswordUrl = new URL('/auth/local/me/change-password', EXTERNAL_API_URL).toString();
 
@@ -33,7 +31,7 @@ export async function POST(request: NextRequest) {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`,
       },
-      body: JSON.stringify(body),
+      body: JSON.stringify({ currentPassword, newPassword }),
     });
 
     const responseText = await apiResponse.text();
@@ -42,24 +40,23 @@ export async function POST(request: NextRequest) {
         let errorMessage = 'Failed to change password.';
         let errorDetails = {};
         try {
-            // Try to parse the error response as JSON
             const errorJson = JSON.parse(responseText);
-            // The actual message from the backend is often in a `message` property
             errorMessage = errorJson.message || 'An unknown error occurred in the backend.';
             errorDetails = errorJson;
         } catch (e) {
-            // If it's not JSON, use the raw text
             if(responseText) errorMessage = responseText;
         }
         logger.error(CONTEXT, `Failed to change password. Status: ${apiResponse.status}`, { error: errorMessage, details: errorDetails });
         return NextResponse.json({ success: false, message: errorMessage }, { status: apiResponse.status });
     }
     
-    // According to docs, a successful response is 204 No Content.
     return NextResponse.json({ success: true, message: 'Password changed successfully.' }, { status: 200 });
 
   } catch (error: any) {
     logger.error(CONTEXT, 'Error in change password handler:', error.message);
+    if (error.name === 'SyntaxError') {
+       return NextResponse.json({ success: false, message: 'Could not parse request. Please ensure all fields are filled.' }, { status: 400 });
+    }
     return NextResponse.json({ success: false, message: 'An unexpected error occurred.' }, { status: 500 });
   }
 }
