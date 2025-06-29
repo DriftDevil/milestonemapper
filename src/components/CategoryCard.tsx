@@ -26,7 +26,7 @@ export function CategoryCard({ title, icon: Icon, visitedCount, totalCount, chil
           <CardTitle className="text-2xl font-headline">{title}</CardTitle>
           <Icon className={cn("w-8 h-8", cardColor ? cardColor : "text-primary")} />
         </div>
-        <CardDescription>Track your visits to {title.toLowerCase()}.</CardDescription>
+        <CardDescription>Track your visits to {title}.</CardDescription>
       </CardHeader>
       <CardContent className="flex-grow">
         <ProgressDisplay currentValue={visitedCount} maxValue={totalCount} />
@@ -40,7 +40,7 @@ export function CategoryCard({ title, icon: Icon, visitedCount, totalCount, chil
             <DialogHeader>
               <DialogTitle className="text-2xl font-headline">{title}</DialogTitle>
               <DialogDescription>
-                Mark the {title.toLowerCase()} you've visited. Progress: {visitedCount}/{totalCount}.
+                Mark the {title} you've visited. Progress: {visitedCount}/{totalCount}.
               </DialogDescription>
             </DialogHeader>
             {/* ScrollArea should take remaining space and scroll internally */}
