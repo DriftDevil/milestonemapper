@@ -22,7 +22,7 @@ export async function GET() {
       headers: {
         'Content-Type': 'application/json',
       },
-      next: { revalidate: 86400 }, // Cache for a day
+      cache: 'no-store', // Ensure we get fresh data with coordinates
     });
 
     if (!apiResponse.ok) {
