@@ -21,9 +21,6 @@ const ptSans = PT_Sans({
 export const metadata: Metadata = {
   title: 'Milestone Mapper',
   description: 'Track your travel milestones with Milestone Mapper.',
-  icons: {
-    icon: '/icon.svg',
-  },
 };
 
 export default function RootLayout({
