@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -255,8 +254,8 @@ export function Dashboard() {
                     <Skeleton className="h-6 w-40 hidden sm:block" />
                 </div>
                 <div className="flex items-center gap-2">
-                    <Skeleton className="h-8 w-8 rounded-full" />
                     <Skeleton className="h-10 w-10 rounded-md" />
+                    <Skeleton className="h-8 w-8 rounded-full" />
                 </div>
             </div>
         </header>
@@ -311,8 +310,8 @@ export function Dashboard() {
             <span className="text-xl font-bold font-headline hidden sm:inline-block">Milestone Mapper</span>
           </Link>
           <div className="flex items-center gap-2">
-            <UserNav />
             <ThemeToggle />
+            <UserNav />
           </div>
         </div>
       </header>
