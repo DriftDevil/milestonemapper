@@ -153,9 +153,6 @@ export function MlbStadiumTracker({ stadiums, categorySlug, isItemVisited, toggl
           ) : (
             <p className="text-muted-foreground text-center">No ballpark data to display on map.</p>
           )}
-          <p className="text-sm text-muted-foreground text-center px-4 mt-2">
-            The map shows ballparks in the USA. For Rogers Centre in Canada, please use the List View.
-          </p>
         </TabsContent>
       </Tabs>
     </div>
