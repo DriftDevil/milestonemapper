@@ -21,9 +21,10 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const { currentPassword, newPassword } = await request.json();
+    const body = await request.json();
 
-    if (!currentPassword || !newPassword) {
+    if (!body.currentPassword || !body.newPassword) {
+      logger.warn(CONTEXT, 'Change password request missing required fields.', { body });
       return NextResponse.json({ message: 'Both current and new passwords are required.' }, { status: 400 });
     }
 
@@ -35,10 +36,12 @@ export async function POST(request: NextRequest) {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`,
       },
-      body: JSON.stringify({ currentPassword, newPassword }),
+      body: JSON.stringify({
+        currentPassword: body.currentPassword,
+        newPassword: body.newPassword,
+      }),
     });
 
-    // Don't assume the response is always JSON. It could be empty on success.
     const responseText = await apiResponse.text();
 
     if (!apiResponse.ok) {
@@ -47,14 +50,12 @@ export async function POST(request: NextRequest) {
             const errorJson = JSON.parse(responseText);
             errorMessage = errorJson.message || errorMessage;
         } catch (e) {
-            // It's not JSON, maybe just a string error. Use the text if available.
             if(responseText) errorMessage = responseText;
         }
         logger.error(CONTEXT, `Failed to change password. Status: ${apiResponse.status}`, { error: errorMessage });
         return NextResponse.json({ success: false, message: errorMessage }, { status: apiResponse.status });
     }
     
-    // The backend might return an empty body on success (200 or 204)
     return NextResponse.json({ success: true, message: 'Password changed successfully.' }, { status: 200 });
 
   } catch (error: any) {
