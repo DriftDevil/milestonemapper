@@ -60,15 +60,29 @@ export function ChangePasswordDialog() {
       }
 
       toast({
-        title: 'Success',
-        description: 'Your password has been changed successfully.',
+        title: 'Password Changed Successfully',
+        description: 'For your security, you will be logged out. Please sign in again with your new password.',
       });
+      
       form.reset();
       setOpen(false);
+
+      // Perform logout after a short delay to allow toast to be seen
+      setTimeout(async () => {
+        try {
+          await fetch('/api/auth/logout', { method: 'POST' });
+        } catch (error) {
+          console.error("Automatic logout after password change failed:", error);
+        } finally {
+          // Hard redirect to login page to clear all state
+          window.location.href = '/login';
+        }
+      }, 2500);
+
     } catch (error: any) {
       toast({
         variant: 'destructive',
-        title: 'Error',
+        title: 'Error Changing Password',
         description: error.message || 'An unexpected error occurred.',
       });
     }
