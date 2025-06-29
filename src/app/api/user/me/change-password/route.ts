@@ -23,11 +23,8 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    if (!body.currentPassword || !body.newPassword) {
-      logger.warn(CONTEXT, 'Change password request missing required fields.', { body });
-      return NextResponse.json({ message: 'Both current and new passwords are required.' }, { status: 400 });
-    }
-
+    // The validation was moved to rely solely on the backend's response for better error reporting.
+    
     const changePasswordUrl = new URL('/auth/local/me/change-password', EXTERNAL_API_URL).toString();
 
     const apiResponse = await fetch(changePasswordUrl, {
@@ -36,26 +33,29 @@ export async function POST(request: NextRequest) {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`,
       },
-      body: JSON.stringify({
-        currentPassword: body.currentPassword,
-        newPassword: body.newPassword,
-      }),
+      body: JSON.stringify(body),
     });
 
     const responseText = await apiResponse.text();
 
     if (!apiResponse.ok) {
         let errorMessage = 'Failed to change password.';
+        let errorDetails = {};
         try {
+            // Try to parse the error response as JSON
             const errorJson = JSON.parse(responseText);
-            errorMessage = errorJson.message || errorMessage;
+            // The actual message from the backend is often in a `message` property
+            errorMessage = errorJson.message || 'An unknown error occurred in the backend.';
+            errorDetails = errorJson;
         } catch (e) {
+            // If it's not JSON, use the raw text
             if(responseText) errorMessage = responseText;
         }
-        logger.error(CONTEXT, `Failed to change password. Status: ${apiResponse.status}`, { error: errorMessage });
+        logger.error(CONTEXT, `Failed to change password. Status: ${apiResponse.status}`, { error: errorMessage, details: errorDetails });
         return NextResponse.json({ success: false, message: errorMessage }, { status: apiResponse.status });
     }
     
+    // According to docs, a successful response is 204 No Content.
     return NextResponse.json({ success: true, message: 'Password changed successfully.' }, { status: 200 });
 
   } catch (error: any) {
