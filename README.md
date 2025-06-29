@@ -27,25 +27,35 @@ This project is built with a modern web stack, including:
 -   **Component Library**: [ShadCN UI](https://ui.shadcn.com/)
 -   **Authentication**: Custom cookie-based authentication forwarding to a backend service.
 -   **Generative AI**: [Google Genkit](https://firebase.google.com/docs/genkit) (for potential future AI features)
+-   **Containerization**: [Docker](https://www.docker.com/)
 
 ## Getting Started
 
-To run this project locally, you will need to set up a `.env` file with the necessary environment variables, primarily the base URL for the external backend API.
+This project is designed to be run with Docker and Docker Compose.
+
+### Prerequisites
+
+*   Docker
+*   Docker Compose
+
+### Setup
 
 1.  **Set Environment Variables**:
-    Create a `.env` file in the root of the project and add the URL of your backend authentication and data service:
+    Create a `.env` file in the root of the project. At a minimum, you must provide the base URL for the external backend API:
     ```
     EXTERNAL_API_BASE_URL=http://your-backend-api-url.com
     ```
 
-2.  **Install dependencies**:
+2.  **Run with Docker Compose**:
+    From the root of the project, run the following command to build and start the application in the background:
     ```bash
-    npm install
+    docker compose up -d --build
     ```
 
-3.  **Run the development server**:
-    ```bash
-    npm run dev
-    ```
+3.  **Accessing the Application**:
+    The application is configured to be served by a Traefik reverse proxy at `https://milestonemapper.huangtechhub.dev`. You will need to have your local environment configured to resolve this domain to your Docker host.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+    To stop the application, run:
+    ```bash
+    docker compose down
+    ```
