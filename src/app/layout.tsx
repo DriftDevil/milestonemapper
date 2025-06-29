@@ -21,6 +21,9 @@ const ptSans = PT_Sans({
 export const metadata: Metadata = {
   title: 'Milestone Mapper',
   description: 'Track your travel milestones with Milestone Mapper.',
+  icons: {
+    icon: '/icon.svg',
+  },
 };
 
 export default function RootLayout({
@@ -30,9 +33,6 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head>
-        {/* next/font handles font loading; manual links are no longer needed here */}
-      </head>
       <body className={cn(
         "font-body antialiased min-h-screen flex flex-col",
         playfairDisplay.variable,
