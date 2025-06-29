@@ -6,7 +6,7 @@ import { ComposableMap, Geographies, Geography, Marker, Sphere, Graticule } from
 import type { NFLStadium, CategorySlug, TrackableItem } from '@/types';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
-const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
+const geoUrl = "https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json";
 
 interface NflStadiumsMapProps {
   stadiums: NFLStadium[];
@@ -29,21 +29,14 @@ export function NflStadiumsMap({ stadiums, isItemVisited, categorySlug, toggleIt
     <div className="relative w-full h-full">
       <TooltipProvider>
         <ComposableMap
-          projection="geoMercator"
-          projectionConfig={{
-            rotate: [96, 0, 0],
-            center: [0, 39],
-            scale: 600,
-          }}
+          projection="geoAlbersUsa"
           className="w-full h-full rsm-svg"
         >
           <Sphere stroke="hsl(var(--border))" strokeWidth={0.5} fill="transparent" id={''} />
           <Graticule stroke="hsl(var(--border))" strokeWidth={0.5} strokeOpacity={0.5} />
           <Geographies geography={geoUrl} className="rsm-geographies">
             {({ geographies }) =>
-              geographies
-                .filter(geo => ["United States of America"].includes(geo.properties.name))
-                .map(geo => (
+              geographies.map(geo => (
                   <Geography
                     key={geo.rsmKey}
                     geography={geo}

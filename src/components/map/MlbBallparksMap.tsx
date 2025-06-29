@@ -6,8 +6,9 @@ import { ComposableMap, Geographies, Geography, Marker, Sphere, Graticule } from
 import type { MLBStadium, CategorySlug, TrackableItem } from '@/types';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
-// Using a world atlas to render both USA and Canada
-const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
+// Using a world atlas to render Canada and a US atlas for state outlines
+const worldGeoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
+const usStatesGeoUrl = "https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json";
 
 interface MlbBallparksMapProps {
   ballparks: MLBStadium[];
@@ -41,10 +42,12 @@ export function MlbBallparksMap({ ballparks, isItemVisited, categorySlug, toggle
         >
           <Sphere stroke="hsl(var(--border))" strokeWidth={0.5} fill="transparent" id={''} />
           <Graticule stroke="hsl(var(--border))" strokeWidth={0.5} strokeOpacity={0.5} />
-          <Geographies geography={geoUrl} className="rsm-geographies">
+          
+          {/* Render Canada from world map */}
+          <Geographies geography={worldGeoUrl} className="rsm-geographies">
             {({ geographies }) =>
               geographies
-                .filter(geo => ["United States of America", "Canada"].includes(geo.properties.name))
+                .filter(geo => geo.properties.name === "Canada")
                 .map(geo => (
                   <Geography
                     key={geo.rsmKey}
@@ -60,6 +63,26 @@ export function MlbBallparksMap({ ballparks, isItemVisited, categorySlug, toggle
                 ))
             }
           </Geographies>
+
+          {/* Render US States from us-atlas */}
+          <Geographies geography={usStatesGeoUrl} className="rsm-geographies">
+            {({ geographies }) =>
+              geographies.map(geo => (
+                <Geography
+                  key={geo.rsmKey}
+                  geography={geo}
+                  fill="hsl(var(--muted))"
+                  stroke="hsl(var(--background))"
+                  style={{
+                    default: { outline: "none" },
+                    hover: { outline: "none" },
+                    pressed: { outline: "none" },
+                  }}
+                />
+              ))
+            }
+          </Geographies>
+          
           {ballparksWithCoords.map(ballpark => {
             const visited = isItemVisited(categorySlug, ballpark);
             
