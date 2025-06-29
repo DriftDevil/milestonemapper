@@ -17,8 +17,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { User } from 'lucide-react';
+import { useRouter } from "next/navigation";
 
 export function UserNav() {
+  const router = useRouter();
 
   const handleSignOut = async () => {
     try {
@@ -49,7 +51,7 @@ export function UserNav() {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuItem disabled>
+          <DropdownMenuItem onClick={() => router.push('/profile')}>
             Profile
             <DropdownMenuShortcut>⇧P</DropdownMenuShortcut>
           </DropdownMenuItem>

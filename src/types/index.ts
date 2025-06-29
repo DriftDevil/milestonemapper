@@ -125,3 +125,17 @@ export interface VisitedItems {
   'mlb-ballparks': Set<string>;
   'nfl-stadiums': Set<string>;
 }
+
+export interface User {
+  authSource: string;
+  data: {
+    id: string;
+    email: string;
+    name: string;
+    preferredUsername: string;
+    isAdmin: boolean;
+    createdAt: string;
+    lastSeen: string;
+    avatarUrl: string;
+  };
+}
