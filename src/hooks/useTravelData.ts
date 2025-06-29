@@ -3,9 +3,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from 'react';
-import type { CategorySlug, VisitedItems, UserCountry, TrackableItem, Country, UserNationalPark, NationalPark, USState, UserUSState, MLBStadium, UserMLBStadium } from '@/types';
-
-const LOCAL_STORAGE_KEY = 'milestoneMapperData';
+import type { CategorySlug, VisitedItems, UserCountry, TrackableItem, Country, UserNationalPark, NationalPark, USState, UserUSState, MLBStadium, UserMLBStadium, NFLStadium, UserNFLStadium } from '@/types';
 
 // Helper function to handle automatic sign-out
 const handleUnauthorized = async () => {
@@ -147,33 +145,41 @@ export function useTravelData() {
       console.error("Network error fetching visited ballparks:", error);
     }
   }, []);
+  
+  const fetchVisitedNflStadiums = useCallback(async () => {
+    try {
+      const response = await fetch('/api/user/me/stadiums', { cache: 'no-store' });
+      if (!response.ok) {
+        if (response.status === 401) {
+          await handleUnauthorized();
+        } else {
+          console.error(`Failed to fetch visited NFL stadiums. Status: ${response.status}`);
+        }
+        return;
+      }
+      const userStadiums: UserNFLStadium[] = await response.json();
+
+      const stadiumSet = new Set(userStadiums.map(us => String(us.stadium.id)));
+      
+      setVisitedItems(prev => ({
+        ...prev,
+        'nfl-stadiums': stadiumSet,
+      }));
+    } catch (error) {
+      console.error("Network error fetching visited NFL stadiums:", error);
+    }
+  }, []);
 
   useEffect(() => {
     let isMounted = true;
 
     async function loadData() {
-      if (typeof window !== 'undefined') {
-        try {
-          const storedData = localStorage.getItem(LOCAL_STORAGE_KEY);
-          if (storedData) {
-            const parsedData = JSON.parse(storedData);
-            if (isMounted) {
-               setVisitedItems(prev => ({
-                ...prev,
-                'nfl-stadiums': new Set(parsedData['nfl-stadiums'] || []),
-              }));
-            }
-          }
-        } catch (error) {
-          console.error("Failed to load travel data from local storage:", error);
-        }
-      }
-      
       await Promise.all([
         fetchVisitedCountries(),
         fetchVisitedParks(),
         fetchVisitedStates(),
-        fetchVisitedBallparks()
+        fetchVisitedBallparks(),
+        fetchVisitedNflStadiums()
       ]);
 
       if (isMounted) {
@@ -184,20 +190,7 @@ export function useTravelData() {
     loadData();
 
     return () => { isMounted = false; };
-  }, [fetchVisitedCountries, fetchVisitedParks, fetchVisitedStates, fetchVisitedBallparks]);
-
-  useEffect(() => {
-    if (isLoaded && typeof window !== 'undefined') {
-      try {
-        const dataToStore = {
-          'nfl-stadiums': Array.from(visitedItems['nfl-stadiums']),
-        };
-        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dataToStore));
-      } catch (error) {
-        console.error("Failed to save travel data to local storage:", error);
-      }
-    }
-  }, [visitedItems, isLoaded]);
+  }, [fetchVisitedCountries, fetchVisitedParks, fetchVisitedStates, fetchVisitedBallparks, fetchVisitedNflStadiums]);
 
   const isItemVisited = useCallback((category: CategorySlug, item: TrackableItem) => {
     const items = visitedItems[category as 'us-states' | 'national-parks' | 'mlb-ballparks' | 'nfl-stadiums' | 'countries'];
@@ -296,19 +289,27 @@ export function useTravelData() {
         console.error(`Network error for ballpark ${item.name}. Reverting.`, error);
         await fetchVisitedBallparks();
       }
-    } else {
-        const itemId = item.id;
-        setVisitedItems(prev => {
-          const newCategorySet = new Set(prev[category as 'nfl-stadiums']);
-          if (newCategorySet.has(itemId)) {
-            newCategorySet.delete(itemId);
-          } else {
-            newCategorySet.add(itemId);
-          }
-          return { ...prev, [category]: newCategorySet };
+    } else if (category === 'nfl-stadiums') {
+      const stadiumId = item.id;
+      setVisitedItems(prev => {
+        const newSet = new Set(prev['nfl-stadiums']);
+        isCurrentlyVisited ? newSet.delete(stadiumId) : newSet.add(stadiumId);
+        return {...prev, 'nfl-stadiums': newSet };
+      });
+      try {
+        const response = await fetch(`/api/user/me/stadiums/${stadiumId}`, {
+          method: isCurrentlyVisited ? 'DELETE' : 'POST'
         });
+        if (!response.ok) {
+          await fetchVisitedNflStadiums();
+          if (response.status === 401) await handleUnauthorized();
+        }
+      } catch (error) {
+        console.error(`Network error for stadium ${item.name}. Reverting.`, error);
+        await fetchVisitedNflStadiums();
+      }
     }
-  }, [isItemVisited, fetchVisitedCountries, fetchVisitedParks, fetchVisitedStates, fetchVisitedBallparks]);
+  }, [isItemVisited, fetchVisitedCountries, fetchVisitedParks, fetchVisitedStates, fetchVisitedBallparks, fetchVisitedNflStadiums]);
 
   const getVisitedCount = useCallback((category: CategorySlug) => {
     const items = visitedItems[category];
@@ -388,13 +389,19 @@ export function useTravelData() {
         } catch (error) {
             console.error('Failed to clear visited ballparks:', error);
         }
-     } else {
-        setVisitedItems(prev => {
-            const newState = { ...prev, [category]: new Set<string>() };
-            return newState;
-        });
+     } else if (category === 'nfl-stadiums') {
+        try {
+            const response = await fetch(`/api/user/me/stadiums`, { method: 'DELETE' });
+            if (response.status === 401) {
+              await handleUnauthorized();
+              return;
+            }
+            await fetchVisitedNflStadiums();
+        } catch (error) {
+            console.error('Failed to clear visited NFL stadiums:', error);
+        }
      }
-  }, [fetchVisitedCountries, fetchVisitedParks, fetchVisitedStates, fetchVisitedBallparks]);
+  }, [fetchVisitedCountries, fetchVisitedParks, fetchVisitedStates, fetchVisitedBallparks, fetchVisitedNflStadiums]);
 
   const setNationalParkVisitDate = (parkCode: string, date: string) => {
     // This function is deprecated as visit dates for parks are not supported.

@@ -90,6 +90,22 @@ export interface NFLStadium extends TrackableItem {
   team: string;
   city: string;
   state: string;
+  latitude?: number;
+  longitude?: number;
+}
+
+export interface UserNFLStadium {
+  id: string; // This is the ID of the user-stadium relationship record
+  userId: string;
+  stadium_id: number; // This is the foreign key to the stadiums table
+  createdAt: string;
+  stadium: {
+    id: number;
+    name: string;
+    team: string;
+    city: string;
+    state: string;
+  };
 }
 
 export interface Category {

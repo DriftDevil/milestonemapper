@@ -3,7 +3,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import type { CategorySlug, Country as CountryType, USState as USStateType, NationalPark as NationalParkType, TrackableItem, MLBStadium } from '@/types';
+import type { CategorySlug, Country as CountryType, USState as USStateType, NationalPark as NationalParkType, TrackableItem, MLBStadium, NFLStadium } from '@/types';
 import { CategoryCard } from "@/components/CategoryCard";
 import { GlobeIcon, UsaFlagIcon, MountainIcon, BaseballIcon, FootballIcon, MilestoneMapperIcon } from "@/components/icons";
 import { CountryTracker } from "@/components/trackers/CountryTracker";
@@ -11,7 +11,6 @@ import { StateTracker } from "@/components/trackers/StateTracker";
 import { NationalParkTracker } from "@/components/trackers/NationalParkTracker";
 import { MlbStadiumTracker } from "@/components/trackers/MlbStadiumTracker";
 import { NflStadiumTracker } from "@/components/trackers/NflStadiumTracker";
-import * as localData from "@/lib/data";
 import { useTravelData } from "@/hooks/useTravelData";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card";
@@ -71,8 +70,8 @@ const initialCategories: CategoryConfig[] = [
     slug: 'nfl-stadiums',
     title: "NFL Stadiums",
     icon: FootballIcon,
-    totalCount: localData.nflStadiums.length,
-    data: localData.nflStadiums,
+    totalCount: 0,
+    data: [] as NFLStadium[],
     TrackerComponent: NflStadiumTracker,
     cardColor: "text-purple-500",
   },
@@ -93,6 +92,7 @@ export function Dashboard() {
   const [statesLoading, setStatesLoading] = useState(true);
   const [parksLoading, setParksLoading] = useState(true);
   const [ballparksLoading, setBallparksLoading] = useState(true);
+  const [nflStadiumsLoading, setNflStadiumsLoading] = useState(true);
 
   useEffect(() => {
       async function fetchCountries() {
@@ -214,13 +214,35 @@ export function Dashboard() {
         }
       }
 
+      async function fetchNflStadiums() {
+        try {
+          const res = await fetch('/api/nfl-stadiums');
+          if (!res.ok) {
+            const errorBody = await res.text();
+            throw new Error(`API error! status: ${res.status}, body: ${errorBody}`);
+          }
+          const data: NFLStadium[] = await res.json();
+          setCategories(prev => 
+            prev.map(cat => cat.slug === 'nfl-stadiums' ? { ...cat, data, totalCount: data.length, error: undefined } : cat)
+          );
+        } catch (error: any) {
+           console.error("Failed to fetch NFL stadiums:", error.message);
+           setCategories(prev => 
+            prev.map(cat => cat.slug === 'nfl-stadiums' ? { ...cat, data: [], totalCount: 0, error: "Failed to load stadium data. Please try again later." } : cat)
+          );
+        } finally {
+          setNflStadiumsLoading(false);
+        }
+      }
+
       fetchCountries();
       fetchStates();
       fetchNationalParks();
       fetchBallparks();
+      fetchNflStadiums();
   }, []);
 
-  const overallLoading = !travelDataLoaded || countriesLoading || statesLoading || parksLoading || ballparksLoading;
+  const overallLoading = !travelDataLoaded || countriesLoading || statesLoading || parksLoading || ballparksLoading || nflStadiumsLoading;
 
   if (overallLoading) {
     return (
