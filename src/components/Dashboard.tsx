@@ -16,7 +16,7 @@ import { useTravelData } from "@/hooks/useTravelData";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { AuthButton } from '@/components/AuthButton';
+import { UserNav } from '@/components/UserNav';
 
 interface CategoryConfig {
   slug: CategorySlug;
@@ -255,7 +255,7 @@ export function Dashboard() {
                     <Skeleton className="h-6 w-40 hidden sm:block" />
                 </div>
                 <div className="flex items-center gap-2">
-                    <Skeleton className="h-9 w-24 rounded-md" />
+                    <Skeleton className="h-8 w-8 rounded-full" />
                     <Skeleton className="h-10 w-10 rounded-md" />
                 </div>
             </div>
@@ -311,7 +311,7 @@ export function Dashboard() {
             <span className="text-xl font-bold font-headline hidden sm:inline-block">Milestone Mapper</span>
           </Link>
           <div className="flex items-center gap-2">
-            <AuthButton />
+            <UserNav />
             <ThemeToggle />
           </div>
         </div>
