@@ -40,8 +40,8 @@ export async function GET() {
       team: stadium.team,
       city: stadium.city,
       state: stadium.state,
-      latitude: stadium.latitude ? parseFloat(stadium.latitude) : undefined,
-      longitude: stadium.longitude ? parseFloat(stadium.longitude) : undefined,
+      latitude: stadium.lat ? parseFloat(stadium.lat) : undefined,
+      longitude: stadium.lon ? parseFloat(stadium.lon) : undefined,
     }));
 
     // Sort alphabetically by stadium name, then team name
