@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -15,6 +14,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import type { User } from '@/types';
 import { UserCircle } from 'lucide-react';
+import { ChangePasswordDialog } from '@/components/ChangePasswordDialog';
 
 function ProfileDetailRow({ label, value }: { label: string, value: string | undefined }) {
   return (
@@ -212,7 +212,7 @@ export default function ProfilePage() {
                             <h3 className="text-lg font-medium">Actions</h3>
                             <div className="flex flex-wrap gap-4 mt-4">
                                 <Button disabled>Edit Profile (Coming Soon)</Button>
-                                <Button variant="secondary" disabled>Change Password</Button>
+                                <ChangePasswordDialog />
                             </div>
                         </CardContent>
                     </Card>
