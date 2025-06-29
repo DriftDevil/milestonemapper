@@ -22,6 +22,11 @@ export async function POST(request: NextRequest) {
 
   try {
     const { currentPassword, newPassword } = await request.json();
+
+    if (!currentPassword || !newPassword) {
+      logger.warn(CONTEXT, 'Change password attempt with missing fields.');
+      return NextResponse.json({ success: false, message: 'Current password and new password are required fields.' }, { status: 400 });
+    }
     
     const changePasswordUrl = new URL('/auth/local/me/change-password', EXTERNAL_API_URL).toString();
 
@@ -31,32 +36,30 @@ export async function POST(request: NextRequest) {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`,
       },
-      body: JSON.stringify({ currentPassword, newPassword }),
+      // The backend Go code expects "oldPassword", not "currentPassword". This is the fix.
+      body: JSON.stringify({ oldPassword: currentPassword, newPassword }),
     });
 
-    const responseText = await apiResponse.text();
+    // Check if the response has a body before trying to parse it
+    if (apiResponse.status === 204 || apiResponse.headers.get('content-length') === '0') {
+      return NextResponse.json({ success: true, message: 'Password changed successfully.' }, { status: 200 });
+    }
+
+    const responseData = await apiResponse.json();
 
     if (!apiResponse.ok) {
-        let errorMessage = 'Failed to change password.';
-        let errorDetails = {};
-        try {
-            const errorJson = JSON.parse(responseText);
-            errorMessage = errorJson.message || 'An unknown error occurred in the backend.';
-            errorDetails = errorJson;
-        } catch (e) {
-            if(responseText) errorMessage = responseText;
-        }
-        logger.error(CONTEXT, `Failed to change password. Status: ${apiResponse.status}`, { error: errorMessage, details: errorDetails });
+        const errorMessage = responseData.message || 'Failed to change password at the backend.';
+        logger.error(CONTEXT, `Backend error changing password. Status: ${apiResponse.status}`, { error: errorMessage, details: responseData });
         return NextResponse.json({ success: false, message: errorMessage }, { status: apiResponse.status });
     }
     
     return NextResponse.json({ success: true, message: 'Password changed successfully.' }, { status: 200 });
 
   } catch (error: any) {
-    logger.error(CONTEXT, 'Error in change password handler:', error.message);
+    logger.error(CONTEXT, 'Error in change password handler:', { message: error.message, stack: error.stack });
     if (error.name === 'SyntaxError') {
-       return NextResponse.json({ success: false, message: 'Could not parse request. Please ensure all fields are filled.' }, { status: 400 });
+       return NextResponse.json({ success: false, message: 'Invalid request from client. Please ensure all fields are filled.' }, { status: 400 });
     }
-    return NextResponse.json({ success: false, message: 'An unexpected error occurred.' }, { status: 500 });
+    return NextResponse.json({ success: false, message: 'An unexpected server error occurred.' }, { status: 500 });
   }
 }
