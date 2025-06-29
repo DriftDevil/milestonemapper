@@ -3,6 +3,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import type { CategorySlug, Country as CountryType, USState as USStateType, NationalPark as NationalParkType, TrackableItem, MLBStadium, NFLStadium } from '@/types';
 import { CategoryCard } from "@/components/CategoryCard";
 import { GlobeIcon, UsaFlagIcon, MountainIcon, BaseballIcon, FootballIcon, MilestoneMapperIcon } from "@/components/icons";
@@ -246,121 +247,141 @@ export function Dashboard() {
 
   if (overallLoading) {
     return (
-      <main className="flex-grow">
-        {/* Skeleton for Hero Section */}
-        <section className="bg-muted/30 py-20">
-          <div className="container mx-auto px-4 text-center animate-pulse">
-            <div className="flex justify-center items-center gap-3 mb-4">
-              <Skeleton className="w-16 h-16 rounded-lg" />
-              <Skeleton className="h-12 md:h-16 w-72 md:w-96" />
+      <div className="flex flex-col min-h-screen">
+        <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+            <div className="container mx-auto flex h-14 items-center justify-between">
+                <div className="flex items-center gap-2">
+                    <Skeleton className="w-8 h-8 rounded-lg" />
+                    <Skeleton className="h-6 w-40 hidden sm:block" />
+                </div>
+                <div className="flex items-center gap-2">
+                    <Skeleton className="h-9 w-24 rounded-md" />
+                    <Skeleton className="h-10 w-10 rounded-md" />
+                </div>
             </div>
-            <Skeleton className="h-7 w-full max-w-3xl mx-auto mt-4" />
-            <Skeleton className="h-6 w-full max-w-lg mx-auto mt-3" />
-          </div>
-        </section>
+        </header>
+        <main className="flex-grow">
+          {/* Skeleton for Hero Section */}
+          <section className="bg-muted/30 py-20">
+            <div className="container mx-auto px-4 text-center animate-pulse">
+              <div className="flex justify-center items-center gap-3 mb-4">
+                <Skeleton className="w-16 h-16 rounded-lg" />
+                <Skeleton className="h-12 md:h-16 w-72 md:w-96" />
+              </div>
+              <Skeleton className="h-7 w-full max-w-3xl mx-auto mt-4" />
+              <Skeleton className="h-6 w-full max-w-lg mx-auto mt-3" />
+            </div>
+          </section>
 
-        {/* Skeleton for Main Content */}
-        <div className="container mx-auto px-4 py-12">
-          <Skeleton className="h-10 w-72 mx-auto mb-10" />
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {Array(5).fill(0).map((_, index) => (
-              <Card className="flex flex-col" key={index}>
-                <CardHeader className="pb-3">
-                  <Skeleton className="h-8 w-3/4 mb-2" />
-                  <Skeleton className="h-4 w-1/2" />
-                </CardHeader>
-                <CardContent className="flex-grow">
-                  <Skeleton className="h-3 w-full mb-1" />
-                  <Skeleton className="h-3 w-1/4 ml-auto" />
-                </CardContent>
-                <CardFooter>
-                  <Skeleton className="h-10 w-full" />
-                </CardFooter>
-              </Card>
-            ))}
-          </div>
-        </div>
-        <footer className="py-8 text-center text-muted-foreground bg-background border-t">
-            <div className="mb-4 flex items-center justify-center gap-4">
-                <Skeleton className="h-9 w-24 rounded-md" />
-                <Skeleton className="h-10 w-10 rounded-md" />
+          {/* Skeleton for Main Content */}
+          <div className="container mx-auto px-4 py-12">
+            <Skeleton className="h-10 w-72 mx-auto mb-10" />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {Array(5).fill(0).map((_, index) => (
+                <Card className="flex flex-col" key={index}>
+                  <CardHeader className="pb-3">
+                    <Skeleton className="h-8 w-3/4 mb-2" />
+                    <Skeleton className="h-4 w-1/2" />
+                  </CardHeader>
+                  <CardContent className="flex-grow">
+                    <Skeleton className="h-3 w-full mb-1" />
+                    <Skeleton className="h-3 w-1/4 ml-auto" />
+                  </CardContent>
+                  <CardFooter>
+                    <Skeleton className="h-10 w-full" />
+                  </CardFooter>
+                </Card>
+              ))}
             </div>
+          </div>
+        </main>
+        <footer className="py-8 text-center text-muted-foreground bg-background border-t">
             <Skeleton className="h-4 w-64 mx-auto" />
         </footer>
-      </main>
+      </div>
     );
   }
 
   return (
-    <main className="flex-grow bg-background">
-      {/* Hero Section */}
-      <section className="bg-muted/30 dark:bg-muted/10 border-b">
-        <div className="container mx-auto px-4 py-16 md:py-24 text-center">
-            <div className="inline-flex items-center gap-3 mb-4">
-              <MilestoneMapperIcon className="w-12 h-12 md:w-16 md:h-16 text-primary" />
-              <h1 className="text-4xl md:text-6xl font-headline tracking-tight text-primary">Milestone Mapper</h1>
-            </div>
-            <p className="mt-4 text-lg md:text-2xl text-muted-foreground font-body max-w-3xl mx-auto">
-              Your personal atlas of achievements. Track your journeys, from states and countries to stadiums and national parks.
-            </p>
-            <p className="mt-2 text-base md:text-lg text-muted-foreground/80 font-body">
-              Where have you been? Where will you go next?
-            </p>
+    <div className="flex flex-col min-h-screen bg-background">
+      <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container mx-auto flex h-14 items-center justify-between">
+          <Link href="/" className="flex items-center gap-2" aria-label="Milestone Mapper Home">
+            <MilestoneMapperIcon className="w-8 h-8 text-primary" />
+            <span className="text-xl font-bold font-headline hidden sm:inline-block">Milestone Mapper</span>
+          </Link>
+          <div className="flex items-center gap-2">
+            <AuthButton />
+            <ThemeToggle />
+          </div>
         </div>
-      </section>
+      </header>
+      <main className="flex-grow">
+        {/* Hero Section */}
+        <section className="bg-muted/30 dark:bg-muted/10 border-b">
+          <div className="container mx-auto px-4 py-16 md:py-24 text-center">
+              <div className="inline-flex items-center gap-3 mb-4">
+                <MilestoneMapperIcon className="w-12 h-12 md:w-16 md:h-16 text-primary" />
+                <h1 className="text-4xl md:text-6xl font-headline tracking-tight text-primary">Milestone Mapper</h1>
+              </div>
+              <p className="mt-4 text-lg md:text-2xl text-muted-foreground font-body max-w-3xl mx-auto">
+                Your personal atlas of achievements. Track your journeys, from states and countries to stadiums and national parks.
+              </p>
+              <p className="mt-2 text-base md:text-lg text-muted-foreground/80 font-body">
+                Where have you been? Where will you go next?
+              </p>
+          </div>
+        </section>
 
-      {/* Main Content */}
-      <div className="container mx-auto px-4 py-12">
-        <h2 className="text-3xl font-headline text-center mb-10">Your Progress Trackers</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {categories.map(category => {
-            const visitedCount = getVisitedCount(category.slug);
-            const trackerSpecificProps: any = {
-              isItemVisited: isItemVisited,
-              toggleItemVisited: toggleItemVisited,
-              categorySlug: category.slug,
-              clearCategoryVisited: clearCategoryVisited,
-            };
+        {/* Main Content */}
+        <div className="container mx-auto px-4 py-12">
+          <h2 className="text-3xl font-headline text-center mb-10">Your Progress Trackers</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {categories.map(category => {
+              const visitedCount = getVisitedCount(category.slug);
+              const trackerSpecificProps: any = {
+                isItemVisited: isItemVisited,
+                toggleItemVisited: toggleItemVisited,
+                categorySlug: category.slug,
+                clearCategoryVisited: clearCategoryVisited,
+              };
 
-            if (category.slug === 'countries') {
-              trackerSpecificProps.countries = category.data;
-              trackerSpecificProps.visitedCount = visitedCount;
-            }
-            else if (category.slug === 'us-states') trackerSpecificProps.states = category.data;
-            else if (category.slug === 'national-parks') {
-              trackerSpecificProps.parks = category.data;
-              trackerSpecificProps.setNationalParkVisitDate = setNationalParkVisitDate;
-              trackerSpecificProps.getNationalParkVisitDate = getNationalParkVisitDate;
-            }
-            else if (category.slug === 'mlb-ballparks') trackerSpecificProps.stadiums = category.data;
-            else if (category.slug === 'nfl-stadiums') trackerSpecificProps.stadiums = category.data;
+              if (category.slug === 'countries') {
+                trackerSpecificProps.countries = category.data;
+                trackerSpecificProps.visitedCount = visitedCount;
+              }
+              else if (category.slug === 'us-states') trackerSpecificProps.states = category.data;
+              else if (category.slug === 'national-parks') {
+                trackerSpecificProps.parks = category.data;
+                trackerSpecificProps.setNationalParkVisitDate = setNationalParkVisitDate;
+                trackerSpecificProps.getNationalParkVisitDate = getNationalParkVisitDate;
+              }
+              else if (category.slug === 'mlb-ballparks') trackerSpecificProps.stadiums = category.data;
+              else if (category.slug === 'nfl-stadiums') trackerSpecificProps.stadiums = category.data;
 
-            return (
-              <CategoryCard
-                key={category.slug}
-                title={category.title}
-                icon={category.icon}
-                visitedCount={visitedCount}
-                totalCount={category.totalCount}
-                cardColor={category.cardColor}
-              >
-                {category.error ? (
-                  <p className="text-destructive text-center p-4">{category.error}</p>
-                ) : (
-                  <category.TrackerComponent {...trackerSpecificProps} />
-                )}
-              </CategoryCard>
-            );
-          })}
+              return (
+                <CategoryCard
+                  key={category.slug}
+                  title={category.title}
+                  icon={category.icon}
+                  visitedCount={visitedCount}
+                  totalCount={category.totalCount}
+                  cardColor={category.cardColor}
+                >
+                  {category.error ? (
+                    <p className="text-destructive text-center p-4">{category.error}</p>
+                  ) : (
+                    <category.TrackerComponent {...trackerSpecificProps} />
+                  )}
+                </CategoryCard>
+              );
+            })}
+          </div>
         </div>
-      </div>
-       <footer className="py-8 text-center text-muted-foreground border-t">
-         <div className="mb-4 flex items-center justify-center gap-4">
-          <AuthButton />
-          <ThemeToggle />
-        </div>
-        <p>&copy; {new Date().getFullYear()} Milestone Mapper. Happy travels!</p>
-      </footer>
-    </main>
+        <footer className="py-8 text-center text-muted-foreground border-t">
+          <p>&copy; {new Date().getFullYear()} Milestone Mapper. Happy travels!</p>
+        </footer>
+      </main>
+    </div>
   );
 }
